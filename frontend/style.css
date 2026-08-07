@@ -1,0 +1,102 @@
+/*
+ * Spritesheet grid: 8 cols x 11 rows, native cell 192x208.
+ * #pet renders at native size; the user-chosen pet size is applied from
+ * main.js as CSS zoom (plus a matching window resize).
+ *   row 0: idle, front facing (7 frames)
+ *   row 1: run facing right   (8 frames)
+ *   row 2: run facing left    (8 frames)
+ *   row 5: sad, drooping head (8 frames) — used when mood is low
+ */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* pet sits at the bottom; bubble floats above */
+}
+
+body:active {
+  cursor: grabbing;
+}
+
+#bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid rgba(255, 255, 255, 0.95);
+}
+
+#bubble {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 10px);
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #1d1d1f;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+#pet {
+  width: 192px;
+  height: 208px;
+  background: url("pets/toy_poodle.webp") no-repeat 0 0;
+  background-size: 1536px 2288px;
+}
+
+#pet[data-anim="idle"] {
+  background-position-y: 0;
+  animation: cycle-7 1.6s steps(7) infinite;
+}
+
+#pet[data-anim="run-right"] {
+  background-position-y: -208px;
+  animation: cycle-8 0.7s steps(8) infinite;
+}
+
+#pet[data-anim="run-left"] {
+  background-position-y: -416px;
+  animation: cycle-8 0.7s steps(8) infinite;
+}
+
+#pet[data-anim="sad"] {
+  background-position-y: -1040px; /* row 5 */
+  animation: cycle-8 2.2s steps(8) infinite;
+}
+
+@keyframes cycle-7 {
+  from { background-position-x: 0; }
+  to   { background-position-x: -1344px; } /* 7 frames x 192px */
+}
+
+@keyframes cycle-8 {
+  from { background-position-x: 0; }
+  to   { background-position-x: -1536px; } /* 8 frames x 192px */
+}

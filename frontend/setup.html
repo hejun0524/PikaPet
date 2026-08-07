@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome!</title>
+    <link rel="stylesheet" href="setup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>🐾 Welcome to your new best friend!</h1>
+      <p class="subtitle">Choose a pet to start with — your first friend is free.</p>
+
+      <div id="species-cards"></div>
+
+      <div class="form-row">
+        <label for="setup-name">Pet's name</label>
+        <input type="text" id="setup-name" maxlength="20" value="Huanhuan" />
+      </div>
+      <div class="form-row">
+        <label for="setup-callme">Your pet calls you</label>
+        <input type="text" id="setup-callme" maxlength="12" value="Owner" placeholder="Papa / Mama / Dada / Owner…" />
+      </div>
+
+      <div class="actions">
+        <button id="setup-quit">Quit</button>
+        <button id="setup-start" class="primary">Let's go! 🎉</button>
+      </div>
+    </main>
+    <script src="items.js"></script>
+    <script src="setup.js"></script>
+  </body>
+</html>

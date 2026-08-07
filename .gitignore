@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Rust / Tauri build output (frontend assets embed at compile time)
+backend/target/
+backend/gen/
+
+# Editor & assistant local state
+.vscode/
+.claude/
+
+# macOS
+.DS_Store
+
+# Logs & scratch
+*.log
+nohup.out

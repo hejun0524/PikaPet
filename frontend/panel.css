@@ -1,0 +1,246 @@
+/* Shared pet-panel styles (header, care meters, traits, footer buttons)
+   used by the stats popover and the bag window. Each window defines the
+   color variables (--bg, --text, --muted, --track, --fill, --fill-warn,
+   --fill-low, --fill-critical, --chip, --border) in its own stylesheet. */
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Idle frame 0 of the spritesheet (8x11 grid, cell 192x208) scaled to 64px wide. */
+#avatar {
+  width: 64px;
+  height: 69px;
+  background: url("pets/toy_poodle.webp") no-repeat 0 0;
+  background-size: 512px 762px;
+  border-radius: 12px;
+  background-color: var(--chip);
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.breed {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+h2 {
+  margin: 12px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.emoji {
+  margin-right: 5px;
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: 96px 1fr 30px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.meter .track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.meter .fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--fill);
+  transition: width 0.4s ease, background-color 0.4s ease;
+}
+
+.meter .fill.warn {
+  background: var(--fill-warn);
+}
+
+.meter .fill.low {
+  background: var(--fill-low);
+}
+
+.meter .fill.critical {
+  background: var(--fill-critical);
+}
+
+.meter .value,
+.trait .value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.trait {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  background: var(--chip);
+  border-radius: 8px;
+}
+
+.trait .value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* World nav buttons and add-on buttons share one 4-per-row metric. */
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+footer button,
+.addon-btn {
+  flex: 0 0 calc(25% - 6px);
+  padding: 7px 0;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+footer button:active,
+.addon-btn:active {
+  filter: brightness(0.92);
+}
+
+/* Pocket coins, shown under the pet's name + breed. */
+.coins-line {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Four equal care cards: background fill = meter level. */
+.care-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.care-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 2px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.care-card .tc-value,
+.care-card .tc-label {
+  position: relative; /* floats above the fill */
+}
+
+.care-card .tc-label {
+  font-size: 10px;
+}
+
+.cc-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--fill);
+  opacity: 0.3;
+  transition: height 0.4s ease, background-color 0.4s ease;
+}
+
+.care-card.warn .cc-fill {
+  background: var(--fill-warn);
+}
+
+.care-card.low .cc-fill {
+  background: var(--fill-low);
+}
+
+.care-card.critical .cc-fill {
+  background: var(--fill-critical);
+}
+
+/* Three equal trait cards spanning the full row. */
+.trait-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.trait-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 2px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.tc-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tc-label {
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status-badge {
+  margin: 2px 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--track);
+  border-radius: 7px;
+}
+
+#addon-row,
+#side-addons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Emoji that "flies" from a clicked card into the cart / plan book. */
+.fly {
+  position: fixed;
+  z-index: 99;
+  font-size: 30px;
+  pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.4, 0.1, 0.7, 1), opacity 0.55s ease;
+}

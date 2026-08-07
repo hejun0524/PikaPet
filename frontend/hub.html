@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Home &amp; Town</title>
+    <link rel="stylesheet" href="panel.css" />
+    <link rel="stylesheet" href="hub.css" />
+  </head>
+  <body>
+    <div id="layout">
+      <aside id="side">
+        <header>
+          <div id="avatar"></div>
+          <div class="who">
+            <h1 id="side-name"></h1>
+            <p id="side-breed" class="breed"></p>
+            <div id="side-coins" class="coins-line"></div>
+          </div>
+        </header>
+        <div id="side-status"></div>
+
+        <section>
+          <h2>Care</h2>
+          <div id="side-care"></div>
+        </section>
+
+        <section>
+          <h2>Traits</h2>
+          <div id="side-traits"></div>
+        </section>
+
+        <h2>World</h2>
+        <footer>
+          <button data-view="home" title="Home">🏠</button>
+          <button data-view="shopping" title="Shopping">🛒</button>
+          <button data-view="career" title="Career">💼</button>
+          <button data-view="touring" title="Touring">🗺️</button>
+          <button data-view="achievements" title="Achievements">🏆</button>
+          <button data-view="government" title="Pet Center">💖</button>
+          <button data-view="pika" title="Pika">🐱</button>
+          <button data-view="settings" title="Settings">⚙️</button>
+        </footer>
+
+        <section>
+          <h2>Add-ons</h2>
+          <div id="side-addons"></div>
+        </section>
+      </aside>
+
+      <div id="splitter"></div>
+
+      <section id="content">
+        <div id="topbar">
+          <h3 id="view-title"></h3>
+          <span class="topbar-spacer"></span>
+          <button id="plan-btn" hidden>📔<span id="plan-count" class="badge" hidden></span></button>
+          <button id="cart-btn" hidden>🛒<span id="cart-count" class="badge" hidden></span></button>
+          <button id="trade-btn" hidden>🤝<span id="trade-count" class="badge" hidden></span></button>
+          <button id="service-btn" hidden>🛎️<span id="service-count" class="badge" hidden></span></button>
+        </div>
+        <div id="cart-drawer" hidden></div>
+        <div id="plan-drawer" hidden></div>
+        <div id="trade-drawer" hidden></div>
+        <div id="service-drawer" hidden></div>
+        <nav id="tabs"></nav>
+        <main id="grid"></main>
+        <div id="addon-host" hidden></div>
+      </section>
+    </div>
+    <script src="items.js"></script>
+    <script src="school.js"></script>
+    <script src="career.js"></script>
+    <script src="touring.js"></script>
+    <script src="panel.js"></script>
+    <script src="hub.js"></script>
+  </body>
+</html>
