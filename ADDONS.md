@@ -1,13 +1,14 @@
 # 🧩 Preparing an Add-on Zip for MyPetGame
 
 Add-ons are distributed as **zip files** and managed entirely from inside the
-app: **Settings → Add-ons → "📦 Install add-on from zip…"** (a file picker
-opens), and every installed add-on has a 🗑️ uninstall icon next to its name.
-No manual folder digging required.
+app: the **🧩 Add-ons homepage** in the hub shows installed add-ons as an
+iPhone-style grid of app tiles, and its **🧰 manager** (top-right button) has
+**"📦 Install add-on from zip…"** (a file picker opens) plus a 🗑️ uninstall
+icon per add-on. No manual folder digging required.
 
-Installed add-ons appear as icon buttons in the **Add-ons** row (below the
-navigation buttons in the menu-bar popover and the hub's left panel); clicking
-one opens its page in the hub. Beyond that page, an add-on can also hang a
+Installed add-ons appear as tiles on the Add-ons homepage and as icon buttons
+in the **Quick Launch** row (below the navigation buttons in the menu-bar
+popover and the hub's left panel); clicking either opens the add-on's page. Beyond that page, an add-on can also hang a
 **mini-widget under the tray popover**, open its own **popup windows**, and
 send **system notifications** — see "Beyond the hub page" below.
 
@@ -41,9 +42,9 @@ folder and extracts everything beside it.
 
 | Field | Required | Rules |
 |---|---|---|
-| `id` | ✅ | Unique, stable, ≤40 chars, only `a-z A-Z 0-9 - _`. Keys the install folder, the hub view (`addon:<id>`), and user overrides. |
-| `name` | ✅ | Default display name (user-renamable). |
-| `emoji` | ✅ | Default button emoji — pick a bright one; it sits on dark and light panels. |
+| `id` | ✅ | Unique, stable, ≤40 chars, only `a-z A-Z 0-9 - _`. Keys the install folder and the hub view (`addon:<id>`). |
+| `name` | ✅ | Display name, shown under the app tile and as the page title. |
+| `emoji` | ✅ | Button/tile emoji — pick a bright one; it sits on dark and light panels. |
 | `version` | ✅ | Semver string; used for upgrade hints. |
 | `entry` | ✅ (in practice) | HTML page rendered when the add-on opens; an add-on without one shows "has no page". |
 | `widget` | optional | HTML page for the tray mini-widget (see "Tray widgets"). |
@@ -55,7 +56,14 @@ Your `entry` page renders in an `<iframe sandbox="allow-scripts
 allow-same-origin">` served through the asset protocol, hosted **outside**
 the hub's view grid — so your page keeps running (audio keeps playing, timers
 keep ticking) while the user browses other hub pages or closes the hub
-window. Each opened add-on keeps its own live iframe, so **several add-ons
+window.
+
+> ⚠️ **Pages must be self-contained single files.** The asset protocol
+> encodes the page's whole file path as one URL segment, so *relative
+> subresources do not resolve* — `<script src="game.js">` or
+> `<link href="style.css">` silently 404 and your page loads with no JS.
+> Inline all scripts and styles into the HTML (see the Music Player).
+> `localStorage` may also throw here — wrap every access in `try/catch`. Each opened add-on keeps its own live iframe, so **several add-ons
 can run at once** (music playing while another add-on does its thing).
 Everything must be local files inside your folder: no network access.
 Updating your add-on = the user reinstalls the new zip — **no app rebuild or
@@ -143,8 +151,8 @@ mini-player tray widget in `widget.html`). Start by copying it.
   replacing any previous version — so an upgrade is just installing the new
   zip. Paths containing `..` are skipped.
 - **Scan**: the app lists that directory at startup and after every
-  install/uninstall; the save file stores only user overrides (emoji/name),
-  which are pruned automatically when their add-on disappears.
+  install/uninstall; your manifest is the single source of truth for the
+  add-on's emoji, name, and pages.
 - **Uninstall**: deletes the folder. Nothing else to clean.
 - The repo's `addons/` folder is *not* bundled into the shipped app — it's
   a convenient place to keep zips during development (like `pets/` for
@@ -153,8 +161,8 @@ mini-player tray widget in `widget.html`). Start by copying it.
 ## Checklist before zipping
 
 - [ ] `manifest.json` with unique `id`, `name`, bright `emoji`, `version`
-- [ ] `entry` page + assets all inside the folder, all paths relative
+- [ ] `entry` page is self-contained (JS/CSS inlined — relative subresources don't load)
 - [ ] No external network dependencies (the iframe has no internet)
 - [ ] `zip -r yourthing.zip yourthing` from the parent directory
-- [ ] Test: Settings → Install add-on from zip → button appears → page opens
+- [ ] Test: Add-ons homepage → 🧰 manager → Install from zip → tile appears → page opens
       → Uninstall removes it cleanly

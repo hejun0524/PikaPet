@@ -95,10 +95,6 @@ function findPlace(key) {
   return ALL_PLACES.find((d) => d.key === key);
 }
 
-function tourKey(destKey, cityCount) {
-  return `tour-${destKey}-${cityCount}`;
-}
-
 function cityDestination(city) {
   return ALL_PLACES.find((d) => d.cities.includes(city));
 }

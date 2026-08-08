@@ -19,7 +19,7 @@ const CELL_W = 192;
 const CELL_H = 208;
 const BUBBLE_SPACE = 84;
 const MIN_WINDOW_W = 220;
-const DEFAULT_SETTINGS = { scale: 0.75, allDesktops: true };
+const DEFAULT_SETTINGS = { scale: 0.5, allDesktops: true };
 
 async function applySettings(s) {
   const scale = typeof s.scale === "number" ? s.scale : DEFAULT_SETTINGS.scale;
@@ -178,7 +178,7 @@ const TRAVEL_STEP_PX = 16; // per 16ms frame
 const trip = { away: false, homePos: null, monitor: null, size: null };
 let animating = false;
 
-function animateX(fromX, y, targetX, onFrame) {
+function animateX(fromX, y, targetX) {
   return new Promise((resolve) => {
     const dir = targetX > fromX ? 1 : -1;
     let x = fromX;
@@ -328,7 +328,7 @@ async function buildMenu() {
   return Menu.new({
     items: [
       { id: "home", text: "🏠 Home", action: () => openHub("home") },
-      { id: "shopping", text: "🛒 Shopping", action: () => openHub("shopping") },
+      { id: "shopping", text: "🧺 Life", action: () => openHub("shopping") },
       { id: "career", text: "💼 Career", action: () => openHub("career") },
       { id: "touring", text: "🗺️ Touring", action: () => openHub("touring") },
       { id: "achievements", text: "🏆 Achievements", action: () => openHub("achievements") },

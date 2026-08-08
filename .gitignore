@@ -1,6 +1,3 @@
-# Dependencies
-node_modules/
-
 # Rust / Tauri build output (frontend assets embed at compile time)
 backend/target/
 backend/gen/

@@ -33,7 +33,7 @@ const pet = {
   callMe: "Owner",
   coins: 1000,
   achievements: [],
-  settings: { scale: 0.75, allDesktops: true, devMode: false },
+  settings: { scale: 0.5, allDesktops: true, devMode: false },
   care: CARE_META.map((m) => ({ ...m, value: 100, max: 100 })),
   traits: TRAIT_META.map((m) => ({ ...m, value: 0 })),
   bag: Object.fromEntries(ALL_ITEMS.map((i) => [i.key, i.startQty ?? DEFAULT_ITEM_QTY])),
@@ -57,8 +57,8 @@ const pet = {
   tickets: {}, // "flight:City" / "train:dest" -> count
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
-  addons: {}, // user overrides: {id: {emoji, name}}
   homework: { date: "", count: 0 }, // daily homework limit tracking
+  pinnedAddons: [], // add-on ids pinned to the popover + hub quick-launch rows
 };
 
 // Care meters were renamed once; accept values saved under the old names.
@@ -102,8 +102,8 @@ function save() {
     tickets: pet.tickets,
     pika: pet.pika,
     bank: pet.bank,
-    addons: pet.addons,
     homework: pet.homework,
+    pinnedAddons: pet.pinnedAddons,
     activity: {
       plan: [...pet.activity.plan],
       // Persist elapsed time, not wall-clock, so a closed app pauses activities.
@@ -355,12 +355,8 @@ async function load() {
         date: typeof saved.bank.date === "string" ? saved.bank.date : "",
       };
     }
-    if (saved.addons && typeof saved.addons === "object") {
-      for (const [id, o] of Object.entries(saved.addons)) {
-        if (o && typeof o === "object") {
-          pet.addons[id] = { emoji: String(o.emoji ?? ""), name: String(o.name ?? "") };
-        }
-      }
+    if (Array.isArray(saved.pinnedAddons)) {
+      pet.pinnedAddons = saved.pinnedAddons.filter((id) => typeof id === "string");
     }
     if (saved.homework && typeof saved.homework === "object") {
       pet.homework = {
@@ -427,8 +423,8 @@ function broadcastState() {
     activity: activityView(),
     caretaking: caretakingView(),
     bank: { ...pet.bank },
-    addons: { ...pet.addons },
     addonsInstalled: installedAddons,
+    pinnedAddons: [...pet.pinnedAddons],
     homework: { ...pet.homework },
     settings: { ...pet.settings },
   });
@@ -550,11 +546,22 @@ async function rescanAddons() {
     console.error("addon scan failed:", e);
     installedAddons = [];
   }
-  // Drop overrides for add-ons that no longer exist.
-  for (const id of Object.keys(pet.addons)) {
-    if (!installedAddons.some((a) => a.id === id)) delete pet.addons[id];
-  }
+  // Unpin add-ons that are no longer installed.
+  pet.pinnedAddons = pet.pinnedAddons.filter((id) =>
+    installedAddons.some((a) => a.id === id)
+  );
 }
+
+// Pin/unpin an add-on to the quick-launch rows (popover + hub side panel).
+listen("addon-pin", ({ payload }) => {
+  const id = payload.id;
+  if (!installedAddons.some((a) => a.id === id)) return;
+  pet.pinnedAddons = pet.pinnedAddons.filter((p) => p !== id);
+  if (payload.pinned) pet.pinnedAddons.push(id);
+  render();
+  save();
+  broadcastState();
+});
 
 listen("addons-changed", async () => {
   await rescanAddons();
@@ -576,7 +583,6 @@ listen("addons-changed", async () => {
 // widget-push state; the widget page answers with widget-ready and sends
 // widget-action, which we relay back to the main page via a Tauri event.
 const POPOVER_W = 360;
-const POPOVER_H = 525;
 const widgetStates = new Map(); // addon id -> last pushed state
 
 function widgetBox(id) {
@@ -585,16 +591,23 @@ function widgetBox(id) {
   );
 }
 
-function resizeForWidgets() {
-  let h = POPOVER_H;
+// The popover window hugs its content: the panel height changes with the
+// compact toggle and status rows, and widget boxes hang below it.
+let lastPopoverH = 0;
+
+function resizePopover() {
+  let h = 9 + document.getElementById("panel").offsetHeight; // 9 = tray arrow
   for (const box of document.querySelectorAll(".widget-box")) {
     h += box.offsetHeight + 8;
   }
+  h = Math.ceil(h) + 2;
+  if (Math.abs(h - lastPopoverH) < 2) return;
+  lastPopoverH = h;
   const { getCurrentWindow } = window.__TAURI__.window;
   const { LogicalSize } = window.__TAURI__.dpi ?? window.__TAURI__.window;
   getCurrentWindow()
     .setSize(new LogicalSize(POPOVER_W, h))
-    .catch((e) => jlog(`widget resize failed: ${e}`));
+    .catch((e) => jlog(`popover resize failed: ${e}`));
 }
 
 function showWidget(id) {
@@ -610,13 +623,13 @@ function showWidget(id) {
   frame.src = window.__TAURI__.core.convertFileSrc(`${addon.dir}/${addon.widget}`);
   box.appendChild(frame);
   document.getElementById("widgets").appendChild(box);
-  resizeForWidgets();
+  resizePopover();
 }
 
 function hideWidget(id) {
   widgetBox(id)?.remove();
   widgetStates.delete(id);
-  resizeForWidgets();
+  resizePopover();
 }
 
 listen("addon-widget-set", ({ payload }) => {
@@ -647,25 +660,6 @@ window.addEventListener("message", (e) => {
   } else if (type === "widget-action") {
     emit("addon-widget-action", { id, payload });
   }
-});
-
-listen("addon-update", ({ payload }) => {
-  const id = payload.id;
-  if (!installedAddons.some((a) => a.id === id)) return;
-  const current = addonList(installedAddons, pet.addons).find((a) => a.id === id);
-  pet.addons[id] = {
-    emoji:
-      typeof payload.emoji === "string" && payload.emoji.trim()
-        ? payload.emoji.trim().slice(0, 4)
-        : current.emoji,
-    name:
-      typeof payload.name === "string" && payload.name.trim()
-        ? payload.name.trim().slice(0, 20)
-        : current.name,
-  };
-  render();
-  save();
-  broadcastState();
 });
 
 listen("pika-checkout", ({ payload }) => {
@@ -789,7 +783,7 @@ listen("use-item", ({ payload }) => {
   broadcastState();
 });
 
-// ── Purchases: cart checkout (requested by the hub's Shopping view) ─────────
+// ── Purchases: cart checkout (requested by the hub's Life view) ─────────────
 listen("buy-cart", ({ payload }) => {
   const entries = (payload.items ?? []).map(({ key, qty }) => ({
     entry: findSellable(key),
@@ -1280,13 +1274,13 @@ listen("setup-complete", ({ payload }) => {
   broadcastState();
 });
 
-// Magic Station: buy a form once at its full price (transforms immediately);
-// switching between owned forms costs only the small transform fee.
+// Magic Station: buy a form once at its full price (switches immediately);
+// switching between owned forms is free.
 listen("gov-magic", ({ payload }) => {
   const species = SPECIES.find((s) => s.key === payload.species);
   if (!species || species.key === pet.species) return;
   const owned = pet.forms.includes(species.key);
-  const cost = owned ? TRANSFORM_FEE : species.price;
+  const cost = owned ? 0 : species.price;
   if (pet.coins < cost) return;
   pet.coins -= cost;
   if (!owned) pet.forms.push(species.key);
@@ -1313,13 +1307,52 @@ function render() {
       <button id="stop-caretaking" title="End caretaking service">🛑</button></div>`;
   }
   document.getElementById("study-status").innerHTML = statusHTML;
-  document.getElementById("care").innerHTML = careCardsHTML(pet.care);
+  document.getElementById("care").innerHTML = trayCompact
+    ? miniCareHTML(pet.care)
+    : careCardsHTML(pet.care);
   document.getElementById("coins").textContent = `💰 ${pet.coins.toLocaleString()}`;
   document.getElementById("traits").innerHTML = traitCardsHTML(pet.traits);
-  document.getElementById("addon-row").innerHTML = addonButtonsHTML(
-    addonList(installedAddons, pet.addons)
+  const pinned = addonList(installedAddons).filter((a) =>
+    pet.pinnedAddons.includes(a.id)
   );
+  document.getElementById("addons-section").hidden = pinned.length === 0;
+  document.getElementById("addon-row").innerHTML = addonButtonsHTML(pinned);
+  resizePopover();
 }
+
+// ── Compact (minimized) popover ─────────────────────────────────────────────
+// The ▾ toggle collapses the popover to the essentials: slim emoji+bar care
+// meters (no numbers) and Home / Add-ons / Settings buttons.
+let trayCompact = localStorage.getItem("trayCompact") === "1";
+
+function miniCareHTML(meters) {
+  return meters
+    .map(
+      (m) => `
+    <div class="mini-meter" title="${escText(m.label)}: ${m.value}/${m.max}">
+      <span class="mm-emoji">${m.emoji}</span>
+      <div class="mm-track"><div class="mm-fill${barClassFor(m.value, m.max)}" style="width:${(m.value / m.max) * 100}%"></div></div>
+    </div>`
+    )
+    .join("");
+}
+
+function applyTrayCompact() {
+  document.body.classList.toggle("compact", trayCompact);
+  document.getElementById("tray-collapse").textContent = trayCompact ? "▴" : "▾";
+  document.getElementById("tray-collapse").title = trayCompact ? "Expand" : "Minimize";
+}
+
+document.getElementById("tray-collapse").addEventListener("click", () => {
+  trayCompact = !trayCompact;
+  try {
+    localStorage.setItem("trayCompact", trayCompact ? "1" : "0");
+  } catch {}
+  applyTrayCompact();
+  render();
+});
+
+applyTrayCompact();
 
 // ── Boot ────────────────────────────────────────────────────────────────────
 (async () => {
@@ -1354,10 +1387,17 @@ for (const id of [
   "achievements",
   "government",
   "pika",
+  "adventure",
+  "addons",
   "settings",
 ]) {
   document.getElementById(id).addEventListener("click", () => openHub(id));
 }
+
+// Compact-mode shortcut row.
+document.getElementById("mini-home").addEventListener("click", () => openHub("home"));
+document.getElementById("mini-addons").addEventListener("click", () => openHub("addons"));
+document.getElementById("mini-settings").addEventListener("click", () => openHub("settings"));
 
 // End/call-back the current activity or caretaker straight from the popover.
 document.getElementById("study-status").addEventListener("click", (e) => {

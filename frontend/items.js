@@ -148,27 +148,24 @@ const LOAN_APR = 0.15;
 const LOAN_LIMIT = 50000;
 
 // Add-ons are installed from zip files (Settings → Install add-on) into the
-// app-data addons directory; the save stores only the user's emoji/name
-// overrides keyed by add-on id. `installed` comes from the Rust scan.
-function addonList(installed, overrides) {
+// app-data addons directory; `installed` comes from the Rust manifest scan.
+function addonList(installed) {
   return (installed ?? []).map((a) => ({
     id: a.id,
     emoji: a.emoji || "🧩",
     name: a.name || a.id,
     entry: a.entry,
     dir: a.dir,
-    ...(overrides?.[a.id] ?? {}),
   }));
 }
 
 // Pet species (forms). A form is PURCHASED once at its price (which also
-// transforms immediately); afterwards switching to any owned form costs the
-// small TRANSFORM_FEE. Every sheet shares the poodle's 8x11 grid.
-const TRANSFORM_FEE = 200;
-
+// switches to it immediately); afterwards switching between owned forms is
+// free. Every sheet shares the poodle's 8x11 grid.
 const SPECIES = [
-  { key: "toy_poodle", label: "Toy Poodle", breed: "Chocolate Toy Poodle", emoji: "🐩", sheet: "pets/toy_poodle.webp", price: 0, defaultName: "Huanhuan" },
-  { key: "white_cat", label: "White Cat", breed: "White Cat", emoji: "🐈", sheet: "pets/white_cat.webp", price: 6767, defaultName: "Mimi" },
+  { key: "toy_poodle", label: "Toy Poodle", breed: "Chocolate Toy Poodle", sheet: "pets/toy_poodle.webp", price: 6666, defaultName: "Huanhuan" },
+  { key: "white_cat", label: "White Cat", breed: "White Cat", sheet: "pets/white_cat.webp", price: 6767, defaultName: "Mimi" },
+  { key: "bichon", label: "Bichon", breed: "Bichon Frisé", sheet: "pets/bichon.webp", price: 5888, defaultName: "Snow" },
 ];
 
 function findSpecies(key) {
@@ -187,7 +184,7 @@ const SERVICES = [
   },
 ];
 
-// The Shopping view's stores. `sells` references item/service keys.
+// The Life view's stores. `sells` references item/service keys.
 const SHOP_CATALOG = [
   { key: "food-store", label: "Food Store", tabEmoji: "🍎", sells: ["carrot", "apple", "milk", "cookie", "donut", "noodles", "pizza", "bento", "sushi", "steak", "cake"] },
   { key: "bath-store", label: "Bath Shop", tabEmoji: "🧼", sells: ["toothbrush", "soap", "shampoo", "sponge", "bubbles", "spa", "grooming", "hotspring"] },
@@ -196,10 +193,10 @@ const SHOP_CATALOG = [
   { key: "homework-store", label: "Homework", tabEmoji: "✏️", sells: ["math", "reading", "basketball", "swimming", "violin", "dance"] },
 ];
 
-// The Career view's venues; `construction` entries render as placeholders.
+// The Career view's tabs.
 const CAREER_CATALOG = [
   { key: "school", label: "School", tabEmoji: "🏫" }, // custom page, see hub.js + school.js
-  { key: "job", label: "Job", tabEmoji: "🧑‍💼", construction: true },
+  { key: "job", label: "Job", tabEmoji: "🧑‍💼" },
 ];
 
 // The Touring view's tabs.

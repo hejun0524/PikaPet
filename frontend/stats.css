@@ -92,6 +92,7 @@ body {
 }
 
 #panel {
+  position: relative; /* anchors the collapse toggle */
   box-sizing: border-box;
   margin: 0;
   padding: 16px;
@@ -99,6 +100,107 @@ body {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 14px;
+}
+
+/* ── Compact (minimized) mode ──────────────────────────────────────────── */
+
+#tray-collapse {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+body.compact #study-status,
+body.compact #care-section h2,
+body.compact #traits-section,
+body.compact #world-title,
+body.compact footer,
+body.compact #addons-section {
+  display: none;
+}
+
+#mini-actions {
+  display: none;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+body.compact #mini-actions {
+  display: flex;
+}
+
+#mini-actions button {
+  flex: 1;
+  padding: 6px 0;
+  font-family: inherit;
+  font-size: 15px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#mini-actions button:active {
+  filter: brightness(0.92);
+}
+
+/* Slim emoji + bar care meters (no numbers) for compact mode, styled after
+   macOS level indicators: hairline track in Apple's translucent systemFill,
+   softly transparent color fill. */
+.mini-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.mini-meter:last-child {
+  margin-bottom: 0;
+}
+
+.mm-emoji {
+  width: 15px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.mm-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(120, 120, 128, 0.18);
+  overflow: hidden;
+}
+
+.mm-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--fill);
+  opacity: 0.7;
+  transition: width 0.4s ease, background-color 0.4s ease;
+}
+
+.mm-fill.warn {
+  background: var(--fill-warn);
+}
+
+.mm-fill.low {
+  background: var(--fill-low);
+}
+
+.mm-fill.critical {
+  background: var(--fill-critical);
 }
 
 /* Add-on mini-widgets: rounded boxes hanging below the main popover,

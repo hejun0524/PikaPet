@@ -32,17 +32,19 @@
         <h2>World</h2>
         <footer>
           <button data-view="home" title="Home">🏠</button>
-          <button data-view="shopping" title="Shopping">🛒</button>
+          <button data-view="shopping" title="Life">🧺</button>
           <button data-view="career" title="Career">💼</button>
           <button data-view="touring" title="Touring">🗺️</button>
           <button data-view="achievements" title="Achievements">🏆</button>
           <button data-view="government" title="Pet Center">💖</button>
           <button data-view="pika" title="Pika">🐱</button>
+          <button data-view="adventure" title="Adventure">⚔️</button>
+          <button data-view="addons" title="Add-ons">🧩</button>
           <button data-view="settings" title="Settings">⚙️</button>
         </footer>
 
-        <section>
-          <h2>Add-ons</h2>
+        <section id="side-addons-section">
+          <h2>Quick Launch</h2>
           <div id="side-addons"></div>
         </section>
       </aside>
@@ -51,14 +53,17 @@
 
       <section id="content">
         <div id="topbar">
+          <button id="addons-home-btn" hidden title="Back to Add-ons">← 🧩</button>
           <h3 id="view-title"></h3>
           <span class="topbar-spacer"></span>
           <button id="plan-btn" hidden>📔<span id="plan-count" class="badge" hidden></span></button>
           <button id="cart-btn" hidden>🛒<span id="cart-count" class="badge" hidden></span></button>
           <button id="trade-btn" hidden>🤝<span id="trade-count" class="badge" hidden></span></button>
           <button id="service-btn" hidden>🛎️<span id="service-count" class="badge" hidden></span></button>
+          <button id="manager-btn" hidden title="Manage add-ons">🧰</button>
         </div>
         <div id="cart-drawer" hidden></div>
+        <div id="addon-drawer" hidden></div>
         <div id="plan-drawer" hidden></div>
         <div id="trade-drawer" hidden></div>
         <div id="service-drawer" hidden></div>
@@ -72,6 +77,7 @@
     <script src="career.js"></script>
     <script src="touring.js"></script>
     <script src="panel.js"></script>
+    <script src="adventure.js"></script>
     <script src="hub.js"></script>
   </body>
 </html>

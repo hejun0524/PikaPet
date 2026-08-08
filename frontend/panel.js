@@ -19,36 +19,15 @@ function barClassFor(value, max) {
   return level ? ` ${level.className}` : "";
 }
 
-function meterHTML({ key, emoji, label, value, max }) {
-  return `
-    <div class="meter" data-stat="${key}">
-      <label><span class="emoji">${emoji}</span>${label}</label>
-      <div class="track"><div class="fill${barClassFor(value, max)}" style="width: ${(value / max) * 100}%"></div></div>
-      <span class="value">${value}</span>
-    </div>`;
-}
-
-function traitHTML({ key, emoji, label, value }) {
-  return `
-    <div class="trait" data-stat="${key}">
-      <label><span class="emoji">${emoji}</span>${label}</label>
-      <span class="value">${value}</span>
-    </div>`;
-}
-
-function coinsHTML(coins) {
-  return traitHTML({ key: "coins", emoji: "💰", label: "Pocket", value: coins.toLocaleString() });
-}
-
 // Four equal care cards: the background fill rises with the meter's value,
-// colored by the same thresholds as the old bars.
+// colored by the BAR_LEVELS thresholds.
 function careCardsHTML(meters) {
   return `<div class="care-cards">${meters
     .map((m) => {
       const pct = (m.value / m.max) * 100;
       const level = barClassFor(m.value, m.max).trim();
       return `
-    <div class="care-card ${level}" data-stat="${escText(m.key)}">
+    <div class="care-card ${level}">
       <div class="cc-fill" style="height:${pct}%"></div>
       <span class="tc-value">${escText(String(m.value))}</span>
       <span class="tc-label">${m.emoji} ${escText(m.label)}</span>
@@ -62,7 +41,7 @@ function traitCardsHTML(traits) {
   return `<div class="trait-cards">${traits
     .map(
       (t) => `
-    <div class="trait-card" data-stat="${escText(t.key)}">
+    <div class="trait-card">
       <span class="tc-value">${escText(String(t.value))}</span>
       <span class="tc-label">${t.emoji} ${escText(t.label)}</span>
     </div>`
@@ -74,11 +53,12 @@ function escText(text) {
   return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 }
 
-// One button per add-on, for the popover and the hub side panel.
-function addonButtonsHTML(addons) {
+// One button per add-on, for the popover and the hub side panel. `activeId`
+// highlights the add-on whose page is open (hub only).
+function addonButtonsHTML(addons, activeId) {
   return addons
     .map(
-      (a) => `<button class="addon-btn" data-addon="${escText(a.id)}" title="${escText(a.name)}">${escText(a.emoji)}</button>`
+      (a) => `<button class="addon-btn${a.id === activeId ? " active" : ""}" data-addon="${escText(a.id)}" title="${escText(a.name)}">${escText(a.emoji)}</button>`
     )
     .join("");
 }

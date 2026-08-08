@@ -9,16 +9,17 @@ A cross-platform desktop pet (in the spirit of QQ Pet, with a Codex-pet-style co
 | Tool | Install | Notes |
 |---|---|---|
 | Rust (stable) | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Compiles the Tauri backend |
-| Node.js ≥ 18 + npm | [nodejs.org](https://nodejs.org) or nvm | Only used to run the Tauri CLI; the frontend has no build step |
 | Xcode Command Line Tools (macOS) | `xcode-select --install` | C toolchain for the Rust build |
 | Linux only: WebKitGTK dev packages | see [Tauri prerequisites](https://tauri.app/start/prerequisites/) | Not needed on macOS/Windows |
+
+No Node.js required — the frontend is plain vanilla JS with no build step.
 
 ### Run
 
 ```bash
 git clone <this repo>
-npm install        # installs the Tauri CLI
-npm run dev        # compile + launch (first build takes a few minutes)
+cd backend
+cargo run          # compile + launch (first build takes a few minutes)
 ```
 
 First launch opens a Welcome window: pick a species (free), name your pet, tell it what to call you.
@@ -26,7 +27,9 @@ First launch opens a Welcome window: pick a species (free), name your pet, tell 
 ### Build a distributable app
 
 ```bash
-npm run build      # outputs to backend/target/release/bundle/
+cargo install tauri-cli --version "^2"   # one-time
+cd backend
+cargo tauri build                        # outputs to backend/target/release/bundle/
 ```
 
 On macOS this produces a `.app` for /Applications; Settings → "Show up when computer starts" registers it as a Launch Agent.
@@ -37,13 +40,14 @@ On macOS this produces a `.app` for /Applications; Settings → "Show up when co
 mypetgame/
 ├── pets/                     # Source artwork (spritesheets, 8×11 grids of 192×208 frames)
 │   ├── toy_poodle.webp
-│   └── white_cat.webp
+│   ├── white_cat.webp
+│   └── bichon.webp
 ├── addons/                   # Add-on zips for development (NOT bundled into the app)
 │   └── music.zip             #   the Music Player add-on (manifest + entry page)
 ├── frontend/                 # All UI — plain HTML/CSS/JS, no bundler (EMBEDDED in the binary)
 │   ├── index.html/main.js/style.css    # Desktop pet window: sprite animation, drag, speech bubbles, travel runs, context menu
 │   ├── stats.html/stats.js/stats.css   # Menu bar popover + THE STATE OWNER: game clocks, save/load, all mutations
-│   ├── hub.html/hub.js/hub.css         # Hub window: Home / Shopping / Career / Touring / Achievements / Pet Center / Pika / Settings + add-on host
+│   ├── hub.html/hub.js/hub.css         # Hub window: Home / Life / Career / Touring / Achievements / Pet Center / Pika / Adventure / Add-ons / Settings + add-on host
 │   ├── addon-window.html/.js # Shell for add-on popup windows (iframe + bridge)
 │   ├── setup.html/setup.js/setup.css   # First-run welcome window (choose pet, name, call-me)
 │   ├── items.js              # Shared catalog: items, prices, stores, caretakers, bank rates, species, add-on helpers
@@ -57,17 +61,16 @@ mypetgame/
 │   ├── tauri.conf.json       # App config: the four windows, asset protocol scope
 │   ├── capabilities/default.json   # Security allowlist: which APIs the JS may call
 │   └── icons/                # Paw app icons + monochrome paw tray template
-├── ADDONS.md                 # How to package an add-on zip
-└── package.json              # Just the Tauri CLI + dev/build scripts
+└── ADDONS.md                 # How to package an add-on zip
 ```
 
 ### Architecture notes
 
-- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has eight views — 🏠 Home / 🛒 Shopping / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu. Hidden windows hide (rather than close) when dismissed. Add-on concepts under consideration live in [IDEAS.md](IDEAS.md).
-- **State ownership**: `frontend/stats.js` is the single owner of persistent state. It runs the game clocks and writes `save.json` (via Rust `save_state`/`load_state`) to `~/Library/Application Support/com.junhe.mypet/`. Other windows never write state: they emit events (`use-item`, `buy-cart`, `start-plan`, `end-activity`, `hire-caretakers`, `end-caretaking`, `bank-op`, `pika-checkout`, `gov-update`, `gov-magic`, `addon-update`, `settings-changed`, …); stats.js validates, applies, saves, and broadcasts `pet-state`, which every window consumes.
+- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has ten views — 🏠 Home / 🧺 Life / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika / ⚔️ Adventure / 🧩 Add-ons / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu. Hidden windows hide (rather than close) when dismissed. The Adventure view's design doc lives in [ADVENTURE.md](ADVENTURE.md).
+- **State ownership**: `frontend/stats.js` is the single owner of persistent state. It runs the game clocks and writes `save.json` (via Rust `save_state`/`load_state`) to `~/Library/Application Support/com.junhe.mypet/`. Other windows never write state: they emit events (`use-item`, `buy-cart`, `start-plan`, `end-activity`, `hire-caretakers`, `end-caretaking`, `bank-op`, `pika-checkout`, `gov-update`, `gov-magic`, `settings-changed`, …); stats.js validates, applies, saves, and broadcasts `pet-state`, which every window consumes.
 - **Persistence model**: saved every tick, restored verbatim — intentionally **no offline decay**, and activity/shift timers store elapsed time so they pause while the app is closed. Bank interest is the one exception: it compounds per calendar day, including days offline.
 - **Background throttling caveat**: WebKit suspends JS (timers *and* event delivery) in hidden webviews, so the main/stats/hub windows all set `"backgroundThrottling": "disabled"` in `tauri.conf.json`. The hub additionally re-syncs from the save file on window focus. All windows report errors to stdout via the Rust `log` command.
-- **Frontend assets are embedded in the binary at compile time** — after editing anything in `frontend/`, rebuild (`cargo build` / `npm run dev`). Add-on pages are the exception: they live in the user's addons directory and update by reinstalling the zip, no app restart needed.
+- **Frontend assets are embedded in the binary at compile time** — after editing anything in `frontend/`, rebuild (`cargo build` from `backend/`). Add-on pages are the exception: they live in the user's addons directory and update by reinstalling the zip, no app restart needed.
 - **Duplicate top-level `const` across `<script>` files kills a page silently** (parse error before any error hook runs). Sanity check: `cat items.js panel.js school.js career.js touring.js hub.js | node --check /dev/stdin`.
 - **Sprite animation** is pure CSS `steps()` over `background-position`; JS switches the `data-anim` attribute (`idle`, `run-left`, `run-right`, `sad`) and swaps the sheet image per species.
 
@@ -82,7 +85,7 @@ mypetgame/
 
 **Menu bar (tray)**
 - Monochrome paw-print template icon (drawn programmatically with Swift/CoreGraphics); the app icon set is the same paw on a warm rounded square. Left-click toggles the popover (rounded, with a pointer arrow at the tray icon); right-click has a plain Quit item.
-- Popover shows: name + breed + 💰 pocket coins in the header, avatar, four care cards whose background fill rises with the meter (threshold-colored), three equal trait cards (value, emoji, name), compact status rows for the current activity and caretaker shift (each with its 🛑/📢 button, activity-end disabled while caretaken), a **"World"** section of view buttons (4 per row), and an **Add-ons** section whose buttons share the same size. The hub's left panel mirrors the same layout.
+- Popover shows: name + breed + 💰 pocket coins in the header, avatar, four care cards whose background fill rises with the meter (threshold-colored), three equal trait cards (value, emoji, name), compact status rows for the current activity and caretaker shift (each with its 🛑/📢 button, activity-end disabled while caretaken), a **"World"** section of view buttons (4 per row), and a **Quick Launch** section with one button per installed add-on. The hub's left panel mirrors the same layout. A **▾ minimize toggle** (top right) collapses the popover to the essentials: slim emoji+bar care meters (no numbers) plus 🏠 Home / 🧩 Add-ons / ⚙️ Settings buttons; the window height hugs the content in both modes.
 
 **Care & stats**
 - Energy ⚡, Hygiene 🛁, Mood 😊 decay by 1 per tick (`TICK_MS`); colors green → yellow (<60%) → orange (<35%) → red (<15%).
@@ -91,7 +94,7 @@ mypetgame/
 
 **Hub — Home** 🏠: seven tabs — Food, Bath, Toys, Meds, Homework, Tickets 🎫, Souvenirs 🎁. Items apply instantly (capped at 100) and disappear at quantity 0; homework trades −5/−5 care for +1 trait, all at 💰25, **max 5 per day** (counter shown in the tab, resets at midnight); tickets launch trips; souvenirs are tour trophies Pika buys at 💰200 each.
 
-**Hub — Shopping** 🛒: five stores (Food 11 items, Bath 8, Toys 8, Hospital 6 incl. 💰200 Full Recovery, Homework 6) with a fly-to-cart animation and an atomic checkout that greys out when unaffordable.
+**Hub — Life** 🧺: five stores (Food 11 items, Bath 8, Toys 8, Hospital 6 incl. 💰200 Full Recovery, Homework 6) with a fly-to-cart animation and an atomic checkout that greys out when unaffordable.
 
 **Hub — Career** 💼: School and Job share one plan book and one activity clock.
 - **School**: 7 subjects × 7 stages (Kindergarten → PhD, 26 years/subject), per-subject credits (10→110 per year by stage), 49 courses, stage-gated 🔒, diplomas on the Achievements wall.
@@ -99,6 +102,8 @@ mypetgame/
 - **📔 Plan book**: stage classes/jobs like a cart, ▶ Start (greyed if up-front costs exceed pocket); charges land as each activity starts; ending early prorates and refunds.
 
 **Hub — Touring** 🗺️: 27 destinations (~190 cities) + 5 sports leagues with full rosters (NBA/WNBA/NFL/MLB/CBA, 125 teams). Mystery packages (1-5 stops; 💰70/city, 💰150/team stop) draw uniformly across *everything* and reveal stops only on completion. Care is frozen during trips and **fully recharged** on any trip that visited ≥1 stop. Journals record "Country - City" / "League - Team" per stop under 🌍/🏟️; city maps light up; each stop yields a souvenir. Call back = ⌊elapsed/30min⌋ stops visited, rest refunded.
+
+**Hub — Adventure** ⚔️: the pet's second life as a guildmaster — part of the app (not an add-on) but a fully separate, novel-styled ecosystem (serif type; Finnies 🐟 ≠ coins; own localStorage save; reads only the pet's name). Six tabs — Guild (NPC notice board + story chronicle), World (Finder-style three-column browser: 5 eras → cities + wilderness → gathering dispatch and familiar-face sightings), Storehouse (materials/trinkets inventory), Crafthouse (all crafts listed; blueprint purchases unlock benches permanently, the rest greyed out), and the three cats right-aligned: Pika (blueprint shop + trinket buy-back), Darcy (whereabouts ledger, paid locates, the Express), Noonie (HR & Talent Acquisition: roster, hiring pool, instant healing). Answer one notice for an NPC and you'll spot them yourself when browsing their city; Darcy just finds them faster. Full design + to-dos in [ADVENTURE.md](ADVENTURE.md).
 
 **Hub — Achievements** 🏆: four tabs (Degrees 49, Career Tiers 60, World Touring 27, Sports Touring 5) listing everything earnable; earned rows show their date; backfilled from progress on load.
 
@@ -108,14 +113,14 @@ mypetgame/
 - **📋 Registry** — name + call-me changes, 💰50 fee (breed is preset by species).
 - **🏦 Bank** — savings 5.0% APR, loans 15.0% APR (limit 💰50k), daily compounding; panels show pocket cash only.
 - **🧑‍🍼 Caretakers** — six automated 4-game-hour services hired via the 🛎️ basket: Pet Sitter 💰300 (auto-feeds from inventory, buys at plain cost), Home Teacher 💰500 (advances the most-behind subject), Job Manager 💰500 (best-paying unlocked job in the top career), Tour Guide 🚩 💰800 (city tours, tickets first), Sports Agent 🎽 💰1000 (sports tours), Super AI Butler 🤖 💰1200 (sitter care + class→job→city tour→class→job→sports tour rotation). Behavior is data-driven from the catalog; End Service refunds prorated; caretakers outrank manual End Activity.
-- **✨ Magic Station** — forms are owned: buy once (White Cat 💰6767, includes transformation), then switch between owned forms for 💰200, with a confirmation page.
+- **🔮 Magic Station** — forms are owned: buy once (Toy Poodle 💰6666, White Cat 💰6767, Bichon Frisé 💰5888; purchase switches you immediately, with a confirmation page), then switch between owned forms anytime for free.
 
 **Hub — Settings** ⚙️: three boxless sections — **General** (pet size as a % number field, show-on-all-desktops, launch-at-startup, Hide-my-pet checkbox, plus "Quit the app" / "Reset all data…" as red links; reset requires typing the pet's name and restarts into first-run), **Add-ons** (read-only list with 🗑️ uninstall icons + the zip installer), and **Developer mode** (a toggle: ON = fast game time — care decays every 10s, 1 game-minute = 5s; OFF = normal — 3 min per care point, real-time activities; applies live to newly started activities).
 
 **First run / reset**: a Welcome window replaces the pet — choose a species (free, with per-species default names), set name and call-me, "Let's go! 🎉". Nothing is written to disk until setup completes; quitting keeps the app in the first-run state.
 
 **Add-ons** 🧩 (developer guide: [ADDONS.md](ADDONS.md))
-- Installed from zips: Settings → "📦 Install add-on from zip…" (native file picker); per-add-on 🗑️ uninstall icons. Zips extract to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`; the app rescans at startup and after every change.
+- **🧩 Add-ons homepage**: an iPhone-style springboard of app tiles in the hub; its 🧰 manager (top-right, like the cart button) is where add-ons are installed ("📦 Install add-on from zip…", native file picker), uninstalled (🗑️), and 📌 **pinned** — only pinned add-ons appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open add-on's Quick Launch button highlights like the World buttons. Zips extract to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`; the app rescans at startup and after every change.
 - Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (`pick-folder`, `list-music`, `file-url`, `notify`, `open-window`, `widget-set`, `widget-push` — see ADDONS.md).
 - **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
 - **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Updating the add-on = reinstalling the zip — no app rebuild or restart.

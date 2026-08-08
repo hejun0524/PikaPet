@@ -39,8 +39,8 @@ const state = {
   tickets: {},
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
-  addons: {},
   addonsInstalled: [],
+  pinnedAddons: [],
 };
 
 const HOME_TABS = [
@@ -65,17 +65,19 @@ const PETCENTER_TABS = [
   { key: "registry", label: "Registry", tabEmoji: "📋" },
   { key: "bank", label: "Bank", tabEmoji: "🏦" },
   { key: "caretakers", label: "Caretakers", tabEmoji: "🧑‍🍼" },
-  { key: "magic", label: "Magic Station", tabEmoji: "✨" },
+  { key: "magic", label: "Magic Station", tabEmoji: "🔮" },
 ];
 
 const VIEWS = {
   home: { title: "🏠 Home" },
-  shopping: { title: "🛒 Shopping" },
+  shopping: { title: "🧺 Life" },
   career: { title: "💼 Career" },
   touring: { title: "🗺️ Touring" },
   achievements: { title: "🏆 Achievements" },
   government: { title: "💖 Pet Center" },
   pika: { title: "🐱 Pika" },
+  adventure: { title: "⚔️ Adventure" },
+  addons: { title: "🧩 Add-ons" },
   settings: { title: "⚙️ Settings" },
 };
 
@@ -101,7 +103,7 @@ const tradeBuy = new Map(); // offer id -> offer
 let serviceCart = []; // caretaker keys staged to hire (duplicates = extra shifts)
 
 // Mirrors save.json's settings; edited here, persisted by the stats window.
-const appSettings = { scale: 0.75, allDesktops: true, devMode: false };
+const appSettings = { scale: 0.5, allDesktops: true, devMode: false };
 
 function esc(text) {
   return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
@@ -193,15 +195,20 @@ function renderSidePanel() {
   document.querySelectorAll("#side footer button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
+  const pinned = addonList(state.addonsInstalled).filter((a) =>
+    state.pinnedAddons.includes(a.id)
+  );
+  document.getElementById("side-addons-section").hidden = pinned.length === 0;
   document.getElementById("side-addons").innerHTML = addonButtonsHTML(
-    addonList(state.addonsInstalled, state.addons)
+    pinned,
+    view.startsWith("addon:") ? view.slice(6) : null
   );
 }
 
 // ── Top bar: cart + plan book buttons ───────────────────────────────────────
 function renderTopbar() {
   const addon = view.startsWith("addon:")
-    ? addonList(state.addonsInstalled, state.addons).find((a) => a.id === view.slice(6))
+    ? addonList(state.addonsInstalled).find((a) => a.id === view.slice(6))
     : null;
   document.getElementById("view-title").textContent = addon
     ? `${addon.emoji} ${addon.name}`
@@ -210,6 +217,8 @@ function renderTopbar() {
   document.getElementById("plan-btn").hidden = view !== "career";
   document.getElementById("trade-btn").hidden = view !== "pika";
   document.getElementById("service-btn").hidden = view !== "government";
+  document.getElementById("manager-btn").hidden = view !== "addons";
+  document.getElementById("addons-home-btn").hidden = !view.startsWith("addon:");
   renderCartBadge();
   renderPlanBadge();
   renderTradeBadge();
@@ -405,6 +414,7 @@ function tabSource() {
   if (view === "achievements") return { source: ACH_TABS, active: achTab };
   if (view === "pika") return { source: PIKA_TABS, active: pikaTab };
   if (view === "government") return { source: PETCENTER_TABS, active: petcenterTab };
+  if (view === "adventure") return { source: ADV_TABS, active: advTab };
   return null;
 }
 
@@ -413,8 +423,9 @@ function renderTabs() {
   document.getElementById("tabs").innerHTML = tabs
     ? tabs.source
         .map(
+          // push: true starts a right-aligned group (adventure's cat tabs)
           (c) => `
-    <button data-tab="${c.key}" class="${c.key === tabs.active ? "active" : ""}">
+    <button data-tab="${c.key}" class="${c.key === tabs.active ? "active" : ""}${c.push ? " tab-push" : ""}">
       ${c.tabEmoji} ${c.label}
     </button>`
         )
@@ -881,7 +892,7 @@ function registryHTML() {
   return `
     <div class="settings-card">
       <div class="gov-note">📋 Pet Registry — update your pet's official record. Service fee: 💰${GOV_FEE}<br/>
-      Breed: <b>${esc(findSpecies(state.species).breed)}</b> (set by species — visit ✨ Magic Station to change)</div>
+      Breed: <b>${esc(findSpecies(state.species).breed)}</b> (set by species — visit 🔮 Magic Station to change)</div>
       <div class="settings-row">
         <label for="gov-name">Name</label>
         <input type="text" id="gov-name" maxlength="20" value="${esc(state.name)}" />
@@ -899,42 +910,31 @@ function registryHTML() {
 function caretakersHTML() {
   return (
     `<div class="school-head">${caretakingStatusRowHTML()}</div>` +
-    `<div class="ach-section caretaker-title">🧑‍🍼 Caretaker services — stage shifts, then hire via the 🛎️ basket. Automation behavior coming soon; a shift charges when it starts and refunds prorated if ended early.</div>` +
+    `<div class="ach-section caretaker-title">🧑‍🍼 Caretaker services — stage shifts, then hire via the 🛎️ basket. A shift charges when it starts and refunds prorated if ended early.</div>` +
     CARETAKERS.map(caretakerCardHTML).join("")
   );
 }
 
-let pendingMagic = null; // species key awaiting confirmation
-
-function magicFeeFor(speciesKey) {
-  return state.forms.includes(speciesKey) ? TRANSFORM_FEE : findSpecies(speciesKey).price;
-}
+let pendingMagic = null; // species key awaiting purchase confirmation
 
 function magicStationHTML() {
   if (pendingMagic) {
     const target = findSpecies(pendingMagic);
-    const owned = state.forms.includes(target.key);
-    const fee = magicFeeFor(target.key);
-    const question = owned
-      ? `Transform ${esc(state.name)} into a ${esc(target.breed)}?`
-      : `Purchase the ${esc(target.breed)} form for ${esc(state.name)}?`;
-    const note = owned
-      ? `Transformation fee: 💰${fee}. Name, stats, and memories stay the same.`
-      : `One-time price: 💰${fee} (includes immediate transformation). Owned forms switch for just 💰${TRANSFORM_FEE} afterwards.`;
+    const fee = target.price;
     return `
       <div class="settings-card">
-        <div class="gov-note">✨ ${owned ? "Confirm transformation" : "Confirm purchase"}</div>
+        <div class="gov-note">🔮 Confirm purchase</div>
         <div class="magic-confirm-row">
           <span class="species-thumb" style="background-image:url('${target.sheet}')"></span>
           <div>
-            <b>${question}</b><br/>
-            <span class="gov-note">${note}</span>
+            <b>Purchase the ${esc(target.breed)} form for ${esc(state.name)}?</b><br/>
+            <span class="gov-note">One-time price: 💰${fee} — ${esc(state.name)} becomes a ${esc(target.breed)} right away, and owned forms switch freely afterwards.</span>
           </div>
         </div>
         <div class="settings-actions">
           <button id="magic-cancel">Cancel</button>
           <button id="magic-confirm" ${state.coins >= fee ? "" : "disabled"}>
-            ${state.coins >= fee ? `Pay 💰${fee} &amp; ${owned ? "transform" : "purchase"}` : "Not enough coins"}
+            ${state.coins >= fee ? `Pay 💰${fee} &amp; purchase` : "Not enough coins"}
           </button>
         </div>
       </div>`;
@@ -944,11 +944,13 @@ function magicStationHTML() {
     const owned = state.forms.includes(s.key);
     const badge = current
       ? `<span class="qty">now</span>`
-      : `<span class="qty price">💰${magicFeeFor(s.key)}</span>`;
+      : owned
+        ? `<span class="qty">owned</span>`
+        : `<span class="qty price">💰${s.price}</span>`;
     const line = current
       ? "Your current form"
       : owned
-        ? "Owned · click to transform"
+        ? "Owned · click to switch"
         : "Click to purchase this form";
     return `
       <div class="item ${current ? "disabled" : ""}" ${current ? "" : `data-magic="${s.key}"`}>
@@ -959,7 +961,7 @@ function magicStationHTML() {
       </div>`;
   }).join("");
   return (
-    `<div class="ach-section caretaker-title">✨ Magic Station — buy new forms once, then switch between owned forms for 💰${TRANSFORM_FEE}. Name, stats, and memories always stay.</div>` +
+    `<div class="ach-section caretaker-title">🔮 Magic Station — buy new forms once, then switch between owned forms anytime. Name, stats, and memories always stay.</div>` +
     cards
   );
 }
@@ -1074,16 +1076,6 @@ function resetConfirmHTML() {
 
 function settingsHTML() {
   if (resetPending) return resetConfirmHTML();
-  const addonRows =
-    addonList(state.addonsInstalled, state.addons)
-      .map(
-        (a) => `
-      <div class="settings-row addon-line">
-        <span class="addon-line-label">${esc(a.emoji)} ${esc(a.name)}</span>
-        <button class="icon-btn" data-uninstall="${esc(a.id)}" title="Uninstall ${esc(a.name)}">🗑️</button>
-      </div>`
-      )
-      .join("") || `<div class="cart-empty">No add-ons installed yet</div>`;
   return `
     <div class="settings-plain">
       <div class="ach-section">General</div>
@@ -1109,13 +1101,6 @@ function settingsHTML() {
         <a id="reset-btn" class="danger-link">Reset all data…</a>
       </div>
 
-      <div class="ach-section">Add-ons</div>
-      ${addonRows}
-      <div class="settings-row">
-        <button id="addon-install">📦 Install add-on from zip…</button>
-      </div>
-      ${addonMsg ? `<div class="gov-note">${esc(addonMsg)}</div>` : ""}
-
       <div class="ach-section">Developer mode</div>
       <div class="settings-row">
         <label for="dev-mode">Fast game time (care decays every 10s; 1 game-minute = 5s)</label>
@@ -1125,6 +1110,32 @@ function settingsHTML() {
 }
 
 let addonMsg = "";
+
+// The add-on manager: a drawer on the Add-ons homepage (like the shopping
+// cart), listing installed add-ons with uninstall + a zip installer.
+function renderAddonDrawer() {
+  const drawer = document.getElementById("addon-drawer");
+  if (drawer.hidden) return;
+  const rows =
+    addonList(state.addonsInstalled)
+      .map((a) => {
+        const pinned = state.pinnedAddons.includes(a.id);
+        return `
+      <div class="cart-row addon-line">
+        <span class="addon-line-label">${esc(a.emoji)} ${esc(a.name)}</span>
+        <button class="icon-btn pin ${pinned ? "on" : ""}" data-pin="${esc(a.id)}"
+          title="${pinned ? "Unpin from" : "Pin to"} the tray and side panel">📌</button>
+        <button class="icon-btn" data-uninstall="${esc(a.id)}" title="Uninstall ${esc(a.name)}">🗑️</button>
+      </div>`;
+      })
+      .join("") || `<div class="cart-empty">No add-ons installed yet</div>`;
+  drawer.innerHTML = `
+    ${rows}
+    <div class="cart-actions">
+      <button id="addon-install">📦 Install add-on from zip…</button>
+    </div>
+    ${addonMsg ? `<div class="gov-note">${esc(addonMsg)}</div>` : ""}`;
+}
 
 async function installAddonFlow() {
   try {
@@ -1139,12 +1150,17 @@ async function installAddonFlow() {
     if (!path) return;
     const manifest = await invoke("install_addon", { path });
     addonMsg = `Installed ${manifest.name ?? manifest.id} ✔`;
+    // On reinstall, kill the old build's running page and tray widget so the
+    // next open loads the freshly extracted files instead of the stale iframe.
+    addonFrame(manifest.id)?.remove();
+    emit("addon-widget-set", { id: manifest.id, on: false });
     emit("addons-changed");
     state.addonsInstalled = await invoke("list_installed_addons");
   } catch (e) {
     addonMsg = `Install failed: ${e}`;
   }
-  if (view === "settings") renderGrid();
+  if (view === "addons") renderGrid();
+  renderAddonDrawer();
   renderSidePanel();
 }
 
@@ -1160,7 +1176,8 @@ async function uninstallAddonFlow(id) {
   } catch (e) {
     addonMsg = `Uninstall failed: ${e}`;
   }
-  if (view === "settings") renderGrid();
+  if (view === "addons") renderGrid();
+  renderAddonDrawer();
   renderSidePanel();
 }
 
@@ -1186,11 +1203,13 @@ function renderGrid() {
   const grid = document.getElementById("grid");
 
   // Add-on iframes live OUTSIDE the grid in #addon-host so they survive view
-  // switches (music keeps playing while you browse other pages). The host
-  // overlays the grid, so it must be hidden on every non-add-on view — do it
-  // up here because most views return early below.
+  // switches (music keeps playing while you browse other pages). Grid and
+  // host are flex siblings, so exactly one of them must be hidden at a time
+  // or they split the panel — do it up here because most views return early
+  // below. (The add-on branch un-hides the grid again for its error notes.)
   const host = document.getElementById("addon-host");
   host.hidden = !view.startsWith("addon:");
+  grid.hidden = view.startsWith("addon:");
 
   if (view === "home") {
     if (homeTab === "souvenirs") {
@@ -1216,7 +1235,7 @@ function renderGrid() {
       note +
       (stocked.length
         ? stocked.map((item) => homeCardHTML(item, exhausted)).join("")
-        : `<div class="empty-note">Nothing here — stock up in the 🛒 Shopping view!</div>`);
+        : `<div class="empty-note">Nothing here — stock up in the 🧺 Life view!</div>`);
     return;
   }
 
@@ -1250,6 +1269,33 @@ function renderGrid() {
     return;
   }
 
+  // Adventure: the pet's own game world — a function of the app (not an
+  // add-on), but a fully separate ecosystem (Paw Tokens ≠ coins, recruit
+  // levels ≠ traits) with its own save. Lives in adventure.js; it reads only
+  // the pet's name. Design doc: ADVENTURE.md.
+  if (view === "adventure") {
+    grid.innerHTML = adventurePageHTML(state.name);
+    return;
+  }
+
+  // Add-ons homepage: an iPhone-style springboard of app tiles. The 🧰
+  // manager (top right) installs/uninstalls.
+  if (view === "addons") {
+    const addons = addonList(state.addonsInstalled);
+    grid.innerHTML = addons.length
+      ? `<div class="app-grid">${addons
+          .map(
+            (a) => `
+        <button class="app-tile" data-open-addon="${esc(a.id)}">
+          <span class="app-icon">${esc(a.emoji)}</span>
+          <span class="app-name">${esc(a.name)}</span>
+        </button>`
+          )
+          .join("")}</div>`
+      : `<div class="empty-note">No add-ons yet — open the 🧰 manager (top right) to install one.</div>`;
+    return;
+  }
+
   if (view === "government") {
     if (petcenterTab === "caretakers") grid.innerHTML = caretakersHTML();
     else if (petcenterTab === "magic") grid.innerHTML = magicStationHTML();
@@ -1270,6 +1316,7 @@ function renderGrid() {
     grid.innerHTML = "";
     if (!addon) {
       host.hidden = true;
+      grid.hidden = false;
       grid.innerHTML = `<div class="empty-note">This add-on is not installed.</div>`;
     } else if (addon.entry && addon.dir) {
       let frame = addonFrame(id);
@@ -1286,6 +1333,7 @@ function renderGrid() {
       }
     } else {
       host.hidden = true;
+      grid.hidden = false;
       grid.innerHTML = `<div class="empty-note">${esc(addon.name ?? id)} has no page.</div>`;
     }
     return;
@@ -1310,6 +1358,7 @@ function renderAll() {
   renderPlanDrawer();
   renderTradeDrawer();
   renderServiceDrawer();
+  renderAddonDrawer();
   renderTabs();
   renderGrid();
 }
@@ -1323,6 +1372,7 @@ function setView(v) {
   document.getElementById("plan-drawer").hidden = true;
   document.getElementById("trade-drawer").hidden = true;
   document.getElementById("service-drawer").hidden = true;
+  document.getElementById("addon-drawer").hidden = true;
   renderAll();
 }
 
@@ -1369,6 +1419,32 @@ document.getElementById("cart-btn").addEventListener("click", () => {
   const drawer = document.getElementById("cart-drawer");
   drawer.hidden = !drawer.hidden;
   renderCartDrawer();
+});
+
+// Back to the Add-ons homepage from an open add-on page. The add-on's iframe
+// stays alive in #addon-host, so this doesn't interrupt whatever it's doing.
+document.getElementById("addons-home-btn").addEventListener("click", () => setView("addons"));
+
+document.getElementById("manager-btn").addEventListener("click", () => {
+  const drawer = document.getElementById("addon-drawer");
+  drawer.hidden = !drawer.hidden;
+  renderAddonDrawer();
+});
+
+// Add-on manager drawer: install, uninstall, pin.
+document.getElementById("addon-drawer").addEventListener("click", (e) => {
+  if (e.target.id === "addon-install") {
+    installAddonFlow();
+    return;
+  }
+  const pinBtn = e.target.closest("[data-pin]");
+  if (pinBtn) {
+    const id = pinBtn.dataset.pin;
+    emit("addon-pin", { id, pinned: !state.pinnedAddons.includes(id) });
+    return;
+  }
+  const uninstallBtn = e.target.closest("[data-uninstall]");
+  if (uninstallBtn) uninstallAddonFlow(uninstallBtn.dataset.uninstall);
 });
 
 document.getElementById("plan-btn").addEventListener("click", () => {
@@ -1525,6 +1601,7 @@ document.getElementById("tabs").addEventListener("click", (e) => {
   else if (view === "touring") touringTab = tab.dataset.tab;
   else if (view === "achievements") achTab = tab.dataset.tab;
   else if (view === "pika") pikaTab = tab.dataset.tab;
+  else if (view === "adventure") advTab = tab.dataset.tab;
   else if (view === "government") {
     petcenterTab = tab.dataset.tab;
     pendingMagic = null;
@@ -1534,6 +1611,19 @@ document.getElementById("tabs").addEventListener("click", (e) => {
 });
 
 document.getElementById("grid").addEventListener("click", (e) => {
+  // The adventure world handles its own clicks (adventure.js) and just needs
+  // a repaint afterwards.
+  if (view === "adventure") {
+    if (advHandleClick(e)) renderGrid();
+    return;
+  }
+
+  const appTile = e.target.closest("[data-open-addon]");
+  if (appTile) {
+    setView(`addon:${appTile.dataset.openAddon}`);
+    return;
+  }
+
   const useCard = e.target.closest("[data-use]");
   if (useCard) {
     emit("use-item", { key: useCard.dataset.use });
@@ -1654,8 +1744,13 @@ document.getElementById("grid").addEventListener("click", (e) => {
 
   const magicCard = e.target.closest("[data-magic]");
   if (magicCard) {
-    pendingMagic = magicCard.dataset.magic; // ask for confirmation first
-    renderGrid();
+    const key = magicCard.dataset.magic;
+    if (state.forms.includes(key)) {
+      emit("gov-magic", { species: key }); // owned: switch instantly, free
+    } else {
+      pendingMagic = key; // purchases ask for confirmation first
+      renderGrid();
+    }
     return;
   }
   if (e.target.id === "magic-confirm") {
@@ -1704,15 +1799,6 @@ document.getElementById("grid").addEventListener("click", (e) => {
       input.value = "";
       break;
     }
-    case "addon-install":
-      installAddonFlow();
-      break;
-  }
-
-  const uninstallBtn = e.target.closest("[data-uninstall]");
-  if (uninstallBtn) {
-    uninstallAddonFlow(uninstallBtn.dataset.uninstall);
-    return;
   }
 });
 
@@ -1801,11 +1887,11 @@ function applyState(saved) {
   if (saved.homework && typeof saved.homework === "object") {
     state.homework = saved.homework;
   }
-  if (saved.addons && typeof saved.addons === "object") {
-    state.addons = saved.addons;
-  }
   if (Array.isArray(saved.addonsInstalled)) {
     state.addonsInstalled = saved.addonsInstalled;
+  }
+  if (Array.isArray(saved.pinnedAddons)) {
+    state.pinnedAddons = saved.pinnedAddons;
   }
   if (saved.settings && typeof saved.settings === "object") {
     if (typeof saved.settings.scale === "number") appSettings.scale = saved.settings.scale;
@@ -1823,6 +1909,7 @@ listen("pet-state", ({ payload }) => {
   renderSidePanel();
   renderCartDrawer();
   renderPlanDrawer();
+  renderAddonDrawer(); // pin toggles reflect the broadcast state
   // Don't re-render form views under the user's cursor/keyboard.
   const isForm =
     view === "settings" ||

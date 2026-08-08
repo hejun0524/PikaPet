@@ -26,7 +26,6 @@ function careerProgress(xp) {
     if (remaining < tierTotal) {
       const level = Math.floor(remaining / TIERS[i].perLevel) + 1;
       return {
-        tierIndex: i,
         tierName: TIERS[i].name,
         level,
         intoLevel: remaining % TIERS[i].perLevel,
@@ -38,7 +37,6 @@ function careerProgress(xp) {
     remaining -= tierTotal;
   }
   return {
-    tierIndex: TIERS.length - 1,
     tierName: TIERS[TIERS.length - 1].name,
     level: 5,
     intoLevel: TIERS[TIERS.length - 1].perLevel,
