@@ -163,9 +163,10 @@ function addonList(installed) {
 // switches to it immediately); afterwards switching between owned forms is
 // free. Every sheet shares the poodle's 8x11 grid.
 const SPECIES = [
-  { key: "toy_poodle", label: "Toy Poodle", breed: "Chocolate Toy Poodle", sheet: "pets/toy_poodle.webp", price: 6666, defaultName: "Huanhuan" },
-  { key: "white_cat", label: "White Cat", breed: "White Cat", sheet: "pets/white_cat.webp", price: 6767, defaultName: "Mimi" },
-  { key: "bichon", label: "Bichon", breed: "Bichon Frisé", sheet: "pets/bichon.webp", price: 5888, defaultName: "Snow" },
+  { key: "toy_poodle", label: "Toy Poodle", breed: "Chocolate Toy Poodle", sheet: "pets/toy_poodle.webp", price: 8000, defaultName: "Huanhuan" },
+  { key: "white_cat", label: "White Cat", breed: "White Cat", sheet: "pets/white_cat.webp", price: 8000, defaultName: "Mimi" },
+  { key: "bichon", label: "Bichon", breed: "Bichon Frisé", sheet: "pets/bichon.webp", price: 8000, defaultName: "Snow" },
+  { key: "black_cat", label: "Black Cat", breed: "Black Cat", sheet: "pets/black_cat.webp", price: 8000, defaultName: "Bean" },
 ];
 
 function findSpecies(key) {
