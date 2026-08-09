@@ -1,6 +1,6 @@
 // hub/initBridge.js — Add-on bridge wiring: add-on pages run in sandboxed
 // iframes and talk to the app through postMessage: {reqId, type, payload} in,
-// {reqId, result, error} out. (See handleAddonRequest.js and ADDONS.md.)
+// {reqId, result, error} out. (See handleAddonRequest.js and doc/addons.md.)
 
 import { listen } from "../shared/tauri.js";
 import { addonFrame } from "./addonFrame.js";

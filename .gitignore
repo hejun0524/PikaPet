@@ -1,6 +1,6 @@
-# Rust / Tauri build output (frontend assets embed at compile time)
-backend/target/
-backend/gen/
+# Rust / Tauri build output (UI assets embed at compile time)
+/target/
+/gen/
 
 # Editor & assistant local state
 .vscode/

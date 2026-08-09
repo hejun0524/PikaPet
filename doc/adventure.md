@@ -12,7 +12,7 @@ and the save is separate.
 
 | | |
 |---|---|
-| Code | `frontend/adventure.js` (all data + logic + rendering), styles in `hub.css` under `.adv-*` |
+| Code | `src/ui/adventure.js` (all data + logic + rendering), styles in `hub.css` under `.adv-*` |
 | Save | `localStorage["pika-adventure-v1"]` — independent of `save.json` |
 | Hub hooks | tab source, one `renderGrid` branch, one click-delegation branch, `<script>` tag in `hub.html` |
 | Currency | **Finnies 🐟** (fish — what else would three cats trade in? Distinct from 💰 and any real currency) |

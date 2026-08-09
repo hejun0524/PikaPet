@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.junhe.mypet",
   "build": {
-    "frontendDist": "../frontend"
+    "frontendDist": "src/ui"
   },
   "app": {
     "withGlobalTauri": true,

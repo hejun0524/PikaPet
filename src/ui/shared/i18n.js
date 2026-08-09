@@ -14,7 +14,7 @@
 //                           the catalog's English name. locales/en.js therefore
 //                           carries NO data-name entries at all.
 //
-// Adding a language = one file in frontend/locales/ + one import + one
+// Adding a language = one file in src/ui/locales/ + one import + one
 // LANGUAGE_OPTIONS entry here (see README "Languages").
 
 import { messages as en } from "../locales/en.js";

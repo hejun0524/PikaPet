@@ -5,7 +5,7 @@
 // Adventure is a deliberately SEPARATE ecosystem: it reads only the pet's
 // NAME (guild title) and the app's devMode flag (time scale). Finnies 🐟,
 // materials, recruits, and all progress live in their own localStorage save
-// and never touch coins, traits, or save.json. Design doc: ADVENTURE.md.
+// and never touch coins, traits, or save.json. Design doc: doc/adventure.md.
 
 /** localStorage key holding the adventure save. */
 export const ADV_SAVE_KEY = "pika-adventure-v1";
@@ -35,7 +35,7 @@ export const ADV_ERAS = [
 ];
 
 /**
- * Placeholder cities — to be replaced with a real map later (ADVENTURE.md).
+ * Placeholder cities — to be replaced with a real map later (doc/adventure.md).
  * Each: `{ key, label, travelExtra }` (extra delivery minutes).
  */
 export const ADV_CITIES = [
@@ -45,7 +45,7 @@ export const ADV_CITIES = [
 
 /**
  * Delivery time = era base + city extra, in minutes. Reaching a deeper past
- * takes longer. Fixed numbers for now; may become random later (ADVENTURE.md).
+ * takes longer. Fixed numbers for now; may become random later (doc/adventure.md).
  */
 export const ADV_ERA_TRAVEL = { ancient: 45, medieval: 35, industrial: 25, information: 15, modern: 10 };
 

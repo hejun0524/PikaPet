@@ -18,7 +18,7 @@ import { renderAll } from "./renderAll.js";
 export function setView(v) {
   if (!VIEWS[v] && !v.startsWith("addon:")) return;
   // Leaving an add-on page: ask it to pause itself. Games listen for this
-  // (see ADDONS.md); add-ons that should keep running (music) just ignore it.
+  // (see doc/addons.md); add-ons that should keep running (music) just ignore it.
   if (ui.view.startsWith("addon:") && v !== ui.view) {
     addonFrame(ui.view.slice(6))?.contentWindow?.postMessage({ type: "addon-pause" }, "*");
   }

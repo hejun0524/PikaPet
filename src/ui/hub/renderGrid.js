@@ -124,7 +124,7 @@ export function renderGrid() {
   // Adventure: the pet's own game world — a function of the app (not an
   // add-on), but a fully separate ecosystem (Paw Tokens ≠ coins, recruit
   // levels ≠ traits) with its own save. Lives in adventure.js; it reads only
-  // the pet's name. Design doc: ADVENTURE.md.
+  // the pet's name. Design doc: doc/adventure.md.
   if (ui.view === "adventure") {
     grid.innerHTML = adventurePageHTML(state.name);
     return;

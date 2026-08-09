@@ -1,16 +1,21 @@
-# 🧩 Preparing an Add-on Zip for MyPetGame
+# 🧩 Add-ons
+
+## The in-app experience
+
+- **🧩 Add-ons homepage**: an iPhone-style springboard of app tiles in the hub; its 🧰 manager (top-right, like the cart button) is where add-ons are installed ("📦 Install add-on from zip…", native file picker), uninstalled (🗑️), and 📌 **pinned** — only pinned add-ons appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open add-on's Quick Launch button highlights like the World buttons. Zips extract to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`; the app rescans at startup and after every change.
+- Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
+- **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
+- **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized in all six app languages (the reference for the `get-locale` / `app-locale` bridge contract). Updating the add-on = reinstalling the zip — no app rebuild or restart.
+
+# Preparing an add-on zip
 
 Add-ons are distributed as **zip files** and managed entirely from inside the
-app: the **🧩 Add-ons homepage** in the hub shows installed add-ons as an
-iPhone-style grid of app tiles, and its **🧰 manager** (top-right button) has
-**"📦 Install add-on from zip…"** (a file picker opens) plus a 🗑️ uninstall
-icon per add-on. No manual folder digging required.
-
-Installed add-ons appear as tiles on the Add-ons homepage and as icon buttons
-in the **Quick Launch** row (below the navigation buttons in the menu-bar
-popover and the hub's left panel); clicking either opens the add-on's page. Beyond that page, an add-on can also hang a
-**mini-widget under the tray popover**, open its own **popup windows**, and
-send **system notifications** — see "Beyond the hub page" below.
+app — no manual folder digging required. Installed add-ons appear as tiles on
+the Add-ons homepage and (when pinned) as icon buttons in the **Quick Launch**
+row; clicking either opens the add-on's page. Beyond that page, an add-on can
+also hang a **mini-widget under the tray popover**, open its own **popup
+windows**, and send **system notifications** — see "Beyond the hub page"
+below.
 
 ## Zip layout
 
@@ -18,7 +23,7 @@ send **system notifications** — see "Beyond the hub page" below.
 yourthing.zip
 └── yourthing/               # top-level folder, name should match the id
     ├── manifest.json        # REQUIRED
-    ├── index.html           # entry page (optional, see "Page types" below)
+    ├── index.html           # entry page (see "How your page runs" below)
     └── assets/…             # anything your page references (all local)
 ```
 
@@ -94,7 +99,7 @@ window.addEventListener("message", (e) => {
 });
 ```
 
-Available requests (the allowlist lives in `frontend/hub/handleAddonRequest.js`;
+Available requests (the allowlist lives in `src/ui/hub/handleAddonRequest.js`;
 PRs welcome):
 
 | `type` | `payload` | `result` |
@@ -224,8 +229,7 @@ app languages via `get-locale` + `app-locale`). Start by copying it.
   add-on's emoji, name, and pages.
 - **Uninstall**: deletes the folder. Nothing else to clean.
 - The repo's `addons/` folder is *not* bundled into the shipped app — it's
-  a convenient place to keep zips during development (like `pets/` for
-  source artwork).
+  a convenient place to keep zips during development.
 
 ## Checklist before zipping
 

@@ -6,7 +6,7 @@ import { addonId } from "./params.js";
 
 /**
  * Serve one postMessage bridge request from the hosted add-on iframe — the
- * same protocol the hub serves (see ADDONS.md). Note: widget-action messages
+ * same protocol the hub serves (see doc/addons.md). Note: widget-action messages
  * are only delivered to the add-on's page in the hub, not here.
  *
  * @param {string} type - Request type: "pick-folder" | "list-music" |

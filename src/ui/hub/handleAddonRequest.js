@@ -2,7 +2,7 @@
 // iframes and talk to the app through postMessage: {reqId, type, payload} in,
 // {reqId, result, error} out. Supported requests: pick-folder, list-music,
 // file-url, say, notify, open-window, widget-set, widget-push, get-locale.
-// (See ADDONS.md.)
+// (See doc/addons.md.)
 
 import { invoke, convertFileSrc, emit } from "../shared/tauri.js";
 import { t, getLocale } from "../shared/i18n.js";

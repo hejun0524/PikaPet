@@ -1,5 +1,5 @@
 // hub/addonFrame.js — Add-on bridge: add-on pages run in sandboxed iframes
-// inside #addon-host (see handleAddonRequest.js and ADDONS.md).
+// inside #addon-host (see handleAddonRequest.js and doc/addons.md).
 
 /**
  * Find the live iframe of an installed add-on, if it has been opened.

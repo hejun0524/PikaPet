@@ -7,7 +7,7 @@
 // NAME (guild title) and the app's devMode flag (time scale). Finnies 🐟,
 // materials, recruits, and all progress live in their own localStorage save
 // ("pika-adventure-v1") and never touch coins, traits, or save.json.
-// Design doc + to-dos: ADVENTURE.md at the repo root.
+// Design doc + to-dos: doc/adventure.md.
 //
 // No side effects here — the hub master calls initAdventureClock().
 

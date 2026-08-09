@@ -4,7 +4,7 @@ import { handleRequest } from "./handleRequest.js";
 
 /**
  * Attach the postMessage bridge: requests `{reqId, type, payload}` from the
- * hosted iframe are answered with `{reqId, result, error}` (see ADDONS.md).
+ * hosted iframe are answered with `{reqId, result, error}` (see doc/addons.md).
  * Messages from any other source, or without a reqId, are ignored.
  *
  * @returns {void} Registers the window "message" listener; call once at

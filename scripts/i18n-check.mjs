@@ -14,7 +14,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const FRONTEND = join(dirname(fileURLToPath(import.meta.url)), "..", "frontend");
+const FRONTEND = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "ui");
 const { LOCALES, setLanguage, t } = await import(join(FRONTEND, "shared/i18n.js"));
 const { ALL_ITEMS, SERVICES, CARETAKERS, SPECIES } = await import(join(FRONTEND, "items.js"));
 const { CLASS_CATALOG, SUBJECTS, SCHOOL_STAGES, subjectStageLabel, classUnlockText } =
