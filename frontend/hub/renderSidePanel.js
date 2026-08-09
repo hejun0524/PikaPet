@@ -2,6 +2,8 @@
 // coins, traits, footer nav, and pinned add-on shortcuts.
 
 import { getCurrentWindow } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
+import { speciesBreed } from "../shared/names.js";
 import { state, ui } from "./state.js";
 import { CARE_META, TRAIT_META, addonList, findSpecies } from "../items.js";
 import {
@@ -22,9 +24,9 @@ import {
  * @returns {void}
  */
 export function renderSidePanel() {
-  getCurrentWindow().setTitle(`${state.name}'s World`).catch(() => {});
+  getCurrentWindow().setTitle(t("hub.windowTitle", { name: state.name })).catch(() => {});
   document.getElementById("side-name").textContent = state.name;
-  document.getElementById("side-breed").textContent = findSpecies(state.species).breed;
+  document.getElementById("side-breed").textContent = speciesBreed(findSpecies(state.species));
   document.getElementById("avatar").style.backgroundImage = `url("${findSpecies(state.species).sheet}")`;
   // Status rows with End buttons live here (and in the popover/right-click
   // menu) — not in the content pages.

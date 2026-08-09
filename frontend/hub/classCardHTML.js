@@ -1,5 +1,7 @@
 // hub/classCardHTML.js
 
+import { t } from "../shared/i18n.js";
+import { className, subjectName } from "../shared/names.js";
 import { state } from "./state.js";
 import { findSubject, isClassUnlocked, classUnlockText } from "../school.js";
 import { STAT_EMOJI } from "../items.js";
@@ -15,13 +17,18 @@ import { drainText } from "./drainText.js";
  */
 export function classCardHTML(cls) {
   const subject = findSubject(cls.subject);
+  const line = t("class.line", {
+    emoji: subject.emoji,
+    subject: subjectName(subject),
+    m: cls.minutes,
+  });
   if (!isClassUnlocked(cls, state.school.subjects)) {
     return `
     <div class="item locked">
       <span class="qty lock">🔒</span>
       <span class="icon">${cls.emoji}</span>
-      <span class="name">${cls.name}</span>
-      <span class="effects">${subject.emoji} ${subject.label}</span>
+      <span class="name">${className(cls)}</span>
+      <span class="effects">${subject.emoji} ${subjectName(subject)}</span>
       <span class="effects">${classUnlockText(cls)}</span>
     </div>`;
   }
@@ -32,9 +39,9 @@ export function classCardHTML(cls) {
     <div class="item ${activityLocked()}" data-plan-class="${cls.key}">
       <span class="qty price">💰${cls.cost}</span>
       <span class="icon">${cls.emoji}</span>
-      <span class="name">${cls.name}</span>
-      <span class="effects">${subject.emoji} ${subject.label} · ⏱ ${cls.minutes}m</span>
-      <span class="effects">+${cls.credits} credits · ${rewards}</span>
+      <span class="name">${className(cls)}</span>
+      <span class="effects">${line}</span>
+      <span class="effects">${t("class.rewards", { credits: cls.credits, rewards })}</span>
       <span class="effects">${drainText(cls.drain)}</span>
     </div>`;
 }

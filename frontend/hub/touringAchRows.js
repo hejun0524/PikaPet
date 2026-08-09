@@ -1,5 +1,7 @@
 // hub/touringAchRows.js
 
+import { t } from "../shared/i18n.js";
+import { placeLabel } from "../shared/names.js";
 import { state } from "./state.js";
 import { achRowHTML } from "./achRowHTML.js";
 
@@ -16,7 +18,7 @@ export function touringAchRows(places) {
     const earned = state.achievements.find((a) => a.type === "touring" && a.place === place.key);
     return achRowHTML(
       place.emoji,
-      `${place.label} Explorer — visit all ${place.cities.length} (${visited}/${place.cities.length})`,
+      t("ach.explorer", { place: placeLabel(place), total: place.cities.length, v: visited }),
       earned
     );
   });

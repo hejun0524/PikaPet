@@ -1,5 +1,7 @@
 // hub/renderCartDrawer.js
 
+import { t } from "../shared/i18n.js";
+import { itemName } from "../shared/names.js";
 import { state, cart } from "./state.js";
 import { findSellable } from "../items.js";
 import { cartTotalPrice } from "./cartTotalPrice.js";
@@ -16,7 +18,7 @@ export function renderCartDrawer() {
   const drawer = document.getElementById("cart-drawer");
   if (drawer.hidden) return;
   if (cart.size === 0) {
-    drawer.innerHTML = `<div class="cart-empty">Cart is empty</div>`;
+    drawer.innerHTML = `<div class="cart-empty">${t("cart.empty")}</div>`;
     return;
   }
   const rows = [...cart]
@@ -24,7 +26,7 @@ export function renderCartDrawer() {
       const entry = findSellable(key);
       return `
       <div class="cart-row">
-        <span>${entry.emoji} ${entry.name} × ${qty}</span>
+        <span>${entry.emoji} ${itemName(entry)} × ${qty}</span>
         <span>💰${entry.price * qty}</span>
         <button class="cart-remove" data-remove="${key}">✕</button>
       </div>`;
@@ -34,11 +36,11 @@ export function renderCartDrawer() {
   const affordable = state.coins >= total;
   drawer.innerHTML = `
     ${rows}
-    <div class="cart-row cart-total"><span>Total</span><span>💰${total}</span><span></span></div>
+    <div class="cart-row cart-total"><span>${t("cart.total")}</span><span>💰${total}</span><span></span></div>
     <div class="cart-actions">
-      <button id="cart-clear">Clear</button>
+      <button id="cart-clear">${t("cart.clear")}</button>
       <button id="cart-checkout" ${affordable ? "" : "disabled"}>
-        ${affordable ? "Checkout" : "Not enough coins"}
+        ${affordable ? t("cart.checkout") : t("cart.noCoins")}
       </button>
     </div>`;
 }

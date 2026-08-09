@@ -1,10 +1,12 @@
 // main/buildMenu.js
-// The menu is rebuilt on every popup so the End items reflect current state:
+// The menu is rebuilt on every popup so the End items reflect current state
+// (and pick up the active language):
 // - End Activity is greyed when idle, or while a caretaker manages things.
 // - End Caretaking is greyed when nobody is hired.
 
 import { Menu, PredefinedMenuItem, emit, invoke } from "../shared/tauri.js";
-import { latest } from "./state.js";
+import { t } from "../shared/i18n.js";
+import { VIEW_EMOJI, latest } from "./state.js";
 import { openHub } from "./openHub.js";
 
 /**
@@ -16,19 +18,16 @@ import { openHub } from "./openHub.js";
  */
 export async function buildMenu() {
   const sep = () => PredefinedMenuItem.new({ item: "Separator" });
-  const endActivityText = latest.activity?.type === "tour" ? "📢 Call Back" : "🛑 End Activity";
+  const endActivityText =
+    latest.activity?.type === "tour" ? t("menu.callBack") : t("menu.endActivity");
+  const viewItems = Object.entries(VIEW_EMOJI).map(([view, emoji]) => ({
+    id: view,
+    text: `${emoji} ${t(`view.${view}`)}`,
+    action: () => openHub(view),
+  }));
   return Menu.new({
     items: [
-      { id: "home", text: "🏠 Home", action: () => openHub("home") },
-      { id: "shopping", text: "🧺 Life", action: () => openHub("shopping") },
-      { id: "career", text: "💼 Career", action: () => openHub("career") },
-      { id: "touring", text: "🗺️ Touring", action: () => openHub("touring") },
-      { id: "achievements", text: "🏆 Achievements", action: () => openHub("achievements") },
-      { id: "government", text: "💖 Pet Center", action: () => openHub("government") },
-      { id: "pika", text: "🐱 Pika", action: () => openHub("pika") },
-      { id: "adventure", text: "⚔️ Adventure", action: () => openHub("adventure") },
-      { id: "arena", text: "🥊 Arena", action: () => openHub("arena") },
-      { id: "addons", text: "🧩 Add-ons", action: () => openHub("addons") },
+      ...viewItems,
       await sep(),
       {
         id: "end-activity",
@@ -38,13 +37,13 @@ export async function buildMenu() {
       },
       {
         id: "end-caretaking",
-        text: "🛎️ End Caretaking",
+        text: t("menu.endCaretaking"),
         enabled: !!latest.caretaking,
         action: () => emit("end-caretaking"),
       },
       await sep(),
-      { id: "settings", text: "⚙️ Settings…", action: () => openHub("settings") },
-      { id: "quit", text: "Quit", action: () => invoke("quit") },
+      { id: "settings", text: t("menu.settings"), action: () => openHub("settings") },
+      { id: "quit", text: t("menu.quit"), action: () => invoke("quit") },
     ],
   });
 }

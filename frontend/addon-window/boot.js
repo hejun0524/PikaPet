@@ -1,6 +1,7 @@
 // addon-window/boot.js
 
 import { convertFileSrc, invoke } from "../shared/tauri.js";
+import { setLanguage } from "../shared/i18n.js";
 import { addonId, addonPage } from "./params.js";
 
 /**
@@ -12,6 +13,13 @@ import { addonId, addonPage } from "./params.js";
  *   note rendered).
  */
 export async function boot() {
+  try {
+    // Pick up the saved language so bridge dialogs match the app.
+    const raw = await invoke("load_state");
+    if (raw) setLanguage(JSON.parse(raw).settings?.language);
+  } catch {
+    // First run / unreadable save: stay on the system language.
+  }
   try {
     const installed = await invoke("list_installed_addons");
     const addon = installed.find((a) => a.id === addonId);

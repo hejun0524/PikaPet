@@ -46,6 +46,23 @@ export const TRAVEL_STEP_PX = 16;
 export const DOUBLE_CLICK_MS = 400;
 
 /**
+ * Right-click menu views, in menu order, with their emoji. Labels come from
+ * the locale files (t("view.<key>")) when the menu is built.
+ */
+export const VIEW_EMOJI = {
+  home: "🏠",
+  shopping: "🧺",
+  career: "💼",
+  touring: "🗺️",
+  achievements: "🏆",
+  government: "💖",
+  pika: "🐱",
+  adventure: "⚔️",
+  arena: "🥊",
+  addons: "🧩",
+};
+
+/**
  * Latest snapshot of what the pet knows about itself (from "pet-state"
  * broadcasts): what to call the owner, care values, the newest journal
  * entry, and the active activity/caretaking entries.

@@ -1,5 +1,6 @@
 // hub/pikaBuyPageHTML.js
 
+import { t } from "../shared/i18n.js";
 import { state, tradeBuy } from "./state.js";
 import { findTour, ticketOfferKey } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -13,9 +14,9 @@ import { escText as esc } from "../panel.js";
 export function pikaBuyPageHTML() {
   const sells = state.pika.sells ?? [];
   if (!sells.length) {
-    return `<div class="empty-note">Sold out — new routes &amp; prices in a few hours!</div>`;
+    return `<div class="empty-note">${t("pika.buyEmpty")}</div>`;
   }
-  const note = `<div class="ach-section caretaker-title">🎫 Tickets on offer — routes and prices change every 3h. Click to add to the 🤝 trade basket.</div>`;
+  const note = `<div class="ach-section caretaker-title">${t("pika.buyNote")}</div>`;
   return (
     note +
     sells
@@ -27,7 +28,7 @@ export function pikaBuyPageHTML() {
         <span class="qty price">💰${offer.price}</span>
         <span class="icon">${def.emoji}</span>
         <span class="name">${esc(def.name)}</span>
-        <span class="effects">${inCart ? "🤝 In trade basket" : `⏱ ${def.minutes}m · one-of-a-kind`}</span>
+        <span class="effects">${inCart ? t("pika.inBasket") : t("pika.oneOfAKind", { m: def.minutes })}</span>
       </div>`;
       })
       .join("")

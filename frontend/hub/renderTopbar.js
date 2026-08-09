@@ -1,5 +1,6 @@
 // hub/renderTopbar.js — Top bar: cart + plan book buttons.
 
+import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { addonList } from "../items.js";
 import { VIEWS } from "./constants.js";
@@ -23,7 +24,7 @@ export function renderTopbar() {
     : null;
   document.getElementById("view-title").textContent = addon
     ? `${addon.emoji} ${addon.name}`
-    : VIEWS[ui.view].title;
+    : `${VIEWS[ui.view].emoji} ${t(`view.${ui.view}`)}`;
   document.getElementById("cart-btn").hidden = ui.view !== "shopping";
   document.getElementById("plan-btn").hidden = ui.view !== "career";
   document.getElementById("trade-btn").hidden = ui.view !== "pika";

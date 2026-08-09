@@ -1,5 +1,6 @@
 // hub/caretakersHTML.js
 
+import { t } from "../shared/i18n.js";
 import { caretakingStatusRowHTML } from "./caretakingStatusRowHTML.js";
 import { caretakerCardHTML } from "./caretakerCardHTML.js";
 import { CARETAKERS } from "../items.js";
@@ -13,7 +14,7 @@ import { CARETAKERS } from "../items.js";
 export function caretakersHTML() {
   return (
     `<div class="school-head">${caretakingStatusRowHTML()}</div>` +
-    `<div class="ach-section caretaker-title">🧑‍🍼 Caretaker services — stage shifts, then hire via the 🛎️ basket. A shift charges when it starts and refunds prorated if ended early.</div>` +
+    `<div class="ach-section caretaker-title">${t("caretakers.note")}</div>` +
     CARETAKERS.map(caretakerCardHTML).join("")
   );
 }

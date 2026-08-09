@@ -1,5 +1,6 @@
 // hub/renderAll.js
 
+import { applyStaticText } from "./applyStaticText.js";
 import { renderSidePanel } from "./renderSidePanel.js";
 import { renderTopbar } from "./renderTopbar.js";
 import { renderCartDrawer } from "./renderCartDrawer.js";
@@ -19,6 +20,7 @@ import { renderGrid } from "./renderGrid.js";
  * @returns {void}
  */
 export function renderAll() {
+  applyStaticText();
   renderSidePanel();
   renderTopbar();
   renderCartDrawer();

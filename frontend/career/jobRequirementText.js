@@ -1,5 +1,6 @@
 // career/jobRequirementText.js
 
+import { t, tOr } from "../shared/i18n.js";
 import { STAT_EMOJI } from "../items.js";
 import { SCHOOL_STAGES, findSubject } from "../school.js";
 import { levelLabel } from "./levelLabel.js";
@@ -21,7 +22,10 @@ export function jobRequirementText(job) {
   }
   for (const d of req.degrees ?? []) {
     const stage = SCHOOL_STAGES.find((s) => s.key === d.stage);
-    parts.push(`🎓 ${stage.label} ${findSubject(d.subject).label}`);
+    const subject = findSubject(d.subject);
+    parts.push(
+      `🎓 ${tOr(`stage.${stage.key}`, stage.label)} ${tOr(`subject.${subject.key}`, subject.label)}`
+    );
   }
-  return parts.length ? `Needs ${parts.join(" · ")}` : "";
+  return parts.length ? t("job.needs", { parts: parts.join(" · ") }) : "";
 }

@@ -31,19 +31,22 @@ export const PETCENTER_TABS = [
   { key: "magic", label: "Magic Station", tabEmoji: "🔮" },
 ];
 
-/** Every top-level view, keyed by the side panel's data-view values. */
+/**
+ * Every top-level view, keyed by the side panel's data-view values. Titles
+ * are localized: emoji here + t("view.<key>") at render time.
+ */
 export const VIEWS = {
-  home: { title: "🏠 Home" },
-  shopping: { title: "🧺 Life" },
-  career: { title: "💼 Career" },
-  touring: { title: "🗺️ Touring" },
-  achievements: { title: "🏆 Achievements" },
-  government: { title: "💖 Pet Center" },
-  pika: { title: "🐱 Pika" },
-  adventure: { title: "⚔️ Adventure" },
-  arena: { title: "🥊 Arena" },
-  addons: { title: "🧩 Add-ons" },
-  settings: { title: "⚙️ Settings" },
+  home: { emoji: "🏠" },
+  shopping: { emoji: "🧺" },
+  career: { emoji: "💼" },
+  touring: { emoji: "🗺️" },
+  achievements: { emoji: "🏆" },
+  government: { emoji: "💖" },
+  pika: { emoji: "🐱" },
+  adventure: { emoji: "⚔️" },
+  arena: { emoji: "🥊" },
+  addons: { emoji: "🧩" },
+  settings: { emoji: "⚙️" },
 };
 
 /** Coins charged for a Pet Registry change (name / call-me). */

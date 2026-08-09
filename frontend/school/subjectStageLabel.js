@@ -1,5 +1,6 @@
 // school/subjectStageLabel.js
 
+import { t, tOr } from "../shared/i18n.js";
 import { stageOfYears } from "./stageOfYears.js";
 
 /**
@@ -12,6 +13,11 @@ import { stageOfYears } from "./stageOfYears.js";
 export function subjectStageLabel(sub) {
   const info = stageOfYears(sub.years);
   return info
-    ? `${info.stage.emoji} ${info.stage.label} · Y${info.yearInStage}/${info.stage.years}`
-    : "🎉 Mastered";
+    ? t("school.stageLine", {
+        emoji: info.stage.emoji,
+        stage: tOr(`stage.${info.stage.key}`, info.stage.label),
+        y: info.yearInStage,
+        years: info.stage.years,
+      })
+    : t("school.masteredShort");
 }

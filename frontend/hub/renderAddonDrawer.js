@@ -2,6 +2,7 @@
 // homepage (like the shopping cart), listing installed add-ons with
 // uninstall + a zip installer.
 
+import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { addonList } from "../items.js";
 import { escText as esc } from "../panel.js";
@@ -26,15 +27,15 @@ export function renderAddonDrawer() {
       <div class="cart-row addon-line">
         <span class="addon-line-label">${esc(a.emoji)} ${esc(a.name)}</span>
         <button class="icon-btn pin ${pinned ? "on" : ""}" data-pin="${esc(a.id)}"
-          title="${pinned ? "Unpin from" : "Pin to"} the tray and side panel">📌</button>
-        <button class="icon-btn" data-uninstall="${esc(a.id)}" title="Uninstall ${esc(a.name)}">🗑️</button>
+          title="${pinned ? t("addonmgr.unpin") : t("addonmgr.pin")}">📌</button>
+        <button class="icon-btn" data-uninstall="${esc(a.id)}" title="${t("addonmgr.uninstall", { name: esc(a.name) })}">🗑️</button>
       </div>`;
       })
-      .join("") || `<div class="cart-empty">No add-ons installed yet</div>`;
+      .join("") || `<div class="cart-empty">${t("addonmgr.none")}</div>`;
   drawer.innerHTML = `
     ${rows}
     <div class="cart-actions">
-      <button id="addon-install">📦 Install add-on from zip…</button>
+      <button id="addon-install">${t("addonmgr.install")}</button>
     </div>
     ${ui.addonMsg ? `<div class="gov-note">${esc(ui.addonMsg)}</div>` : ""}`;
 }

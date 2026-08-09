@@ -1,5 +1,6 @@
 // touring/findTour.js
 
+import { t, tOr } from "../shared/i18n.js";
 import {
   SPORT_LEAGUES,
   SPORT_PRICE_PER_VENUE,
@@ -41,7 +42,7 @@ export function findTour(key) {
       destKey: null,
       cityCount,
       emoji: "🌍",
-      name: `Mystery Tour · ${cityCount} ${cityCount > 1 ? "cities" : "city"}`,
+      name: cityCount > 1 ? t("tour.mystery", { n: cityCount }) : t("tour.mysteryOne"),
       minutes: cityCount * TOUR_MINUTES_PER_CITY,
       cost: cityCount * TOUR_PRICE_PER_CITY,
       drain: {},
@@ -57,7 +58,7 @@ export function findTour(key) {
       destKey: null,
       cityCount,
       emoji: "🏟️",
-      name: `Mystery Sports Tour · ${cityCount} ${cityCount > 1 ? "stops" : "stop"}`,
+      name: cityCount > 1 ? t("tour.sportMystery", { n: cityCount }) : t("tour.sportMysteryOne"),
       minutes: cityCount * TOUR_MINUTES_PER_CITY,
       cost: cityCount * SPORT_PRICE_PER_VENUE,
       drain: {},
@@ -75,7 +76,10 @@ export function findTour(key) {
       destKey: league.key,
       cityCount,
       emoji: league.emoji,
-      name: `${league.label} Tour · ${cityCount} ${cityCount > 1 ? "stops" : "stop"}`,
+      name:
+        cityCount > 1
+          ? t("tour.placeSportTour", { place: league.label, n: cityCount })
+          : t("tour.placeSportTourOne", { place: league.label }),
       minutes: cityCount * TOUR_MINUTES_PER_CITY,
       cost: cityCount * SPORT_PRICE_PER_VENUE,
       drain: {},
@@ -93,7 +97,10 @@ export function findTour(key) {
       destKey: dest.key,
       cityCount,
       emoji: dest.emoji,
-      name: `${dest.label} Tour · ${cityCount} ${cityCount > 1 ? "cities" : "city"}`,
+      name:
+        cityCount > 1
+          ? t("tour.placeTour", { place: tOr(`dest.${dest.key}`, dest.label), n: cityCount })
+          : t("tour.placeTourOne", { place: tOr(`dest.${dest.key}`, dest.label) }),
       minutes: cityCount * TOUR_MINUTES_PER_CITY,
       cost: cityCount * TOUR_PRICE_PER_CITY,
       drain: {}, // care is maintained during the trip
@@ -113,7 +120,9 @@ export function findTour(key) {
       destKey: dest.key,
       cityCount: 1,
       emoji: league ? "🎟️" : "✈️",
-      name: league ? `Ticket to ${city}` : `Flight to ${city}`,
+      name: league
+        ? t("tour.teamTicket", { city: tOr(`city.${city}`, city) })
+        : t("tour.flight", { city: tOr(`city.${city}`, city) }),
       minutes: TOUR_MINUTES_PER_CITY,
       cost: 0,
       drain: {},
@@ -132,7 +141,9 @@ export function findTour(key) {
       destKey: place.key,
       cityCount: 1,
       emoji: league ? "🎟️" : "🚄",
-      name: league ? `${place.label} League Pass` : `Train trip in ${place.label}`,
+      name: league
+        ? t("tour.leaguePass", { place: place.label })
+        : t("tour.train", { place: tOr(`dest.${place.key}`, place.label) }),
       minutes: TOUR_MINUTES_PER_CITY,
       cost: 0,
       drain: {},

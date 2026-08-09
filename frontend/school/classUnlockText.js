@@ -1,5 +1,6 @@
 // school/classUnlockText.js
 
+import { t, tOr } from "../shared/i18n.js";
 import { SCHOOL_STAGES } from "./schoolData.js";
 import { findSubject } from "./findSubject.js";
 
@@ -13,5 +14,8 @@ import { findSubject } from "./findSubject.js";
 export function classUnlockText(cls) {
   const stage = SCHOOL_STAGES.find((s) => s.key === cls.stage);
   const subject = findSubject(cls.subject);
-  return `Reach ${stage.label} in ${subject.label}`;
+  return t("school.unlock", {
+    stage: tOr(`stage.${stage.key}`, stage.label),
+    subject: tOr(`subject.${subject.key}`, subject.label),
+  });
 }

@@ -1,5 +1,7 @@
 // hub/activityStatusRowHTML.js — Career page pieces.
 
+import { t } from "../shared/i18n.js";
+import { activityName, activityVerb } from "../shared/names.js";
 import { state } from "./state.js";
 import { formatRemaining } from "../school.js";
 import { SICK_BELOW } from "../touring.js";
@@ -14,14 +16,18 @@ import { planEntryDef } from "./planEntryDef.js";
  */
 export function activityStatusRowHTML() {
   const a = state.activity?.active;
-  const verb = a ? (a.type === "job" ? "💼" : a.type === "tour" ? "🧳" : "📚") : "";
   const current = a
-    ? `<span class="plan-active">${verb} ${a.emoji} ${a.name} · ${formatRemaining(a.remainingMs)} left</span>`
+    ? `<span class="plan-active">${t("status.running", {
+        verb: activityVerb(a.type).split(" ")[0],
+        emoji: a.emoji,
+        name: activityName(a),
+        time: formatRemaining(a.remainingMs),
+      })}</span>`
     : isSick()
-      ? `<span class="plan-active sick">🤒 Health below ${SICK_BELOW} — no school, work, or travel</span>`
-      : `<span class="plan-active idle">Free now</span>`;
+      ? `<span class="plan-active sick">${t("status.sick", { n: SICK_BELOW })}</span>`
+      : `<span class="plan-active idle">${t("status.free")}</span>`;
   const queued = state.activity?.plan?.length
-    ? `<span class="queued-label">⏳ Up next:</span>` +
+    ? `<span class="queued-label">${t("status.upNext")}</span>` +
       state.activity.plan
         .map((entry) => `<span class="chip">${planEntryDef(entry)?.emoji ?? "?"}</span>`)
         .join("")

@@ -1,5 +1,7 @@
 // hub/achievementWallHTML.js
 
+import { t } from "../shared/i18n.js";
+import { subjectName, stageName, careerName, tierName } from "../shared/names.js";
 import { state, ui } from "./state.js";
 import { SUBJECTS, SCHOOL_STAGES } from "../school.js";
 import { CAREERS, TIERS } from "../career.js";
@@ -17,29 +19,41 @@ export function achievementWallHTML() {
   const rows = [];
   if (ui.achTab === "degrees") {
     for (const subject of SUBJECTS) {
-      rows.push(`<div class="ach-section">${subject.emoji} ${subject.label}</div>`);
+      rows.push(`<div class="ach-section">${subject.emoji} ${subjectName(subject)}</div>`);
       for (const stage of SCHOOL_STAGES) {
         const earned = state.achievements.find(
           (a) => a.type === "degree" && a.subject === subject.key && a.stage === stage.key
         );
-        rows.push(achRowHTML(subject.emoji, `${stage.label} Diploma in ${subject.label}`, earned));
+        rows.push(
+          achRowHTML(
+            subject.emoji,
+            t("ach.diploma", { stage: stageName(stage), subject: subjectName(subject) }),
+            earned
+          )
+        );
       }
     }
   } else if (ui.achTab === "careers") {
     for (const career of CAREERS) {
-      rows.push(`<div class="ach-section">${career.emoji} ${career.label}</div>`);
+      rows.push(`<div class="ach-section">${career.emoji} ${careerName(career)}</div>`);
       TIERS.forEach((tier, i) => {
         const earned = state.achievements.find(
           (a) => a.type === "career" && a.career === career.key && a.tier === i
         );
-        rows.push(achRowHTML(career.emoji, `${career.label} · ${tier.name} Tier Mastered`, earned));
+        rows.push(
+          achRowHTML(
+            career.emoji,
+            t("ach.tier", { career: careerName(career), tier: tierName(tier.name) }),
+            earned
+          )
+        );
       });
     }
   } else if (ui.achTab === "touring") {
-    rows.push(`<div class="ach-section">🗺️ World Explorer</div>`);
+    rows.push(`<div class="ach-section">${t("ach.worldSection")}</div>`);
     rows.push(...touringAchRows(DESTINATIONS));
   } else {
-    rows.push(`<div class="ach-section">🏟️ League Completionist</div>`);
+    rows.push(`<div class="ach-section">${t("ach.leagueSection")}</div>`);
     rows.push(...touringAchRows(SPORT_LEAGUES));
   }
   return `<div class="ach-list">${rows.join("")}</div>`;

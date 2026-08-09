@@ -1,9 +1,11 @@
 // hub/handleAddonRequest.js — Add-on bridge: add-on pages run in sandboxed
 // iframes and talk to the app through postMessage: {reqId, type, payload} in,
 // {reqId, result, error} out. Supported requests: pick-folder, list-music,
-// file-url, say, notify, open-window, widget-set, widget-push. (See ADDONS.md.)
+// file-url, say, notify, open-window, widget-set, widget-push, get-locale.
+// (See ADDONS.md.)
 
 import { invoke, convertFileSrc, emit } from "../shared/tauri.js";
+import { t, getLocale } from "../shared/i18n.js";
 import { state } from "./state.js";
 
 /**
@@ -19,9 +21,14 @@ import { state } from "./state.js";
  *   invalid payloads.
  */
 export async function handleAddonRequest(id, type, payload) {
+  // The app's active locale ("en", "zh", …) so add-ons can render their own
+  // pages in the user's language. Changes arrive as an "app-locale" message.
+  if (type === "get-locale") {
+    return getLocale();
+  }
   if (type === "pick-folder") {
     return invoke("plugin:dialog|open", {
-      options: { title: "Choose a folder", directory: true, multiple: false },
+      options: { title: t("dialog.pickFolder"), directory: true, multiple: false },
     });
   }
   if (type === "list-music") {

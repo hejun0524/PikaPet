@@ -2,6 +2,7 @@
 // from the settings window (registered in initEvents.js).
 
 import { invoke, currentMonitor } from "../shared/tauri.js";
+import { setLanguage } from "../shared/i18n.js";
 import { appWindow, latest, trip } from "./state.js";
 import { applySettings } from "./applySettings.js";
 import { applySpecies } from "./applySpecies.js";
@@ -28,6 +29,7 @@ export async function boot() {
   } catch (e) {
     console.error("failed to load settings:", e);
   }
+  setLanguage(saved.settings?.language);
   applySettings(saved.settings ?? {});
   applySpecies(saved.species);
   if (typeof saved.callMe === "string" && saved.callMe.trim()) {

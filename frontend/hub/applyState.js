@@ -1,5 +1,6 @@
 // hub/applyState.js
 
+import { setLanguage } from "../shared/i18n.js";
 import { state, appSettings } from "./state.js";
 import { SPECIES } from "../items.js";
 import { liveActivity } from "./liveActivity.js";
@@ -83,6 +84,10 @@ export function applyState(saved) {
     }
     if (typeof saved.settings.devCoins === "boolean") {
       appSettings.devCoins = saved.settings.devCoins;
+    }
+    if (typeof saved.settings.language === "string") {
+      appSettings.language = saved.settings.language;
+      setLanguage(appSettings.language);
     }
   }
 }

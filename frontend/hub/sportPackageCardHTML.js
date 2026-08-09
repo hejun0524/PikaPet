@@ -1,5 +1,6 @@
 // hub/sportPackageCardHTML.js
 
+import { t } from "../shared/i18n.js";
 import { findTour } from "../touring.js";
 import { activityLocked } from "./activityLocked.js";
 
@@ -15,8 +16,8 @@ export function sportPackageCardHTML(stopCount) {
     <div class="item ${activityLocked()}" data-tour="${def.key}">
       <span class="qty price">💰${def.cost}</span>
       <span class="icon">🎟️</span>
-      <span class="name">${stopCount} ${stopCount > 1 ? "Stops" : "Stop"} Mystery Sports Tour</span>
-      <span class="effects">⏱ ${def.minutes}m · random teams, any league</span>
-      <span class="effects">🎁 1 souvenir per stop</span>
+      <span class="name">${stopCount > 1 ? t("tour.sportName", { n: stopCount }) : t("tour.sportNameOne")}</span>
+      <span class="effects">${t("tour.sportLine", { m: def.minutes })}</span>
+      <span class="effects">${t("tour.sportSouvenir")}</span>
     </div>`;
 }

@@ -2,6 +2,7 @@
 // collapses the popover to the essentials: slim emoji+bar care meters (no
 // numbers) and Home / Add-ons / Settings buttons.
 
+import { t } from "../shared/i18n.js";
 import { runtime } from "./state.js";
 
 /**
@@ -14,5 +15,7 @@ import { runtime } from "./state.js";
 export function applyTrayCompact() {
   document.body.classList.toggle("compact", runtime.trayCompact);
   document.getElementById("tray-collapse").textContent = runtime.trayCompact ? "▴" : "▾";
-  document.getElementById("tray-collapse").title = runtime.trayCompact ? "Expand" : "Minimize";
+  document.getElementById("tray-collapse").title = runtime.trayCompact
+    ? t("chrome.expand")
+    : t("chrome.minimize");
 }

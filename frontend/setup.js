@@ -5,10 +5,14 @@
 // Each function lives in its own file under setup/; this file only wires
 // them together.
 
+import { setLanguage } from "./shared/i18n.js";
+import { applyStaticText } from "./setup/applyStaticText.js";
 import { renderCards } from "./setup/renderCards.js";
 import { refreshStart } from "./setup/refreshStart.js";
 import { initEvents } from "./setup/initEvents.js";
 
+setLanguage("auto"); // no save yet — follow the system language
+applyStaticText();
 initEvents();
 renderCards();
 refreshStart();

@@ -1,5 +1,6 @@
 // main/greet.js
 
+import { t } from "../shared/i18n.js";
 import { latest } from "./state.js";
 import { say } from "./say.js";
 
@@ -13,6 +14,6 @@ import { say } from "./say.js";
  */
 export function greet() {
   const hour = new Date().getHours();
-  const period = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
-  say(`Good ${period}, ${latest.callMe}!`);
+  const key = hour < 12 ? "bubble.morning" : hour < 18 ? "bubble.afternoon" : "bubble.evening";
+  say(t(key, { callMe: latest.callMe }));
 }

@@ -1,6 +1,7 @@
 // hub/uninstallAddonFlow.js
 
 import { invoke, emit } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { addonFrame } from "./addonFrame.js";
 import { renderGrid } from "./renderGrid.js";
@@ -20,14 +21,14 @@ import { renderSidePanel } from "./renderSidePanel.js";
 export async function uninstallAddonFlow(id) {
   try {
     await invoke("uninstall_addon", { id });
-    ui.addonMsg = `Uninstalled ${id} ✔`;
+    ui.addonMsg = t("addonmgr.uninstalled", { name: id });
     emit("addons-changed");
     state.addonsInstalled = await invoke("list_installed_addons");
     // Kill its running page (stops any playback) and its tray widget.
     addonFrame(id)?.remove();
     emit("addon-widget-set", { id, on: false });
   } catch (e) {
-    ui.addonMsg = `Uninstall failed: ${e}`;
+    ui.addonMsg = t("addonmgr.uninstallFailed", { err: e });
   }
   if (ui.view === "addons") renderGrid();
   renderAddonDrawer();

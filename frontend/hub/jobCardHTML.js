@@ -1,5 +1,7 @@
 // hub/jobCardHTML.js
 
+import { t } from "../shared/i18n.js";
+import { jobName } from "../shared/names.js";
 import { isJobUnlocked, jobRequirementText } from "../career.js";
 import { unlockCtx } from "./unlockCtx.js";
 import { activityLocked } from "./activityLocked.js";
@@ -18,8 +20,8 @@ export function jobCardHTML(job) {
     <div class="item locked">
       <span class="qty lock">🔒</span>
       <span class="icon">${job.emoji}</span>
-      <span class="name">${job.name}</span>
-      <span class="effects">Rank ${job.rank}</span>
+      <span class="name">${jobName(job)}</span>
+      <span class="effects">${t("job.rank", { n: job.rank })}</span>
       <span class="effects">${jobRequirementText(job)}</span>
     </div>`;
   }
@@ -27,8 +29,8 @@ export function jobCardHTML(job) {
     <div class="item ${activityLocked()}" data-plan-job="${job.key}">
       <span class="qty pay">+💰${job.pay}</span>
       <span class="icon">${job.emoji}</span>
-      <span class="name">${job.name}</span>
-      <span class="effects">Rank ${job.rank} · ⏱ ${job.minutes}m · ⭐+${job.xp} XP</span>
+      <span class="name">${jobName(job)}</span>
+      <span class="effects">${t("job.line", { n: job.rank, m: job.minutes, xp: job.xp })}</span>
       <span class="effects">${drainText(job.drain)}</span>
     </div>`;
 }

@@ -1,6 +1,7 @@
 // stats/miniCareHTML.js — Compact (minimized) popover: slim emoji+bar care
 // meters (no numbers) shown while the ▾ toggle has the popover collapsed.
 
+import { tOr } from "../shared/i18n.js";
 import { barClassFor, escText } from "../panel.js";
 
 /**
@@ -15,7 +16,7 @@ export function miniCareHTML(meters) {
   return meters
     .map(
       (m) => `
-    <div class="mini-meter" title="${escText(m.label)}: ${m.value}/${m.max}">
+    <div class="mini-meter" title="${escText(tOr(`care.${m.key}`, m.label))}: ${m.value}/${m.max}">
       <span class="mm-emoji">${m.emoji}</span>
       <div class="mm-track"><div class="mm-fill${barClassFor(m.value, m.max)}" style="width:${(m.value / m.max) * 100}%"></div></div>
     </div>`

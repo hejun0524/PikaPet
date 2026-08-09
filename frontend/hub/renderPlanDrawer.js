@@ -1,6 +1,8 @@
 // hub/renderPlanDrawer.js — The plan book drawer mirrors the cart's flow:
 // stage entries, then Start.
 
+import { t } from "../shared/i18n.js";
+import { activityName } from "../shared/names.js";
 import { state, baskets } from "./state.js";
 import { planEntryDef } from "./planEntryDef.js";
 import { caretakingBusy } from "./caretakingBusy.js";
@@ -18,7 +20,7 @@ export function renderPlanDrawer() {
   const drawer = document.getElementById("plan-drawer");
   if (drawer.hidden) return;
   if (baskets.planBook.length === 0) {
-    drawer.innerHTML = `<div class="cart-empty">Plan book is empty — click classes or jobs to add them</div>`;
+    drawer.innerHTML = `<div class="cart-empty">${t("plan.empty")}</div>`;
     return;
   }
   const rows = baskets.planBook
@@ -27,7 +29,7 @@ export function renderPlanDrawer() {
       const money = entry.type === "job" ? `+💰${def.pay}` : `−💰${def.cost}`;
       return `
       <div class="cart-row">
-        <span>${def.emoji} ${def.name} · ⏱ ${def.minutes}m</span>
+        <span>${def.emoji} ${activityName({ ...entry, name: def.name })} · ⏱ ${def.minutes}m</span>
         <span>${money}</span>
         <button class="cart-remove" data-plan-remove="${i}">✕</button>
       </div>`;
@@ -43,11 +45,11 @@ export function renderPlanDrawer() {
   const busy = caretakingBusy();
   drawer.innerHTML = `
     ${rows}
-    <div class="cart-row cart-total"><span>Up-front cost</span><span>💰${upfront}</span><span></span></div>
+    <div class="cart-row cart-total"><span>${t("plan.upfront")}</span><span>💰${upfront}</span><span></span></div>
     <div class="cart-actions">
-      <button id="plan-clear">Clear</button>
+      <button id="plan-clear">${t("cart.clear")}</button>
       <button id="plan-start" ${affordable && !busy ? "" : "disabled"}>
-        ${busy ? "🛎️ Caretaker on duty" : affordable ? "▶ Start plan" : "Not enough coins"}
+        ${busy ? t("plan.caretakerBusy") : affordable ? t("plan.start") : t("cart.noCoins")}
       </button>
     </div>`;
 }

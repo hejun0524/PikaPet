@@ -1,5 +1,6 @@
 // hub/shopCardHTML.js
 
+import { itemName } from "../shared/names.js";
 import { effectsText } from "./effectsText.js";
 
 /**
@@ -14,7 +15,7 @@ export function shopCardHTML(entry) {
     <div class="item" data-add="${entry.key}">
       <span class="qty price">💰${entry.price}</span>
       <span class="icon">${entry.emoji}</span>
-      <span class="name">${entry.name}</span>
+      <span class="name">${itemName(entry)}</span>
       <span class="effects">${effectsText(entry)}</span>
     </div>`;
 }

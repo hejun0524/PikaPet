@@ -1,5 +1,6 @@
 // main/maybeComplain.js
 
+import { t } from "../shared/i18n.js";
 import {
   latest,
   trip,
@@ -24,18 +25,18 @@ export function maybeComplain() {
   const now = Date.now();
   if (now - rt.lastComplaintAt < COMPLAINT_COOLDOWN_MS) return;
   const care = latest.care;
-  let msg = null;
+  let key = null;
   if (typeof care.health === "number" && care.health < SICK_LINE) {
-    msg = `I am sick, ${latest.callMe}…`;
+    key = "bubble.sick";
   } else if (care.energy < LOW_LINE) {
-    msg = `I am hungry, ${latest.callMe}.`;
+    key = "bubble.hungry";
   } else if (care.hygiene < LOW_LINE) {
-    msg = `I need a shower, ${latest.callMe}.`;
+    key = "bubble.shower";
   } else if (care.mood < LOW_LINE) {
-    msg = `Play with me, ${latest.callMe}!`;
+    key = "bubble.play";
   }
-  if (msg) {
+  if (key) {
     rt.lastComplaintAt = now;
-    say(msg);
+    say(t(key, { callMe: latest.callMe }));
   }
 }

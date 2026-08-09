@@ -1,5 +1,7 @@
 // hub/sportsPageHTML.js
 
+import { t } from "../shared/i18n.js";
+import { cityName } from "../shared/names.js";
 import { state, ui } from "./state.js";
 import { SPORT_LEAGUES, TOUR_MAX_CITIES, findPlace } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -25,14 +27,19 @@ export function sportsPageHTML() {
     <div class="school-head">
       ${activityStatusRowHTML()}
       <div class="career-chips">${chips}</div>
-      <div class="xp-line">${league.emoji} ${league.label} · ${visited.length}/${league.cities.length} teams visited</div>
+      <div class="xp-line">${t("tour.teamsVisited", {
+        emoji: league.emoji,
+        label: league.label,
+        v: visited.length,
+        total: league.cities.length,
+      })}</div>
       <div class="credit-bar">
         <div class="track"><div class="fill" style="width:${(visited.length / league.cities.length) * 100}%"></div></div>
         <span>${visited.length}/${league.cities.length}</span>
       </div>
       <div class="city-grid">
         ${league.cities
-          .map((c) => `<span class="city ${visited.includes(c) ? "visited" : ""}">${esc(c)}</span>`)
+          .map((c) => `<span class="city ${visited.includes(c) ? "visited" : ""}">${esc(cityName(c))}</span>`)
           .join("")}
       </div>
     </div>`;

@@ -2,6 +2,7 @@
 // view and active tab.
 
 import { convertFileSrc } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import {
   ITEM_CATALOG,
@@ -77,13 +78,16 @@ export function renderGrid() {
       const used = state.homework?.date === today ? state.homework.count : 0;
       const left = Math.max(0, HOMEWORK_DAILY_LIMIT - used);
       exhausted = left === 0;
-      note = `<div class="ach-section caretaker-title">✏️ Homework left today: ${left}/${HOMEWORK_DAILY_LIMIT}${exhausted ? " — come back tomorrow!" : ""}</div>`;
+      note = `<div class="ach-section caretaker-title">${t("home.homeworkLeft", {
+        left,
+        max: HOMEWORK_DAILY_LIMIT,
+      })}${exhausted ? t("home.homeworkDone") : ""}</div>`;
     }
     grid.innerHTML =
       note +
       (stocked.length
         ? stocked.map((item) => homeCardHTML(item, exhausted)).join("")
-        : `<div class="empty-note">Nothing here — stock up in the 🧺 Life view!</div>`);
+        : `<div class="empty-note">${t("home.empty")}</div>`);
     return;
   }
 
@@ -148,7 +152,7 @@ export function renderGrid() {
         </button>`
           )
           .join("")}</div>`
-      : `<div class="empty-note">No add-ons yet — open the 🧰 manager (top right) to install one.</div>`;
+      : `<div class="empty-note">${t("addons.empty")}</div>`;
     return;
   }
 
@@ -173,7 +177,7 @@ export function renderGrid() {
     if (!addon) {
       host.hidden = true;
       grid.hidden = false;
-      grid.innerHTML = `<div class="empty-note">This add-on is not installed.</div>`;
+      grid.innerHTML = `<div class="empty-note">${t("addons.notInstalled")}</div>`;
     } else if (addon.entry && addon.dir) {
       let frame = addonFrame(id);
       if (!frame) {
@@ -193,7 +197,7 @@ export function renderGrid() {
     } else {
       host.hidden = true;
       grid.hidden = false;
-      grid.innerHTML = `<div class="empty-note">${esc(addon.name ?? id)} has no page.</div>`;
+      grid.innerHTML = `<div class="empty-note">${t("addons.noPage", { name: esc(addon.name ?? id) })}</div>`;
     }
     return;
   }

@@ -3,7 +3,9 @@
 // checkout result listeners ("pika-result", "cart-result").
 
 import { invoke, emit, listen, WebviewWindow } from "../shared/tauri.js";
+import { setLanguage, getLocale } from "../shared/i18n.js";
 import { state, ui, cart, tradeSell, tradeBuy, baskets, appSettings } from "./state.js";
+import { renderAll } from "./renderAll.js";
 import { findSellable, findCaretaker } from "../items.js";
 import { findClass } from "../school.js";
 import { findJob } from "../career.js";
@@ -472,6 +474,15 @@ export function initEvents() {
     } else if (e.target.id === "dev-coins") {
       appSettings.devCoins = e.target.checked;
       emit("settings-changed", { ...appSettings });
+    } else if (e.target.id === "language") {
+      appSettings.language = e.target.value;
+      setLanguage(appSettings.language);
+      emit("settings-changed", { ...appSettings });
+      // Live add-on pages get told too, so they can re-render themselves.
+      for (const frame of document.querySelectorAll("#addon-host iframe")) {
+        frame.contentWindow?.postMessage({ type: "app-locale", locale: getLocale() }, "*");
+      }
+      renderAll();
     } else if (e.target.id === "autostart") {
       invoke(e.target.checked ? "plugin:autostart|enable" : "plugin:autostart|disable").catch(
         (err) => console.error("autostart toggle failed:", err)

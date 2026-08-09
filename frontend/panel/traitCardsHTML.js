@@ -1,5 +1,6 @@
 // panel/traitCardsHTML.js
 
+import { tOr } from "../shared/i18n.js";
 import { escText } from "./escText.js";
 
 /**
@@ -16,7 +17,7 @@ export function traitCardsHTML(traits) {
       (t) => `
     <div class="trait-card">
       <span class="tc-value">${escText(String(t.value))}</span>
-      <span class="tc-label">${t.emoji} ${escText(t.label)}</span>
+      <span class="tc-label">${t.emoji} ${escText(tOr(`trait.${t.key}`, t.label))}</span>
     </div>`
     )
     .join("")}</div>`;

@@ -4,6 +4,7 @@
 // registry, setup, settings) and the popover's own DOM listeners.
 
 import { emit, listen } from "../shared/tauri.js";
+import { setLanguage } from "../shared/i18n.js";
 import {
   ALL_ITEMS,
   HOMEWORK_DAILY_LIMIT,
@@ -335,10 +336,10 @@ export function initEvents() {
   // ── Footer buttons + settings persistence ────────────────────────────────
   listen("settings-changed", (event) => {
     pet.settings = { ...pet.settings, ...event.payload };
-    if (applyDevCoins()) {
-      render();
-      broadcastState();
-    }
+    setLanguage(pet.settings.language);
+    const coinsChanged = applyDevCoins();
+    render(); // repaints the popover in the (possibly new) language
+    if (coinsChanged) broadcastState();
     save();
   });
 

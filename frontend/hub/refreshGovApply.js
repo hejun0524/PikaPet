@@ -1,5 +1,6 @@
 // hub/refreshGovApply.js
 
+import { t } from "../shared/i18n.js";
 import { state } from "./state.js";
 import { GOV_FEE } from "./constants.js";
 
@@ -21,5 +22,6 @@ export function refreshGovApply() {
   const callMe = callMeInput.value.trim();
   const changed = (name && name !== state.name) || (callMe && callMe !== state.callMe);
   btn.disabled = !changed || state.coins < GOV_FEE;
-  btn.textContent = state.coins < GOV_FEE ? "Not enough coins" : `Apply changes (💰${GOV_FEE})`;
+  btn.textContent =
+    state.coins < GOV_FEE ? t("cart.noCoins") : t("registry.apply", { fee: GOV_FEE });
 }

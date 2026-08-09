@@ -1,49 +1,60 @@
 // hub/settingsHTML.js
 
+import { t, LANGUAGE_OPTIONS, languageSetting } from "../shared/i18n.js";
 import { ui, appSettings } from "./state.js";
 import { resetConfirmHTML } from "./resetConfirmHTML.js";
 
 /**
- * The Settings page: pet size, all-desktops, autostart, hide-pet, quit/reset
- * links, and developer-mode toggles — or the reset confirmation while
- * `ui.resetPending` is set.
+ * The Settings page: pet size, all-desktops, autostart, hide-pet, language,
+ * quit/reset links, and developer-mode toggles — or the reset confirmation
+ * while `ui.resetPending` is set.
  *
  * @returns {string} Page HTML for the grid.
  */
 export function settingsHTML() {
   if (ui.resetPending) return resetConfirmHTML();
+  const langOptions = LANGUAGE_OPTIONS.map(
+    (o) => `
+      <option value="${o.key}" ${o.key === languageSetting() ? "selected" : ""}>
+        ${o.label ?? t("settings.langAuto")}
+      </option>`
+  ).join("");
   return `
     <div class="settings-plain">
-      <div class="ach-section">General</div>
+      <div class="ach-section">${t("settings.general")}</div>
       <div class="settings-row">
-        <label for="size">Pet size (%)</label>
+        <label for="size">${t("settings.size")}</label>
         <input type="number" id="size" class="num-input" min="50" max="150" step="5"
           value="${Math.round(appSettings.scale * 100)}" />
       </div>
       <div class="settings-row">
-        <label for="all-desktops">Show on all desktops</label>
+        <label for="language">${t("settings.language")}</label>
+        <select id="language">${langOptions}</select>
+      </div>
+      <div class="settings-row">
+        <label for="all-desktops">${t("settings.allDesktops")}</label>
         <input type="checkbox" id="all-desktops" ${appSettings.allDesktops ? "checked" : ""} />
       </div>
       <div class="settings-row">
-        <label for="autostart">Show up when computer starts</label>
+        <label for="autostart">${t("settings.autostart")}</label>
         <input type="checkbox" id="autostart" />
       </div>
       <div class="settings-row">
-        <label for="hide-pet">Hide my pet</label>
+        <label for="hide-pet">${t("settings.hidePet")}</label>
         <input type="checkbox" id="hide-pet" />
       </div>
       <div class="settings-links">
-        <a id="quit" class="danger-link">Quit the app</a>
-        <a id="reset-btn" class="danger-link">Reset all data…</a>
+        <a id="quit" class="danger-link">${t("settings.quit")}</a>
+        <a id="reset-btn" class="danger-link">${t("settings.reset")}</a>
       </div>
 
-      <div class="ach-section">Developer mode</div>
+      <div class="ach-section">${t("settings.devTitle")}</div>
       <div class="settings-row">
-        <label for="dev-mode">Fast game time (care decays every 10s; 1 game-minute = 5s)</label>
+        <label for="dev-mode">${t("settings.devFast")}</label>
         <input type="checkbox" id="dev-mode" ${appSettings.devMode ? "checked" : ""} />
       </div>
       <div class="settings-row">
-        <label for="dev-coins">Auto-load coins to 20,000</label>
+        <label for="dev-coins">${t("settings.devCoins")}</label>
         <input type="checkbox" id="dev-coins" ${appSettings.devCoins ? "checked" : ""} />
       </div>
     </div>`;

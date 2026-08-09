@@ -19,7 +19,7 @@ export const pet = {
   callMe: "Owner",
   coins: 1000,
   achievements: [],
-  settings: { scale: 0.5, allDesktops: true, devMode: false, devCoins: false },
+  settings: { scale: 0.5, allDesktops: true, devMode: false, devCoins: false, language: "auto" },
   care: CARE_META.map((m) => ({ ...m, value: 100, max: 100 })),
   traits: TRAIT_META.map((m) => ({ ...m, value: 0 })),
   bag: Object.fromEntries(ALL_ITEMS.map((i) => [i.key, i.startQty ?? DEFAULT_ITEM_QTY])),

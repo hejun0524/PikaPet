@@ -1,5 +1,6 @@
 // hub/tourPackageCardHTML.js — Touring pages.
 
+import { t } from "../shared/i18n.js";
 import { findTour } from "../touring.js";
 import { activityLocked } from "./activityLocked.js";
 
@@ -15,8 +16,8 @@ export function tourPackageCardHTML(cityCount) {
     <div class="item ${activityLocked()}" data-tour="${def.key}">
       <span class="qty price">💰${def.cost}</span>
       <span class="icon">🧳</span>
-      <span class="name">${cityCount} ${cityCount > 1 ? "Cities" : "City"} Mystery Package</span>
-      <span class="effects">⏱ ${def.minutes}m · random cities worldwide</span>
-      <span class="effects">🎁 1 souvenir per city</span>
+      <span class="name">${cityCount > 1 ? t("tour.pkgName", { n: cityCount }) : t("tour.pkgNameOne")}</span>
+      <span class="effects">${t("tour.pkgLine", { m: def.minutes })}</span>
+      <span class="effects">${t("tour.pkgSouvenir")}</span>
     </div>`;
 }

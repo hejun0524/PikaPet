@@ -2,6 +2,7 @@
 // Departure: run toward the nearer screen edge, off the screen, then hide.
 
 import { currentMonitor } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
 import { appWindow, latest, trip, rt } from "./state.js";
 import { say } from "./say.js";
 import { setAnim } from "./setAnim.js";
@@ -30,7 +31,7 @@ export async function departForTrip() {
       await appWindow.hide();
       return;
     }
-    say(`I'm going out for a tour, ${latest.callMe}!`, 2200);
+    say(t("bubble.depart", { callMe: latest.callMe }), 2200);
     await new Promise((resolve) => setTimeout(resolve, 1600));
     const { monitor, homePos, size } = trip;
     const centerX = homePos.x + size.width / 2;

@@ -1,5 +1,6 @@
 // panel/careCardsHTML.js
 
+import { tOr } from "../shared/i18n.js";
 import { barClassFor } from "./barClassFor.js";
 import { escText } from "./escText.js";
 
@@ -20,7 +21,7 @@ export function careCardsHTML(meters) {
     <div class="care-card ${level}">
       <div class="cc-fill" style="height:${pct}%"></div>
       <span class="tc-value">${escText(String(m.value))}</span>
-      <span class="tc-label">${m.emoji} ${escText(m.label)}</span>
+      <span class="tc-label">${m.emoji} ${escText(tOr(`care.${m.key}`, m.label))}</span>
     </div>`;
     })
     .join("")}</div>`;

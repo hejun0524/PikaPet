@@ -2,6 +2,8 @@
 // Return: reappear at a random edge and run back to the departure spot.
 
 import { currentMonitor, PhysicalPosition } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
+import { cityName } from "../shared/names.js";
 import { appWindow, latest, trip, rt } from "./state.js";
 import { say } from "./say.js";
 import { setAnim } from "./setAnim.js";
@@ -43,9 +45,15 @@ export async function returnFromTrip() {
     trip.away = false;
     setAnim(idleAnim());
     if (latest.journal?.cities?.length) {
-      say(`I just visited ${latest.journal.cities.join(", ")}, ${latest.callMe}!`, 8000);
+      say(
+        t("bubble.visited", {
+          cities: latest.journal.cities.map(cityName).join(", "),
+          callMe: latest.callMe,
+        }),
+        8000
+      );
     } else {
-      say(`I'm back, ${latest.callMe}!`);
+      say(t("bubble.back", { callMe: latest.callMe }));
     }
   } finally {
     rt.animating = false;

@@ -1,6 +1,7 @@
 // hub/pikaSellPageHTML.js — Pika's trading post (Sell / Buy tabs, shop-style
 // cards).
 
+import { t } from "../shared/i18n.js";
 import { state, tradeSell } from "./state.js";
 import { SOUVENIR_SELL_PRICE, souvenirName } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -14,9 +15,9 @@ import { escText as esc } from "../panel.js";
 export function pikaSellPageHTML() {
   const wants = state.pika.wants ?? [];
   if (!wants.length) {
-    return `<div class="empty-note">Pika isn't collecting anything right now — check back soon!</div>`;
+    return `<div class="empty-note">${t("pika.sellEmpty")}</div>`;
   }
-  const note = `<div class="ach-section caretaker-title">🐱 Pika is collecting these — she pays +💰${SOUVENIR_SELL_PRICE} each (store refreshes every 3h). Click to add to the 🤝 trade basket.</div>`;
+  const note = `<div class="ach-section caretaker-title">${t("pika.sellNote", { price: SOUVENIR_SELL_PRICE })}</div>`;
   return (
     note +
     wants
@@ -28,7 +29,7 @@ export function pikaSellPageHTML() {
         <span class="qty pay">+💰${SOUVENIR_SELL_PRICE}</span>
         <span class="icon">🎁</span>
         <span class="name">${esc(souvenirName(city))}</span>
-        <span class="effects">${inCart ? "🤝 In trade basket" : owned > 0 ? `You have ${owned}` : "You don't have this yet"}</span>
+        <span class="effects">${inCart ? t("pika.inBasket") : owned > 0 ? t("pika.youHave", { n: owned }) : t("pika.notOwned")}</span>
       </div>`;
       })
       .join("")

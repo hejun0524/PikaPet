@@ -1,5 +1,7 @@
 // hub/journalsPageHTML.js
 
+import { t } from "../shared/i18n.js";
+import { placeLabel, cityName } from "../shared/names.js";
 import { state } from "./state.js";
 import { isLeagueKey, cityDestination } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -12,7 +14,7 @@ import { escText as esc } from "../panel.js";
  */
 export function journalsPageHTML() {
   if (!state.touring.journals.length) {
-    return `<div class="empty-note">No trips yet — pick a package under 🏝️ Destinations!</div>`;
+    return `<div class="empty-note">${t("journal.empty")}</div>`;
   }
   const rows = state.touring.journals
     .map((j) => {
@@ -21,7 +23,10 @@ export function journalsPageHTML() {
       const dest = { emoji: sporty ? "🏟️" : "🌍" };
       // Every stop reads "Country - City" (or "League - Team").
       const stops = j.cities
-        .map((city) => `${esc(cityDestination(city)?.label ?? "?")} - ${esc(city)}`)
+        .map((city) => {
+          const place = cityDestination(city);
+          return `${esc(place ? placeLabel(place) : "?")} - ${esc(cityName(city))}`;
+        })
         .join(", ");
       return `
       <div class="ach earned journal">

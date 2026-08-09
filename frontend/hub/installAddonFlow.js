@@ -1,6 +1,7 @@
 // hub/installAddonFlow.js
 
 import { invoke, emit } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { addonFrame } from "./addonFrame.js";
 import { renderGrid } from "./renderGrid.js";
@@ -20,7 +21,7 @@ export async function installAddonFlow() {
   try {
     const path = await invoke("plugin:dialog|open", {
       options: {
-        title: "Choose an add-on zip",
+        title: t("addonmgr.zipTitle"),
         filters: [{ name: "Add-on zip", extensions: ["zip"] }],
         multiple: false,
         directory: false,
@@ -28,7 +29,7 @@ export async function installAddonFlow() {
     });
     if (!path) return;
     const manifest = await invoke("install_addon", { path });
-    ui.addonMsg = `Installed ${manifest.name ?? manifest.id} ✔`;
+    ui.addonMsg = t("addonmgr.installed", { name: manifest.name ?? manifest.id });
     // On reinstall, kill the old build's running page and tray widget so the
     // next open loads the freshly extracted files instead of the stale iframe.
     addonFrame(manifest.id)?.remove();
@@ -36,7 +37,7 @@ export async function installAddonFlow() {
     emit("addons-changed");
     state.addonsInstalled = await invoke("list_installed_addons");
   } catch (e) {
-    ui.addonMsg = `Install failed: ${e}`;
+    ui.addonMsg = t("addonmgr.installFailed", { err: e });
   }
   if (ui.view === "addons") renderGrid();
   renderAddonDrawer();

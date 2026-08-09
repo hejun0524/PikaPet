@@ -1,5 +1,6 @@
 // hub/renderTradeDrawer.js
 
+import { t } from "../shared/i18n.js";
 import { state, tradeSell, tradeBuy } from "./state.js";
 import { escText as esc } from "../panel.js";
 import { SOUVENIR_SELL_PRICE, findTour, souvenirName, ticketOfferKey } from "../touring.js";
@@ -17,7 +18,7 @@ export function renderTradeDrawer() {
   const drawer = document.getElementById("trade-drawer");
   if (drawer.hidden) return;
   if (tradeSell.size === 0 && tradeBuy.size === 0) {
-    drawer.innerHTML = `<div class="cart-empty">Trade basket is empty — click souvenirs to sell and tickets to buy</div>`;
+    drawer.innerHTML = `<div class="cart-empty">${t("trade.empty")}</div>`;
     return;
   }
   const sellRows = [...tradeSell]
@@ -35,7 +36,7 @@ export function renderTradeDrawer() {
       const def = findTour(ticketOfferKey(offer));
       return `
       <div class="cart-row">
-        <span>${def.emoji} ${esc(def.name)} Ticket</span>
+        <span>${def.emoji} ${t("trade.ticket", { name: esc(def.name) })}</span>
         <span>−💰${offer.price}</span>
         <button class="cart-remove" data-trade-remove-buy="${esc(offer.id)}">✕</button>
       </div>`;
@@ -48,14 +49,14 @@ export function renderTradeDrawer() {
   drawer.innerHTML = `
     ${sellRows}${buyRows}
     <div class="cart-row cart-total">
-      <span>Net</span>
+      <span>${t("trade.net")}</span>
       <span class="${net >= 0 ? "trade-gain" : ""}">${net >= 0 ? "+" : "−"}💰${Math.abs(net)}</span>
       <span></span>
     </div>
     <div class="cart-actions">
-      <button id="trade-clear">Clear</button>
+      <button id="trade-clear">${t("cart.clear")}</button>
       <button id="trade-checkout" ${payable ? "" : "disabled"}>
-        ${payable ? "🤝 Trade" : "Not enough coins"}
+        ${payable ? t("trade.checkout") : t("cart.noCoins")}
       </button>
     </div>`;
 }

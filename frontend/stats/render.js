@@ -1,5 +1,7 @@
 // stats/render.js — Rendering (shared HTML builders live in panel.js).
 
+import { t } from "../shared/i18n.js";
+import { speciesBreed } from "../shared/names.js";
 import { addonList, findSpecies } from "../items.js";
 import {
   activityStatusHTML,
@@ -12,6 +14,7 @@ import { pet, runtime } from "./state.js";
 import { activityView } from "./activityView.js";
 import { caretakingView } from "./caretakingView.js";
 import { miniCareHTML } from "./miniCareHTML.js";
+import { applyStaticText } from "./applyStaticText.js";
 import { resizePopover } from "./resizePopover.js";
 
 const nameEl = document.getElementById("pet-name");
@@ -26,19 +29,20 @@ const nameEl = document.getElementById("pet-name");
  * @returns {void}
  */
 export function render() {
+  applyStaticText();
   nameEl.textContent = pet.name;
-  document.getElementById("breed").textContent = findSpecies(pet.species).breed;
+  document.getElementById("breed").textContent = speciesBreed(findSpecies(pet.species));
   document.getElementById("avatar").style.backgroundImage = `url("${findSpecies(pet.species).sheet}")`;
   const av = activityView();
   const cv = caretakingView();
   let statusHTML = "";
   if (av.active) {
     statusHTML += `<div class="status-row">${activityStatusHTML(av)}
-      <button id="stop-activity" title="${av.active.type === "tour" ? "Call back" : "End activity"}" ${cv.active ? "disabled" : ""}>${av.active.type === "tour" ? "📢" : "🛑"}</button></div>`;
+      <button id="stop-activity" title="${av.active.type === "tour" ? t("btn.callBack") : t("btn.endActivity")}" ${cv.active ? "disabled" : ""}>${av.active.type === "tour" ? "📢" : "🛑"}</button></div>`;
   }
   if (cv.active) {
     statusHTML += `<div class="status-row">${caretakingStatusHTML(cv)}
-      <button id="stop-caretaking" title="End caretaking service">🛑</button></div>`;
+      <button id="stop-caretaking" title="${t("btn.endCaretaking")}">🛑</button></div>`;
   }
   document.getElementById("study-status").innerHTML = statusHTML;
   document.getElementById("care").innerHTML = runtime.trayCompact

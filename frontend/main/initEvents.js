@@ -4,6 +4,7 @@
 // feedback from window move events, and the right-click native menu.
 
 import { listen, emit } from "../shared/tauri.js";
+import { setLanguage } from "../shared/i18n.js";
 import { petEl, appWindow, latest, trip, rt, DOUBLE_CLICK_MS } from "./state.js";
 import { applySettings } from "./applySettings.js";
 import { updateMood } from "./updateMood.js";
@@ -33,7 +34,10 @@ import { jlog } from "./jlog.js";
  */
 export function initEvents() {
   // Follow live changes from the settings window.
-  listen("settings-changed", (event) => applySettings(event.payload));
+  listen("settings-changed", (event) => {
+    setLanguage(event.payload?.language);
+    applySettings(event.payload);
+  });
 
   // The stats window broadcasts care values (as percentages) every change.
   listen("pet-state", ({ payload }) => {

@@ -1,5 +1,7 @@
 // hub/renderServiceDrawer.js
 
+import { t } from "../shared/i18n.js";
+import { caretakerName } from "../shared/names.js";
 import { state, baskets } from "./state.js";
 import { findCaretaker } from "../items.js";
 import { hireLocked } from "./hireLocked.js";
@@ -16,7 +18,7 @@ export function renderServiceDrawer() {
   const drawer = document.getElementById("service-drawer");
   if (drawer.hidden) return;
   if (!baskets.serviceCart.length) {
-    drawer.innerHTML = `<div class="cart-empty">No services staged — click caretaker cards to add shifts</div>`;
+    drawer.innerHTML = `<div class="cart-empty">${t("service.empty")}</div>`;
     return;
   }
   const rows = baskets.serviceCart
@@ -24,7 +26,7 @@ export function renderServiceDrawer() {
       const def = findCaretaker(key);
       return `
       <div class="cart-row">
-        <span>${def.emoji} ${def.name} · 4h shift</span>
+        <span>${t("service.shiftRow", { emoji: def.emoji, name: caretakerName(def) })}</span>
         <span>💰${def.price}</span>
         <button class="cart-remove" data-service-remove="${i}">✕</button>
       </div>`;
@@ -35,11 +37,11 @@ export function renderServiceDrawer() {
   const busy = hireLocked();
   drawer.innerHTML = `
     ${rows}
-    <div class="cart-row cart-total"><span>Total</span><span>💰${total}</span><span></span></div>
+    <div class="cart-row cart-total"><span>${t("cart.total")}</span><span>💰${total}</span><span></span></div>
     <div class="cart-actions">
-      <button id="service-clear">Clear</button>
+      <button id="service-clear">${t("cart.clear")}</button>
       <button id="service-hire" ${affordable && !busy ? "" : "disabled"}>
-        ${busy ? "Pet is busy — end the activity first" : affordable ? "🛎️ Hire" : "Not enough coins"}
+        ${busy ? t("service.busy") : affordable ? t("service.hire") : t("cart.noCoins")}
       </button>
     </div>`;
 }

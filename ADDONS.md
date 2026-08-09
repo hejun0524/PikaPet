@@ -94,10 +94,12 @@ window.addEventListener("message", (e) => {
 });
 ```
 
-Available requests (the allowlist lives in `frontend/hub.js`; PRs welcome):
+Available requests (the allowlist lives in `frontend/hub/handleAddonRequest.js`;
+PRs welcome):
 
 | `type` | `payload` | `result` |
 |---|---|---|
+| `get-locale` | — | The app's active language code (`"en"`, `"zh"`, `"fr"`, `"es"`, `"de"`, `"ja"`) — see "Following the app's language" |
 | `pick-folder` | — | Absolute folder path chosen in a native picker, or `null` if cancelled |
 | `list-music` | `{dir}` | Array of absolute audio-file paths (recursive, 2 levels, mp3/m4a/aac/wav/flac/ogg) |
 | `file-url` | `{path}` | An asset-protocol URL usable as `src` for `<audio>`/`<img>` etc. |
@@ -106,6 +108,54 @@ Available requests (the allowlist lives in `frontend/hub.js`; PRs welcome):
 | `open-window` | `{page, width, height, title}` | Opens `page` (a file in your folder) in its own native window; one per add-on — calling again focuses it |
 | `widget-set` | `{on}` | Shows/hides your tray mini-widget (needs `widget` in the manifest) |
 | `widget-push` | `{state}` | Sends any JSON state to your live widget page |
+
+## Following the app's language
+
+The app is multilingual (English, 中文, Français, Español, Deutsch, 日本語 —
+Settings → 🌐 Language), and add-ons are expected to localize **themselves**:
+the app only tells you which language is active. The contract has two parts:
+
+1. **At boot**, ask once: `bridge("get-locale")` resolves to a two-letter
+   code (`"en"`, `"zh"`, `"fr"`, `"es"`, `"de"`, `"ja"` today; more may come).
+2. **On change**, the app posts a plain message into your iframe (same
+   channel as `addon-pause`): `{type: "app-locale", locale}` — re-render your
+   text when it arrives.
+
+The recommended pattern (this is exactly what the Music Player does — copy
+it):
+
+```js
+const STR = {
+  en: { pick: "📂 Choose Folder", /* … every string your page shows … */ },
+  zh: { pick: "📂 选择文件夹", /* … */ },
+  // fr / es / de / ja …
+};
+let locale = "en";
+const s = (key) => (STR[locale] ?? STR.en)[key];   // unknown locale -> English
+
+bridge("get-locale").then((l) => { if (STR[l]) locale = l; render(); }).catch(() => {});
+window.addEventListener("message", (e) => {
+  if (e.data?.type === "app-locale") {
+    locale = STR[e.data.locale] ? e.data.locale : "en";
+    render();
+  }
+});
+```
+
+Rules of thumb:
+
+- **Always fall back to English** for locales you don't ship — never render
+  raw keys or blanks.
+- **Ship at least English.** Any subset of the other languages is fine; the
+  fallback covers the rest.
+- **Widgets don't get bridge access**, so pass the locale along in your
+  `widget-push` state (`{title, playing, locale}`) and let the widget page
+  keep its own little `STR` table — see the Music Player's `widget.html`.
+- Popup windows opened via `open-window` have the bridge, so they can call
+  `get-locale` themselves; the `app-locale` push only reaches your hub-hosted
+  page (relay it if the popup needs live switching).
+- Keep your strings in one `STR` table at the top of the file — a translator
+  (or a future you) should never have to hunt through the page logic.
 
 ## Pausing when the user walks away
 
@@ -159,8 +209,9 @@ the system notification center. Use sparingly — it's the user's screen.
 
 The reference implementation is the **🎹 Music Player** — this repo's
 `addons/music.zip` is a complete, self-contained example (folder picker,
-scan, play/pause, draggable seek bar, shuffle / loop / repeat-one, and a
-mini-player tray widget in `widget.html`). Start by copying it.
+scan, play/pause, draggable seek bar, shuffle / loop / repeat-one, a
+mini-player tray widget in `widget.html`, and full localization in all six
+app languages via `get-locale` + `app-locale`). Start by copying it.
 
 ## Install / uninstall mechanics (what the app does)
 
@@ -181,6 +232,8 @@ mini-player tray widget in `widget.html`). Start by copying it.
 - [ ] `manifest.json` with unique `id`, `name`, bright `emoji`, `version`
 - [ ] `entry` page is self-contained (JS/CSS inlined — relative subresources don't load)
 - [ ] No external network dependencies (the iframe has no internet)
+- [ ] Strings live in an `STR` table; `get-locale` fetched at boot and
+      `app-locale` handled (English fallback for locales you don't ship)
 - [ ] `zip -r yourthing.zip yourthing` from the parent directory
 - [ ] Test: Add-ons homepage → 🧰 manager → Install from zip → tile appears → page opens
       → Uninstall removes it cleanly

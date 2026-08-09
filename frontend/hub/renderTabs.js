@@ -1,5 +1,6 @@
 // hub/renderTabs.js — Tabs.
 
+import { tOr } from "../shared/i18n.js";
 import { tabSource } from "./tabSource.js";
 
 /**
@@ -17,7 +18,7 @@ export function renderTabs() {
           // push: true starts a right-aligned group (adventure's cat tabs)
           (c) => `
     <button data-tab="${c.key}" class="${c.key === tabs.active ? "active" : ""}${c.push ? " tab-push" : ""}">
-      ${c.tabEmoji} ${c.label}
+      ${c.tabEmoji} ${tabs.prefix ? tOr(tabs.prefix + c.key, c.label) : c.label}
     </button>`
         )
         .join("")

@@ -1,5 +1,6 @@
 // hub/ticketsPageHTML.js
 
+import { t } from "../shared/i18n.js";
 import { state } from "./state.js";
 import { findTour } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -14,7 +15,7 @@ import { activityLocked } from "./activityLocked.js";
 export function ticketsPageHTML() {
   const owned = Object.entries(state.tickets).filter(([, count]) => count > 0);
   if (!owned.length) {
-    return `<div class="empty-note">No tickets — check 🐱 Pika's daily offers!</div>`;
+    return `<div class="empty-note">${t("home.ticketsEmpty")}</div>`;
   }
   return owned
     .map(([key, count]) => {
@@ -24,7 +25,7 @@ export function ticketsPageHTML() {
         <span class="qty">${count}</span>
         <span class="icon">${def.emoji}</span>
         <span class="name">${esc(def.name)}</span>
-        <span class="effects">⏱ ${def.minutes}m · click to travel</span>
+        <span class="effects">${t("home.ticketUse", { m: def.minutes })}</span>
       </div>`;
     })
     .join("");

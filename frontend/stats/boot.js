@@ -1,5 +1,7 @@
 // stats/boot.js — Boot sequence of the stats window.
 
+import { setLanguage } from "../shared/i18n.js";
+import { pet } from "./state.js";
 import { load } from "./load.js";
 import { rescanAddons } from "./rescanAddons.js";
 import { refreshPika } from "./refreshPika.js";
@@ -21,6 +23,7 @@ import { jlog } from "./jlog.js";
  */
 export async function boot() {
   await load();
+  setLanguage(pet.settings.language);
   await rescanAddons();
   refreshPika();
   applyBankInterest();

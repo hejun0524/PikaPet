@@ -1,5 +1,6 @@
 // hub/homeCardHTML.js — Cards.
 
+import { itemName } from "../shared/names.js";
 import { state } from "./state.js";
 import { isUsable } from "./isUsable.js";
 import { effectsText } from "./effectsText.js";
@@ -17,7 +18,7 @@ export function homeCardHTML(item, forceDisabled = false) {
     <div class="item ${!forceDisabled && isUsable(item) ? "" : "disabled"}" data-use="${item.key}">
       <span class="qty">${state.bag[item.key]}</span>
       <span class="icon">${item.emoji}</span>
-      <span class="name">${item.name}</span>
+      <span class="name">${itemName(item)}</span>
       <span class="effects">${effectsText(item)}</span>
     </div>`;
 }

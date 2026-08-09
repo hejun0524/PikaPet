@@ -1,5 +1,7 @@
 // hub/destinationsPageHTML.js
 
+import { t } from "../shared/i18n.js";
+import { placeLabel, cityName } from "../shared/names.js";
 import { state, ui } from "./state.js";
 import { DESTINATIONS, TOUR_MAX_CITIES, findDestination } from "../touring.js";
 import { escText as esc } from "../panel.js";
@@ -16,7 +18,7 @@ export function destinationsPageHTML() {
   const chips = DESTINATIONS.map(
     (d) => `
     <button class="career-chip ${d.key === ui.tourDest ? "active" : ""}" data-dest="${d.key}">
-      ${d.emoji} ${d.label}
+      ${d.emoji} ${placeLabel(d)}
     </button>`
   ).join("");
   const dest = findDestination(ui.tourDest);
@@ -25,14 +27,19 @@ export function destinationsPageHTML() {
     <div class="school-head">
       ${activityStatusRowHTML()}
       <div class="career-chips">${chips}</div>
-      <div class="xp-line">${dest.emoji} ${dest.label} · ${visited.length}/${dest.cities.length} cities visited</div>
+      <div class="xp-line">${t("tour.citiesVisited", {
+        emoji: dest.emoji,
+        label: placeLabel(dest),
+        v: visited.length,
+        total: dest.cities.length,
+      })}</div>
       <div class="credit-bar">
         <div class="track"><div class="fill" style="width:${(visited.length / dest.cities.length) * 100}%"></div></div>
         <span>${visited.length}/${dest.cities.length}</span>
       </div>
       <div class="city-grid">
         ${dest.cities
-          .map((c) => `<span class="city ${visited.includes(c) ? "visited" : ""}">${esc(c)}</span>`)
+          .map((c) => `<span class="city ${visited.includes(c) ? "visited" : ""}">${esc(cityName(c))}</span>`)
           .join("")}
       </div>
     </div>`;

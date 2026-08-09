@@ -1,6 +1,7 @@
 // addon-window/handleRequest.js
 
 import { convertFileSrc, emit, invoke } from "../shared/tauri.js";
+import { getLocale, t } from "../shared/i18n.js";
 import { addonId } from "./params.js";
 
 /**
@@ -16,9 +17,13 @@ import { addonId } from "./params.js";
  *   rejects with an Error for unknown request types.
  */
 export async function handleRequest(type, payload) {
+  // Same contract as the hub bridge: the app's active locale code.
+  if (type === "get-locale") {
+    return getLocale();
+  }
   if (type === "pick-folder") {
     return invoke("plugin:dialog|open", {
-      options: { title: "Choose a folder", directory: true, multiple: false },
+      options: { title: t("dialog.pickFolder"), directory: true, multiple: false },
     });
   }
   if (type === "list-music") {
