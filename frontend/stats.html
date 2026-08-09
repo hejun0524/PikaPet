@@ -46,6 +46,7 @@
         <button id="government" title="Pet Center">💖</button>
         <button id="pika" title="Pika">🐱</button>
         <button id="adventure" title="Adventure">⚔️</button>
+        <button id="arena" title="Arena">🥊</button>
         <button id="addons" title="Add-ons">🧩</button>
         <button id="settings" title="Settings">⚙️</button>
       </footer>
@@ -56,11 +57,9 @@
       </section>
     </div>
     <div id="widgets"></div>
-    <script src="items.js"></script>
-    <script src="school.js"></script>
-    <script src="career.js"></script>
-    <script src="touring.js"></script>
-    <script src="panel.js"></script>
-    <script src="stats.js"></script>
+    <!-- stats.js is an ES module entry point: it imports everything it needs
+         (items.js, school.js, career.js, touring.js, panel.js and the
+         per-function files under stats/). -->
+    <script type="module" src="stats.js"></script>
   </body>
 </html>

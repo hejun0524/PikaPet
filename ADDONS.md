@@ -101,10 +101,28 @@ Available requests (the allowlist lives in `frontend/hub.js`; PRs welcome):
 | `pick-folder` | — | Absolute folder path chosen in a native picker, or `null` if cancelled |
 | `list-music` | `{dir}` | Array of absolute audio-file paths (recursive, 2 levels, mp3/m4a/aac/wav/flac/ogg) |
 | `file-url` | `{path}` | An asset-protocol URL usable as `src` for `<audio>`/`<img>` etc. |
+| `say` | `{text, ms?}` | The desktop pet says `text` in its speech bubble (≤200 chars; `ms` display time, clamped 1–30 s, default 5 s). The app substitutes `{callMe}` → what the pet calls its owner (registry page setting, e.g. "Papa") and `{petName}` → the pet's name, so add-ons never see that data. Great for game results — friendlier than a notification. Skipped while the pet is away on a tour. |
 | `notify` | `{title, body}` | Sends a system push notification (macOS notification center) |
 | `open-window` | `{page, width, height, title}` | Opens `page` (a file in your folder) in its own native window; one per add-on — calling again focuses it |
 | `widget-set` | `{on}` | Shows/hides your tray mini-widget (needs `widget` in the manifest) |
 | `widget-push` | `{state}` | Sends any JSON state to your live widget page |
+
+## Pausing when the user walks away
+
+When the user leaves your page (the ← back button, a nav button, another
+add-on), the app posts a plain message into your iframe:
+
+```js
+window.addEventListener("message", (e) => {
+  if (e.data?.type === "addon-pause") pauseMyGame();
+});
+```
+
+Games should listen and pause. Add-ons that are meant to keep running in the
+background (music players) simply ignore it. Note that a hidden iframe also
+stops receiving `requestAnimationFrame` callbacks, so rAF-driven loops freeze
+either way — the message is what lets you show your pause overlay instead of
+resuming mid-action.
 
 ## Beyond the hub page
 

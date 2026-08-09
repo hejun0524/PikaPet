@@ -8,6 +8,8 @@
   <body>
     <div id="bubble" hidden></div>
     <div id="pet" data-anim="idle"></div>
-    <script src="main.js"></script>
+    <!-- main.js is an ES module entry point: it imports the per-function
+         files under main/. -->
+    <script type="module" src="main.js"></script>
   </body>
 </html>

@@ -39,6 +39,7 @@
           <button data-view="government" title="Pet Center">💖</button>
           <button data-view="pika" title="Pika">🐱</button>
           <button data-view="adventure" title="Adventure">⚔️</button>
+          <button data-view="arena" title="Arena">🥊</button>
           <button data-view="addons" title="Add-ons">🧩</button>
           <button data-view="settings" title="Settings">⚙️</button>
         </footer>
@@ -53,7 +54,7 @@
 
       <section id="content">
         <div id="topbar">
-          <button id="addons-home-btn" hidden title="Back to Add-ons">← 🧩</button>
+          <button id="addons-home-btn" hidden title="Back to Add-ons">←</button>
           <h3 id="view-title"></h3>
           <span class="topbar-spacer"></span>
           <button id="plan-btn" hidden>📔<span id="plan-count" class="badge" hidden></span></button>
@@ -72,12 +73,9 @@
         <div id="addon-host" hidden></div>
       </section>
     </div>
-    <script src="items.js"></script>
-    <script src="school.js"></script>
-    <script src="career.js"></script>
-    <script src="touring.js"></script>
-    <script src="panel.js"></script>
-    <script src="adventure.js"></script>
-    <script src="hub.js"></script>
+    <!-- hub.js is an ES module entry point: it imports everything it needs
+         (items.js, school.js, career.js, touring.js, panel.js, adventure.js
+         and the per-function files under hub/). -->
+    <script type="module" src="hub.js"></script>
   </body>
 </html>

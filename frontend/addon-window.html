@@ -26,6 +26,8 @@
     </style>
   </head>
   <body>
-    <script src="addon-window.js"></script>
+    <!-- addon-window.js is an ES module entry point: it imports the
+         per-function files under addon-window/. -->
+    <script type="module" src="addon-window.js"></script>
   </body>
 </html>

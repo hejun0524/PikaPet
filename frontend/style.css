@@ -46,13 +46,15 @@ body:active {
 }
 
 #bubble {
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: calc(100% - 10px);
+  /* A flex-flow sibling ABOVE #pet (body is a bottom-anchored column), so
+     the bubble always sits directly over the sprite's head at any pet
+     scale — and paints in front of it (positioned + z-index). */
+  position: relative;
+  z-index: 2;
+  margin-bottom: 9px; /* room for the ::after arrow */
+  max-width: calc(100% - 6px);
   box-sizing: border-box;
-  padding: 6px 10px;
+  padding: 7px 12px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 12px;
   line-height: 1.35;

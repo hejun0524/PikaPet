@@ -26,7 +26,8 @@
         <button id="setup-start" class="primary">Let's go! 🎉</button>
       </div>
     </main>
-    <script src="items.js"></script>
-    <script src="setup.js"></script>
+    <!-- setup.js is an ES module entry point: it imports everything it needs
+         (items.js and the per-function files under setup/). -->
+    <script type="module" src="setup.js"></script>
   </body>
 </html>

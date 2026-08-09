@@ -1,0 +1,29 @@
+// hub/souvenirsPageHTML.js
+
+import { state } from "./state.js";
+import { souvenirName } from "../touring.js";
+import { escText as esc } from "../panel.js";
+
+/**
+ * The Souvenirs tab of the Home view: one card per owned souvenir city, or an
+ * empty-state note.
+ *
+ * @returns {string} Page HTML for the grid.
+ */
+export function souvenirsPageHTML() {
+  const owned = Object.entries(state.souvenirs).filter(([, count]) => count > 0);
+  if (!owned.length) {
+    return `<div class="empty-note">No souvenirs yet — go 🗺️ Touring to collect them!</div>`;
+  }
+  return owned
+    .map(
+      ([city, count]) => `
+      <div class="item">
+        <span class="qty">${count}</span>
+        <span class="icon">🎁</span>
+        <span class="name">${esc(souvenirName(city))}</span>
+        <span class="effects">Pika might want this…</span>
+      </div>`
+    )
+    .join("");
+}

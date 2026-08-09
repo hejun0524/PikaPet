@@ -1,88 +1,16 @@
-// Shared pet-panel rendering (care meters, traits, coins) used by the stats
-// popover and the bag window's side panel. Loaded as a plain <script> after
-// items.js.
+// panel.js — master file for the shared pet-panel rendering helpers (care
+// meters, traits, add-on buttons, status badges) used by the stats popover
+// and the hub window's side panel.
+//
+// Each function lives in its own file under panel/; this file only groups
+// and re-exports them. Import from "./panel.js" rather than reaching into
+// the folder.
 
-// Below this percent a meter is "critical" (red bar); critical meters also
-// drain health (see stats.js tick()).
-const CRITICAL_BELOW = 15;
-
-// Bar color switches as a meter empties (percent of max, checked low→high).
-const BAR_LEVELS = [
-  { className: "critical", below: CRITICAL_BELOW }, // red
-  { className: "low", below: 35 },                  // orange
-  { className: "warn", below: 60 },                 // yellow
-];
-
-function barClassFor(value, max) {
-  const pct = (value / max) * 100;
-  const level = BAR_LEVELS.find((l) => pct < l.below);
-  return level ? ` ${level.className}` : "";
-}
-
-// Four equal care cards: the background fill rises with the meter's value,
-// colored by the BAR_LEVELS thresholds.
-function careCardsHTML(meters) {
-  return `<div class="care-cards">${meters
-    .map((m) => {
-      const pct = (m.value / m.max) * 100;
-      const level = barClassFor(m.value, m.max).trim();
-      return `
-    <div class="care-card ${level}">
-      <div class="cc-fill" style="height:${pct}%"></div>
-      <span class="tc-value">${escText(String(m.value))}</span>
-      <span class="tc-label">${m.emoji} ${escText(m.label)}</span>
-    </div>`;
-    })
-    .join("")}</div>`;
-}
-
-// Three equal trait cards filling the row: value, emoji and name each.
-function traitCardsHTML(traits) {
-  return `<div class="trait-cards">${traits
-    .map(
-      (t) => `
-    <div class="trait-card">
-      <span class="tc-value">${escText(String(t.value))}</span>
-      <span class="tc-label">${t.emoji} ${escText(t.label)}</span>
-    </div>`
-    )
-    .join("")}</div>`;
-}
-
-function escText(text) {
-  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-}
-
-// One button per add-on, for the popover and the hub side panel. `activeId`
-// highlights the add-on whose page is open (hub only).
-function addonButtonsHTML(addons, activeId) {
-  return addons
-    .map(
-      (a) => `<button class="addon-btn${a.id === activeId ? " active" : ""}" data-addon="${escText(a.id)}" title="${escText(a.name)}">${escText(a.emoji)}</button>`
-    )
-    .join("");
-}
-
-// Caretaker-on-duty badge (expects the `caretaking` shape from the
-// pet-state broadcast; empty string when nobody is hired).
-function caretakingStatusHTML(caretaking) {
-  const active = caretaking?.active;
-  if (!active) return "";
-  return `
-    <div class="status-badge">
-      🛎️ ${active.emoji} ${active.name} on duty · ${formatRemaining(active.remainingMs)} left
-    </div>`;
-}
-
-// Busy badge shown while the pet is in a class or job (expects the
-// `activity` shape from the pet-state broadcast; empty string when idle).
-function activityStatusHTML(activity) {
-  const active = activity?.active;
-  if (!active) return "";
-  const verb =
-    active.type === "job" ? "💼 Working" : active.type === "tour" ? "🧳 Touring" : "📚 Studying";
-  return `
-    <div class="status-badge">
-      ${verb}: ${active.emoji} ${active.name} · ${formatRemaining(active.remainingMs)} left
-    </div>`;
-}
+export { CRITICAL_BELOW, BAR_LEVELS } from "./panel/barLevels.js";
+export { barClassFor } from "./panel/barClassFor.js";
+export { escText } from "./panel/escText.js";
+export { careCardsHTML } from "./panel/careCardsHTML.js";
+export { traitCardsHTML } from "./panel/traitCardsHTML.js";
+export { addonButtonsHTML } from "./panel/addonButtonsHTML.js";
+export { caretakingStatusHTML } from "./panel/caretakingStatusHTML.js";
+export { activityStatusHTML } from "./panel/activityStatusHTML.js";
