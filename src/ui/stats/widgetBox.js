@@ -1,6 +1,6 @@
 // stats/widgetBox.js — Add-on tray widgets: add-ons with a "widget" page in
 // their manifest can hang a mini rounded box below this popover (a mini
-// music player, an adventure status…). Boxes stack in the order their
+// music player, a status readout…). Boxes stack in the order their
 // add-ons turned them on; the window grows to fit.
 // Protocol (see doc/addons.md): the add-on's main page sends widget-set / a
 // widget-push state; the widget page answers with widget-ready and sends

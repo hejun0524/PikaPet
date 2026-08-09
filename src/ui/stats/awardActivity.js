@@ -10,6 +10,9 @@ import {
   findPlace,
   pickRandomCities,
 } from "../touring.js";
+import { CITY_DISHES, RECIPE_DROP_CHANCE, findRecipe, recipeName } from "../kitchen.js";
+import { emit } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
 import { pet } from "./state.js";
 import { tourVisitCount } from "./tourVisitCount.js";
 import { awardTouringCerts } from "./awardTouringCerts.js";
@@ -54,6 +57,28 @@ export function awardActivity(active, def, fraction) {
         pet.souvenirs[city] = (pet.souvenirs[city] ?? 0) + 1;
       }
       awardTouringCerts(touched);
+      // Souvenir recipes: each visited city may teach its signature dish.
+      const learned = [];
+      for (const city of cities) {
+        const recipeKey = `dish:${city}`;
+        if (
+          CITY_DISHES[city] &&
+          !pet.kitchen.recipes.includes(recipeKey) &&
+          Math.random() < RECIPE_DROP_CHANCE
+        ) {
+          pet.kitchen.recipes.push(recipeKey);
+          learned.push(recipeKey);
+        }
+      }
+      if (learned.length) {
+        emit("pet-say", {
+          text: t("bubble.recipe", {
+            dish: recipeName(findRecipe(learned[0])),
+            callMe: pet.callMe,
+          }),
+          ms: 8000,
+        });
+      }
       // A paid trip fully recharges the pet: back home rested and happy.
       for (const meter of pet.care) meter.value = meter.max;
       const now = new Date();

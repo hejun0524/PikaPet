@@ -141,6 +141,54 @@ fn list_installed_addons(app: tauri::AppHandle) -> Vec<serde_json::Value> {
     out
 }
 
+// Keep-awake (Caffeine add-on): while enabled, a `caffeinate -di` child
+// process holds display + idle sleep assertions. `-w <our pid>` ties the
+// child's lifetime to this app, so sleep behavior always returns to normal
+// when the app quits — even on a force quit.
+struct KeepAwake(std::sync::Mutex<Option<std::process::Child>>);
+
+#[tauri::command]
+fn set_keep_awake(state: tauri::State<KeepAwake>, on: bool) -> Result<bool, String> {
+    #[cfg(target_os = "macos")]
+    {
+        let mut child = state.0.lock().map_err(|e| e.to_string())?;
+        if on {
+            if child.is_none() {
+                *child = Some(
+                    std::process::Command::new("/usr/bin/caffeinate")
+                        .args(["-di", "-w", &std::process::id().to_string()])
+                        .spawn()
+                        .map_err(|e| e.to_string())?,
+                );
+            }
+        } else if let Some(mut c) = child.take() {
+            let _ = c.kill();
+            let _ = c.wait();
+        }
+        Ok(child.is_some())
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (state, on);
+        Err("keep-awake is not supported on this platform yet".into())
+    }
+}
+
+#[tauri::command]
+fn keep_awake_status(state: tauri::State<KeepAwake>) -> bool {
+    let mut child = match state.0.lock() {
+        Ok(guard) => guard,
+        Err(_) => return false,
+    };
+    // Reap a child that died behind our back (e.g. killed externally).
+    if let Some(c) = child.as_mut() {
+        if !matches!(c.try_wait(), Ok(None)) {
+            *child = None;
+        }
+    }
+    child.is_some()
+}
+
 // Add-on push notifications, sent through the system notification center.
 // osascript works from a bare debug binary (no signed .app bundle needed).
 #[tauri::command]
@@ -314,6 +362,7 @@ fn save_state(app: tauri::AppHandle, state: String) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .manage(KeepAwake(std::sync::Mutex::new(None)))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -435,6 +484,8 @@ fn main() {
             list_installed_addons,
             notify,
             open_addon_window,
+            set_keep_awake,
+            keep_awake_status,
             log
         ])
         .run(tauri::generate_context!())

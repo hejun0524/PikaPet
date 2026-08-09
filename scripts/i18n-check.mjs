@@ -23,6 +23,8 @@ const { CAREERS, JOB_CATALOG, levelLabel, jobRequirementText } =
   await import(join(FRONTEND, "career.js"));
 const { DESTINATIONS, ALL_CITIES, ALL_TEAMS, findTour, souvenirName } =
   await import(join(FRONTEND, "touring.js"));
+const kitchen = await import(join(FRONTEND, "kitchen.js"));
+const fclub = await import(join(FRONTEND, "fightclub.js"));
 const names = await import(join(FRONTEND, "shared/names.js"));
 
 let bad = 0;
@@ -30,7 +32,7 @@ const err = (msg) => { bad++; console.error("FAIL:", msg); };
 
 const en = LOCALES.en;
 const enKeys = new Set(Object.keys(en));
-const dataPrefixes = ["item.", "class.", "subject.", "stage.", "career.", "job.", "caretaker.", "species.", "dest.", "city."];
+const dataPrefixes = ["item.", "class.", "subject.", "stage.", "career.", "job.", "caretaker.", "species.", "dest.", "city.", "ing.", "ingcat.", "recipe.", "skill."];
 
 // 1. Key parity: every locale covers en's UI keys; no unknown keys anywhere.
 for (const [code, dict] of Object.entries(LOCALES)) {
@@ -66,6 +68,10 @@ const sets = {
   "species.": new Set(SPECIES.map((s) => s.key)),
   "dest.": new Set(DESTINATIONS.map((d) => d.key)),
   "city.": new Set([...ALL_CITIES, ...ALL_TEAMS]),
+  "ing.": new Set(kitchen.INGREDIENTS.map((i) => i.key)),
+  "ingcat.": new Set(kitchen.INGREDIENT_CATS.map((c) => c.key)),
+  "recipe.": new Set(kitchen.ALL_RECIPES.map((r) => r.key)),
+  "skill.": new Set(fclub.SKILLS.map((s) => s.key)),
 };
 const stripSuffix = (base) => base.replace(/\.(desc|breed)$/, "");
 for (const [code, dict] of Object.entries(LOCALES)) {

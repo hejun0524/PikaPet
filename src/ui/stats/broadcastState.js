@@ -35,5 +35,13 @@ export function broadcastState() {
     pinnedAddons: [...pet.pinnedAddons],
     homework: { ...pet.homework },
     settings: { ...pet.settings },
+    kitchen: {
+      ...pet.kitchen,
+      pantry: { ...pet.kitchen.pantry },
+      recipes: [...pet.kitchen.recipes],
+      orders: pet.kitchen.orders.map((o) => ({ ...o })),
+      log: [...pet.kitchen.log],
+    },
+    fightclub: { books: pet.fightclub.books, skills: { ...pet.fightclub.skills } },
   });
 }

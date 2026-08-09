@@ -45,6 +45,12 @@ export const pet = {
   bank: { savings: 0, loan: 0, date: "" },
   homework: { date: "", count: 0 }, // daily homework limit tracking
   pinnedAddons: [], // add-on ids pinned to the popover + hub quick-launch rows
+  // Noonie's Kitchen: paw-bots, the 3h order board, the pantry (ingredient
+  // key -> count), learned city-recipe keys, and the delivery log.
+  kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
+  // Darcy's Fight Club: Training Manuals (count) the delivery bots bring
+  // home, and skill levels (skill key -> 1..MAX_SKILL_LEVEL).
+  fightclub: { books: 0, skills: {} },
 };
 
 /**

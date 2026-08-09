@@ -9,6 +9,7 @@ import { tick } from "./tick.js";
 import { completeActivity } from "./completeActivity.js";
 import { processCaretaking } from "./processCaretaking.js";
 import { caretakerBrain } from "./caretakerBrain.js";
+import { kitchenBrain } from "./kitchenBrain.js";
 import { render } from "./render.js";
 import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
@@ -35,9 +36,17 @@ export function initClock() {
       tick();
       return;
     }
+    // Paw-bot work resolves on the same clock (and streams countdowns below).
+    if (kitchenBrain()) {
+      render();
+      save();
+      broadcastState();
+      return;
+    }
     const a = pet.activity.active;
     const c = pet.caretaking.active;
-    if (!a && !c) return;
+    const kitchenBusy = pet.kitchen.orders.some((o) => o.endsAt);
+    if (!a && !c && !kitchenBusy) return;
     if (a && Date.now() - a.startedAt >= a.durationMs) {
       completeActivity();
       return;

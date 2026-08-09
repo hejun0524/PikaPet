@@ -13,13 +13,14 @@ PikaPet/                      # The Tauri v2 Rust crate lives at the repo root: 
 │   └── ui/                   # All UI — plain HTML/CSS/JS, no bundler (EMBEDDED in the binary)
 │       ├── index.html/main.js/style.css    # Desktop pet window: sprite animation, drag, speech bubbles, travel runs, context menu
 │       ├── stats.html/stats.js/stats.css   # Menu bar popover + THE STATE OWNER: game clocks, save/load, all mutations
-│       ├── hub.html/hub.js/hub.css         # Hub window: Home / Life / Career / Touring / Achievements / Pet Center / Pika / Adventure / Add-ons / Settings + add-on host
+│       ├── hub.html/hub.js/hub.css         # Hub window: Home / Life / Career / Touring / Achievements / Pet Center / Pika's Trading Post / Fight Club / Delivery / Add-ons / Settings + add-on host
 │       ├── addon-window.html/.js # Shell for add-on popup windows (iframe + bridge)
 │       ├── setup.html/setup.js/setup.css   # First-run welcome window (choose pet, name, call-me)
 │       ├── items.js              # Shared catalog: items, prices, stores, caretakers, bank rates, species, add-on helpers
 │       ├── school.js             # Shared school data: stages, subjects, courses, progression helpers
 │       ├── career.js             # Shared career data: careers, generated job ranks, tier/level helpers
 │       ├── touring.js            # Shared touring data: destinations, leagues, tours, tickets, Pika constants
+│       ├── kitchen.js            # Shared kitchen data: ingredients, recipes (8 basic + generated city dishes), paw-bots, skill books
 │       ├── panel.js / panel.css  # Shared pet-panel rendering (meters/traits/pocket/status/add-on buttons)
 │       ├── shared/               # Cross-window plumbing: tauri.js (API access), i18n.js (t()/tOr()), names.js (translated catalog names), jlog.js
 │       ├── locales/              # One dictionary per language: en / zh / fr / es / de / ja
@@ -35,7 +36,7 @@ The JS is organized as browser ES modules with **one function per file**: each w
 
 ## Architecture notes
 
-- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has eleven views — 🏠 Home / 🧺 Life / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika / ⚔️ Adventure / 🥊 Arena / 🧩 Add-ons / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu. Hidden windows hide (rather than close) when dismissed. The Adventure view's design doc lives in [adventure.md](adventure.md).
+- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has eleven views — 🏠 Home / 🧺 Life / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika's Trading Post / 🥊 Darcy's Fight Club / 🚚 Noonie's Delivery Service / 🧩 Add-ons / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu. Hidden windows hide (rather than close) when dismissed.
 - **State ownership**: `src/ui/stats.js` is the single owner of persistent state. It runs the game clocks and writes `save.json` (via Rust `save_state`/`load_state`) to `~/Library/Application Support/com.junhe.mypet/`. Other windows never write state: they emit events (`use-item`, `buy-cart`, `start-plan`, `end-activity`, `hire-caretakers`, `end-caretaking`, `bank-op`, `pika-checkout`, `gov-update`, `gov-magic`, `settings-changed`, …); stats.js validates, applies, saves, and broadcasts `pet-state`, which every window consumes.
 - **Persistence model**: saved every tick, restored verbatim — intentionally **no offline decay**, and activity/shift timers store elapsed time so they pause while the app is closed. Bank interest is the one exception: it compounds per calendar day, including days offline.
 - **Background throttling caveat**: WebKit suspends JS (timers *and* event delivery) in hidden webviews, so the main/stats/hub windows all set `"backgroundThrottling": "disabled"` in `tauri.conf.json`. The hub additionally re-syncs from the save file on window focus. All windows report errors to stdout via the Rust `log` command.

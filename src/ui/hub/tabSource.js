@@ -1,14 +1,19 @@
 // hub/tabSource.js
 
 import { ui } from "./state.js";
-import { HOME_TABS, ACH_TABS, PIKA_TABS, PETCENTER_TABS } from "./constants.js";
+import {
+  HOME_TABS,
+  ACH_TABS,
+  PIKA_TABS,
+  PETCENTER_TABS,
+  KITCHEN_TABS,
+  FIGHTCLUB_TABS,
+} from "./constants.js";
 import { SHOP_CATALOG, CAREER_CATALOG, TOURING_TABS } from "../items.js";
-import { ADV_TABS, advUi } from "../adventure.js";
 
 /**
  * The tab set and active tab key for the current view. `prefix` is the
- * locale-key prefix its labels translate under (tOr(prefix + key, label));
- * the adventure's tabs have none — that world is not localized yet.
+ * locale-key prefix its labels translate under (tOr(prefix + key, label)).
  *
  * @returns {{source: Object[], active: string, prefix: string|null}|null}
  *   Tab definitions, the active tab key, and the locale prefix, or null for
@@ -22,6 +27,7 @@ export function tabSource() {
   if (ui.view === "achievements") return { source: ACH_TABS, active: ui.achTab, prefix: "achtab." };
   if (ui.view === "pika") return { source: PIKA_TABS, active: ui.pikaTab, prefix: "pikatab." };
   if (ui.view === "government") return { source: PETCENTER_TABS, active: ui.petcenterTab, prefix: "pctab." };
-  if (ui.view === "adventure") return { source: ADV_TABS, active: advUi.tab, prefix: null };
+  if (ui.view === "kitchen") return { source: KITCHEN_TABS, active: ui.kitchenTab, prefix: "kitchentab." };
+  if (ui.view === "fightclub") return { source: FIGHTCLUB_TABS, active: ui.fightclubTab, prefix: "fightclubtab." };
   return null;
 }

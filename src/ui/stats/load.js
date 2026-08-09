@@ -5,6 +5,8 @@
 import { invoke } from "../shared/tauri.js";
 import { SPECIES, findCaretaker } from "../items.js";
 import { ALL_CITIES, ALL_PLACES, findTour, ticketOfferKey } from "../touring.js";
+import { CITY_DISHES, MAX_BOTS, START_BOTS, findIngredient, findRecipe } from "../kitchen.js";
+import { MAX_SKILL_LEVEL, findSkill } from "../fightclub.js";
 import { LEGACY_CARE_KEYS, pet, runtime } from "./state.js";
 import { activityDef } from "./activityDef.js";
 import { backfillAchievements } from "./backfillAchievements.js";
@@ -104,7 +106,11 @@ export async function load() {
           : [],
         sells: hasSells
           ? saved.pika.sells
-              .filter((o) => findTour(ticketOfferKey(o)) && typeof o.price === "number")
+              .filter(
+                (o) =>
+                  typeof o.price === "number" &&
+                  (o.kind === "recipe" ? CITY_DISHES[o.city] : findTour(ticketOfferKey(o)))
+              )
               .map((o, i) => ({ id: `legacy#${i}`, ...o }))
           : [],
       };
@@ -154,6 +160,42 @@ export async function load() {
     }
     if (Array.isArray(saved.pinnedAddons)) {
       pet.pinnedAddons = saved.pinnedAddons.filter((id) => typeof id === "string");
+    }
+    if (saved.kitchen && typeof saved.kitchen === "object") {
+      const k = saved.kitchen;
+      pet.kitchen.bots = Math.min(MAX_BOTS, Math.max(START_BOTS, Math.floor(k.bots ?? START_BOTS)));
+      pet.kitchen.slot = typeof k.slot === "string" ? k.slot : "";
+      for (const [key, count] of Object.entries(k.pantry ?? {})) {
+        if (findIngredient(key) && typeof count === "number") {
+          pet.kitchen.pantry[key] = Math.max(0, Math.floor(count));
+        }
+      }
+      pet.kitchen.recipes = (Array.isArray(k.recipes) ? k.recipes : []).filter((r) => findRecipe(r));
+      pet.kitchen.log = (Array.isArray(k.log) ? k.log : []).slice(0, 8);
+      pet.kitchen.orders = (Array.isArray(k.orders) ? k.orders : [])
+        .filter(
+          (o) =>
+            findRecipe(o.recipe) &&
+            ["open", "cooking", "ready", "delivering"].includes(o.status) &&
+            typeof o.reward === "number"
+        )
+        .map((o) => ({
+          ...o,
+          // Timers were saved as remaining time; resume from now.
+          endsAt: typeof o.remainingMs === "number" ? Date.now() + Math.max(0, o.remainingMs) : null,
+          remainingMs: undefined,
+        }));
+    }
+    if (saved.fightclub && typeof saved.fightclub === "object") {
+      // Manuals were briefly stored as an array of specific books; the count
+      // is all that matters now.
+      const b = saved.fightclub.books;
+      pet.fightclub.books = Array.isArray(b) ? b.length : Math.max(0, Math.floor(b ?? 0));
+      for (const [key, lv] of Object.entries(saved.fightclub.skills ?? {})) {
+        if (findSkill(key) && typeof lv === "number") {
+          pet.fightclub.skills[key] = Math.min(MAX_SKILL_LEVEL, Math.max(1, Math.floor(lv)));
+        }
+      }
     }
     if (saved.homework && typeof saved.homework === "object") {
       pet.homework = {

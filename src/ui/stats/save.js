@@ -36,6 +36,15 @@ export function save() {
     bank: pet.bank,
     homework: pet.homework,
     pinnedAddons: pet.pinnedAddons,
+    // Kitchen stage timers persist as remaining time so they pause while the
+    // app is closed (same philosophy as activities).
+    kitchen: {
+      ...pet.kitchen,
+      orders: pet.kitchen.orders.map((o) =>
+        o.endsAt ? { ...o, endsAt: null, remainingMs: Math.max(0, o.endsAt - Date.now()) } : o
+      ),
+    },
+    fightclub: pet.fightclub,
     activity: {
       plan: [...pet.activity.plan],
       // Persist elapsed time, not wall-clock, so a closed app pauses activities.

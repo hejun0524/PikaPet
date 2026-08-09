@@ -55,5 +55,12 @@ export async function handleRequest(type, payload) {
     await emit("addon-widget-state", { id: addonId, state: payload?.state ?? null });
     return true;
   }
+  // Keep the Mac awake (Caffeine add-on) — same contract as the hub bridge.
+  if (type === "keep-awake") {
+    return invoke("set_keep_awake", { on: !!payload?.on });
+  }
+  if (type === "keep-awake-status") {
+    return invoke("keep_awake_status");
+  }
   throw new Error(`unknown bridge request: ${type}`);
 }

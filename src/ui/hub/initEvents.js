@@ -4,13 +4,12 @@
 
 import { invoke, emit, listen, WebviewWindow } from "../shared/tauri.js";
 import { setLanguage, getLocale } from "../shared/i18n.js";
-import { state, ui, cart, tradeSell, tradeBuy, baskets, appSettings } from "./state.js";
+import { state, ui, cart, tradeSell, tradeBuy, tradeIng, baskets, appSettings } from "./state.js";
+import { findIngredient } from "../kitchen.js";
 import { renderAll } from "./renderAll.js";
 import { findSellable, findCaretaker } from "../items.js";
 import { findClass } from "../school.js";
 import { findJob } from "../career.js";
-import { advUi, advHandleClick } from "../adventure.js";
-import { arenaHandleClick } from "../arena.js";
 import { setView } from "./setView.js";
 import { flyEmoji } from "./flyEmoji.js";
 import { renderTabs } from "./renderTabs.js";
@@ -150,16 +149,29 @@ export function initEvents() {
       renderGrid();
       return;
     }
+    const removeIng = e.target.closest("[data-trade-remove-ing]");
+    if (removeIng) {
+      tradeIng.delete(removeIng.dataset.tradeRemoveIng);
+      renderTradeBadge();
+      renderTradeDrawer();
+      renderGrid();
+      return;
+    }
     if (e.target.id === "trade-clear") {
       tradeSell.clear();
       tradeBuy.clear();
+      tradeIng.clear();
       renderTradeBadge();
       renderTradeDrawer();
       renderGrid();
       return;
     }
     if (e.target.id === "trade-checkout") {
-      emit("pika-checkout", { sold: [...tradeSell], bought: [...tradeBuy.keys()] });
+      emit("pika-checkout", {
+        sold: [...tradeSell],
+        bought: [...tradeBuy.keys()],
+        ingredients: [...tradeIng].map(([key, qty]) => ({ key, qty })),
+      });
     }
   });
 
@@ -167,6 +179,7 @@ export function initEvents() {
     if (payload.ok) {
       tradeSell.clear();
       tradeBuy.clear();
+      tradeIng.clear();
       document.getElementById("trade-drawer").hidden = true;
       renderTradeBadge();
       renderGrid();
@@ -242,7 +255,8 @@ export function initEvents() {
     else if (ui.view === "touring") ui.touringTab = tab.dataset.tab;
     else if (ui.view === "achievements") ui.achTab = tab.dataset.tab;
     else if (ui.view === "pika") ui.pikaTab = tab.dataset.tab;
-    else if (ui.view === "adventure") advUi.tab = tab.dataset.tab;
+    else if (ui.view === "kitchen") ui.kitchenTab = tab.dataset.tab;
+    else if (ui.view === "fightclub") ui.fightclubTab = tab.dataset.tab;
     else if (ui.view === "government") {
       ui.petcenterTab = tab.dataset.tab;
       ui.pendingMagic = null;
@@ -252,19 +266,6 @@ export function initEvents() {
   });
 
   document.getElementById("grid").addEventListener("click", (e) => {
-    // The adventure world handles its own clicks (adventure.js) and just needs
-    // a repaint afterwards.
-    if (ui.view === "adventure") {
-      if (advHandleClick(e)) renderGrid();
-      return;
-    }
-
-    // Same pattern for the Arena (arena.js).
-    if (ui.view === "arena") {
-      if (arenaHandleClick(e, state)) renderGrid();
-      return;
-    }
-
     const appTile = e.target.closest("[data-open-addon]");
     if (appTile) {
       setView(`addon:${appTile.dataset.openAddon}`);
@@ -369,6 +370,36 @@ export function initEvents() {
       renderTradeBadge();
       renderTradeDrawer();
       renderGrid();
+      return;
+    }
+
+    // Pika's Organic Market: stage one unit in the 🤝 trade basket.
+    const ingCard = e.target.closest("[data-trade-ing]");
+    if (ingCard) {
+      const key = ingCard.dataset.tradeIng;
+      flyEmoji(findIngredient(key).emoji, ingCard, document.getElementById("trade-btn"));
+      tradeIng.set(key, (tradeIng.get(key) ?? 0) + 1);
+      renderTradeBadge();
+      renderTradeDrawer();
+      renderGrid();
+      return;
+    }
+    const cookBtn = e.target.closest("[data-cook]");
+    if (cookBtn) {
+      emit("kitchen-cook", { id: cookBtn.dataset.cook });
+      return;
+    }
+    const deliverBtn = e.target.closest("[data-deliver]");
+    if (deliverBtn) {
+      emit("kitchen-deliver", { id: deliverBtn.dataset.deliver });
+      return;
+    }
+    if (e.target.id === "unlock-bot") {
+      emit("kitchen-unlock-bot", {});
+      return;
+    }
+    if (e.target.id === "use-manual") {
+      emit("fightclub-use-book", {});
       return;
     }
 

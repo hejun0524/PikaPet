@@ -68,6 +68,12 @@ export function applyState(saved) {
   if (saved.homework && typeof saved.homework === "object") {
     state.homework = saved.homework;
   }
+  if (saved.kitchen && typeof saved.kitchen === "object") {
+    state.kitchen = { ...state.kitchen, ...saved.kitchen };
+  }
+  if (saved.fightclub && typeof saved.fightclub === "object") {
+    state.fightclub = { ...state.fightclub, ...saved.fightclub };
+  }
   if (Array.isArray(saved.addonsInstalled)) {
     state.addonsInstalled = saved.addonsInstalled;
   }

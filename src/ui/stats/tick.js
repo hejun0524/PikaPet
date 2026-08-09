@@ -4,6 +4,7 @@ import { CRITICAL_BELOW } from "../panel.js";
 import { pet } from "./state.js";
 import { DECAY_KEYS } from "./constants.js";
 import { refreshPika } from "./refreshPika.js";
+import { refreshKitchen } from "./refreshKitchen.js";
 import { applyBankInterest } from "./applyBankInterest.js";
 import { meterOf } from "./meterOf.js";
 import { render } from "./render.js";
@@ -22,7 +23,8 @@ import { jlog } from "./jlog.js";
 export function tick() {
   // All care meters are maintained while the pet is on a trip.
   if (pet.activity.active?.type === "tour") {
-    if (refreshPika()) {
+    const changed = refreshPika() | refreshKitchen();
+    if (changed) {
       save();
       broadcastState();
     }
@@ -30,6 +32,7 @@ export function tick() {
     return;
   }
   refreshPika();
+  refreshKitchen();
   applyBankInterest();
   const criticalCount = pet.care.filter(
     (s) => DECAY_KEYS.includes(s.key) && (s.value / s.max) * 100 < CRITICAL_BELOW

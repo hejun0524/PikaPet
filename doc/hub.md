@@ -1,6 +1,6 @@
 # 🏘️ The Hub
 
-The hub window ("*{pet}*'s World") holds eleven views, selected from its left panel, the tray popover's World buttons, or the pet's right-click menu.
+The hub window ("*{pet}*'s World") holds eleven views, selected from its left panel, the tray popover's World buttons, or the pet's right-click menu. Three of them belong to the app's resident cats: **Pika** 🐱 (female, runs the trading post), **Darcy** 🐈‍⬛ (male, runs the fight club), and **Noonie** 🐈 (female, runs the kitchen).
 
 ## 🏠 Home
 
@@ -22,21 +22,28 @@ School and Job share one plan book and one activity clock.
 
 27 destinations (~190 cities) + 5 sports leagues with full rosters (NBA/WNBA/NFL/MLB/CBA, 125 teams). Mystery packages (1-5 stops; 💰70/city, 💰150/team stop) draw uniformly across *everything* and reveal stops only on completion. Care is frozen during trips and **fully recharged** on any trip that visited ≥1 stop. Journals record "Country - City" / "League - Team" per stop under 🌍/🏟️; city maps light up; each stop yields a souvenir. Call back = ⌊elapsed/30min⌋ stops visited, rest refunded.
 
-## ⚔️ Adventure
-
-The pet's second life as a guildmaster — part of the app (not an add-on) but a fully separate, novel-styled ecosystem (serif type; Finnies 🐟 ≠ coins; own localStorage save; reads only the pet's name). Six tabs — Guild (NPC notice board + story chronicle), World (Finder-style three-column browser: 5 eras → cities + wilderness → gathering dispatch and familiar-face sightings), Storehouse (materials/trinkets inventory), Crafthouse (all crafts listed; blueprint purchases unlock benches permanently, the rest greyed out), and the three cats right-aligned: Pika (blueprint shop + trinket buy-back), Darcy (whereabouts ledger, paid locates, the Express), Noonie (HR & Talent Acquisition: roster, hiring pool, instant healing). Answer one notice for an NPC and you'll spot them yourself when browsing their city; Darcy just finds them faster. Full design + to-dos in [adventure.md](adventure.md).
-
-## 🥊 Arena
-
-大乐斗-style asynchronous pet fights (code in `src/ui/arena/`). Live today: fight cards derived from the real pet (Fitness → HP/ATK, Smarts → ATK/DEF, Charm → SPD/Luck, scaled ±15% by care "Condition"), rerollable sparring rivals, and serverless **fight codes** (base64 card snapshots pasted over any chat app — the friend never needs to be online). Pending: the battle engine (`arena/simulateBattle.js` stub documents the constraints — turn-based, seeded, deterministic so both sides replay identical fights), sprite-animated replays, rewards, and an optional free-tier friend directory.
-
 ## 🏆 Achievements
 
 Four tabs (Degrees 49, Career Tiers 60, World Touring 27, Sports Touring 5) listing everything earnable; earned rows show their date; backfilled from progress on load.
 
-## 🐱 Pika
+## 🐱 Pika's Trading Post
 
-"Sell to Pika" / "Buy from Pika" tabs with a 🤝 trade basket — mix souvenir sales (💰200 each) and ticket purchases (city flights, country trains, team tickets, league passes at randomized prices) into one atomic checkout whose net can be in your favor. Store refreshes every 3 hours.
+Three tabs. "Sell to Pika" / "Buy from Pika" share a 🤝 trade basket — mix souvenir sales (💰200 each) and purchases (city flights, country trains, team tickets, league passes, and 📜 **recipe scrolls** for Noonie's Kitchen, all at randomized prices) into one atomic checkout whose net can be in your favor; store refreshes every 3 hours. The 🥬 **Organic Market** tab sells ~47 ingredients across seven categories (veggies, meat, seafood, staples, dairy, sauces, spices), each category under its own full-row title — clicks stage units in the same 🤝 trade basket, and checkout stocks Noonie's pantry.
+
+## 🍳 Noonie's Kitchen
+
+Noonie 🐈 runs a restaurant staffed by **paw-bots**. Four tabs:
+
+- **📋 Orders** — every 3 hours (same slot clock as Pika's store) 10 hungry pets — one per animal-face emoji (🐶🐱🐭🐹🐰🦊🐻🐼🐻‍❄️🐨🐯🦁🐮🐷🐸🐵🐺🐗🐴🦄) — phone in orders for dishes the kitchen knows. Cooking an order consumes its ingredients and occupies a bot for the cook time (10 min basic / 20 min city dishes); the cooked dish then needs a bot for the 15-min delivery. Delivered orders pay coins (ingredient cost ×1.8 + a tip) and log in the recent-deliveries feed. Orders a bot is working on survive board refreshes.
+- **📜 Recipes** — the full catalog is always visible: a House-recipes section (8 known from day one), then every touring city's signature dish grouped by country — unlearned ones greyed out with a 🔒. Scrolls come home from tours (20% chance per visited city) or from Pika's shop (2 per refresh, 💰300–500) and show the dish, origin, ingredients, and cook time.
+- **🧺 Pantry** — the ingredient inventory, stocked from the Organic Market.
+- **🤖 Paw-Bots** — ten slots with cute robotic names (Chip, Bolt, Gizmo…). Two are free; the rest unlock at rising prices (💰800 → 💰60,000). Each bot card shows what it's doing.
+
+After a successful delivery there's a 15% chance the bot brings back a **📖 Training Manual** — counted on Darcy's Skills tab.
+
+## 🥊 Darcy's Fight Club
+
+Darcy 🐈‍⬛ will run pet fights here — the Fight Club tab shows a coming-soon note (design intent per [roadmap.md](roadmap.md): async friend battles via shareable fight codes, coins-based). The **📖 Skills** tab is live: ten skills at 5 levels each — fun ones (🍽️ Plate Toss, 🏏 Bat Swing, 💫 Apparent Death, which survives a KO at 1 HP once per fight, 💨 Zoomies Rush) alongside MMA staples (Lightning Jab, Uppercut, High Kick, Takedown, Iron Guard, Swift Footwork). **Training Manuals** found by Noonie's delivery bots are counted here; using one unlocks or levels up a random non-maxed skill. Combat effects land when the fights open.
 
 ## 💖 Pet Center
 

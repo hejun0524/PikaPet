@@ -5,6 +5,7 @@
 - **🧩 Add-ons homepage**: an iPhone-style springboard of app tiles in the hub; its 🧰 manager (top-right, like the cart button) is where add-ons are installed ("📦 Install add-on from zip…", native file picker), uninstalled (🗑️), and 📌 **pinned** — only pinned add-ons appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open add-on's Quick Launch button highlights like the World buttons. Zips extract to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`; the app rescans at startup and after every change.
 - Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
 - **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
+- **☕ Caffeine** (`addons/caffeine.zip`): keeps the Mac from auto-sleeping (and the screen from dimming) while its switch is on — a `caffeinate` process held by the app and released when the app quits. Once installed, its toggle box hangs below the tray popover permanently (`widgetAuto`); the same switch lives on its hub page. The reference for `widgetAuto` + the widget bridge subset.
 - **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized in all six app languages (the reference for the `get-locale` / `app-locale` bridge contract). Updating the add-on = reinstalling the zip — no app rebuild or restart.
 
 # Preparing an add-on zip
@@ -41,7 +42,8 @@ folder and extracts everything beside it.
   "version": "1.0.0",
   "entry": "index.html",
   "widget": "widget.html",
-  "widgetHeight": 40
+  "widgetHeight": 40,
+  "widgetAuto": false
 }
 ```
 
@@ -54,6 +56,7 @@ folder and extracts everything beside it.
 | `entry` | ✅ (in practice) | HTML page rendered when the add-on opens; an add-on without one shows "has no page". |
 | `widget` | optional | HTML page for the tray mini-widget (see "Tray widgets"). |
 | `widgetHeight` | optional | Widget content height in px (default 64, clamped 32–220). Keep it minimal. |
+| `widgetAuto` | optional | `true` = the widget mounts as soon as the add-on is installed (every app start), no `widget-set` call needed. For always-there utility widgets like Caffeine's toggle; leave it off for on-demand widgets like the mini music player. |
 
 ## How your page runs
 
@@ -113,6 +116,8 @@ PRs welcome):
 | `open-window` | `{page, width, height, title}` | Opens `page` (a file in your folder) in its own native window; one per add-on — calling again focuses it |
 | `widget-set` | `{on}` | Shows/hides your tray mini-widget (needs `widget` in the manifest) |
 | `widget-push` | `{state}` | Sends any JSON state to your live widget page |
+| `keep-awake` | `{on}` | Prevents the Mac from auto-sleeping (and the display from dimming) while on — a `caffeinate` process held by the app, released on quit. Returns the resulting state (`true`/`false`) |
+| `keep-awake-status` | — | Whether keep-awake is currently on — poll it if you show a toggle, another surface may have flipped it |
 
 ## Following the app's language
 
@@ -153,9 +158,11 @@ Rules of thumb:
   raw keys or blanks.
 - **Ship at least English.** Any subset of the other languages is fine; the
   fallback covers the rest.
-- **Widgets don't get bridge access**, so pass the locale along in your
-  `widget-push` state (`{title, playing, locale}`) and let the widget page
-  keep its own little `STR` table — see the Music Player's `widget.html`.
+- **Widgets** can call `get-locale` themselves (it's in the widget bridge
+  subset), but they don't receive the `app-locale` push — either poll, or
+  pass the locale along in your `widget-push` state (`{title, playing,
+  locale}`) and keep a little `STR` table in the widget page — see the Music
+  Player's `widget.html`.
 - Popup windows opened via `open-window` have the bridge, so they can call
   `get-locale` themselves; the `app-locale` push only reaches your hub-hosted
   page (relay it if the popup needs live switching).
@@ -189,8 +196,18 @@ hanging below the menu-bar popover** — a mini music player, a status readout.
 If several add-ons show widgets, they stack in the order they were turned on.
 Keep the design *minimal*: one row of content is ideal (`widgetHeight` ≈ 40).
 
+Add `"widgetAuto": true` and the widget instead mounts **on its own at every
+app start** — no `widget-set` call, no need for your main page to ever be
+opened. That's the right mode for always-there utility widgets (Caffeine's
+keep-awake toggle); on-demand widgets like the mini music player should keep
+appearing only when relevant.
+
 The widget page is a separate iframe in a separate window, so it doesn't share
-JS state with your main page. It talks through three tiny messages:
+JS state with your main page. Widgets get a **small self-serve subset of the
+bridge** (same `{reqId, type, payload}` helper as above, so a widget can work
+even while your main page isn't loaded): `get-locale`, `keep-awake`,
+`keep-awake-status`, and `notify`. For everything else it talks to your main
+page through three tiny messages:
 
 - Widget → app: `parent.postMessage({type: "widget-ready"}, "*")` once on
   load — the app replies with the latest state so you're never blank.

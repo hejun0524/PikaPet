@@ -11,8 +11,6 @@ import {
   addonList,
   findSellable,
 } from "../items.js";
-import { adventurePageHTML } from "../adventure.js";
-import { arenaPageHTML } from "../arena.js";
 import { escText as esc } from "../panel.js";
 import { addonFrame } from "./addonFrame.js";
 import { homeCardHTML } from "./homeCardHTML.js";
@@ -32,6 +30,12 @@ import { registryHTML } from "./registryHTML.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { pikaSellPageHTML } from "./pikaSellPageHTML.js";
 import { pikaBuyPageHTML } from "./pikaBuyPageHTML.js";
+import { pikaMarketPageHTML } from "./pikaMarketPageHTML.js";
+import { kitchenOrdersHTML } from "./kitchenOrdersHTML.js";
+import { kitchenRecipesHTML } from "./kitchenRecipesHTML.js";
+import { kitchenPantryHTML } from "./kitchenPantryHTML.js";
+import { kitchenBotsHTML } from "./kitchenBotsHTML.js";
+import { fightclubSkillsHTML } from "./fightclubSkillsHTML.js";
 import { settingsHTML } from "./settingsHTML.js";
 import { refreshHidePet } from "./refreshHidePet.js";
 import { refreshAutostart } from "./refreshAutostart.js";
@@ -39,8 +43,8 @@ import { refreshAutostart } from "./refreshAutostart.js";
 /**
  * Render the main grid for the current view (`ui.view`) and its active tab:
  * Home item cards, the shop, career pages, touring pages, achievements, the
- * adventure world, add-on tiles/iframes, Pet Center pages, Pika's trading
- * post, and Settings.
+ * coming-soon cat pages (Fight Club, Delivery), add-on tiles/iframes, Pet
+ * Center pages, Pika's Trading Post, and Settings.
  *
  * Side effects: rewrites #grid, toggles #grid/#addon-host visibility, may
  * create add-on iframes inside #addon-host, and kicks off the async
@@ -121,20 +125,26 @@ export function renderGrid() {
     return;
   }
 
-  // Adventure: the pet's own game world — a function of the app (not an
-  // add-on), but a fully separate ecosystem (Paw Tokens ≠ coins, recruit
-  // levels ≠ traits) with its own save. Lives in adventure.js; it reads only
-  // the pet's name. Design doc: doc/adventure.md.
-  if (ui.view === "adventure") {
-    grid.innerHTML = adventurePageHTML(state.name);
+  // Darcy's Fight Club: the fights are still coming soon, but the Skills tab
+  // (levels + Training Manuals from Noonie's deliveries) is live.
+  if (ui.view === "fightclub") {
+    grid.innerHTML =
+      ui.fightclubTab === "skills"
+        ? fightclubSkillsHTML()
+        : `<div class="empty-note">${t("fightclub.upcoming")}</div>`;
     return;
   }
 
-  // Arena: 大乐斗-style async pet fights. Fight cards derive from the real
-  // pet (traits + care), so it's a hub view, not an add-on. Battle engine
-  // pending — see arena.js.
-  if (ui.view === "arena") {
-    grid.innerHTML = arenaPageHTML(state);
+  // Noonie's Kitchen: order board, recipe scrolls, pantry, paw-bots.
+  if (ui.view === "kitchen") {
+    grid.innerHTML =
+      ui.kitchenTab === "recipes"
+        ? kitchenRecipesHTML()
+        : ui.kitchenTab === "pantry"
+          ? kitchenPantryHTML()
+          : ui.kitchenTab === "bots"
+            ? kitchenBotsHTML()
+            : kitchenOrdersHTML();
     return;
   }
 
@@ -203,7 +213,12 @@ export function renderGrid() {
   }
 
   if (ui.view === "pika") {
-    grid.innerHTML = ui.pikaTab === "buy" ? pikaBuyPageHTML() : pikaSellPageHTML();
+    grid.innerHTML =
+      ui.pikaTab === "buy"
+        ? pikaBuyPageHTML()
+        : ui.pikaTab === "market"
+          ? pikaMarketPageHTML()
+          : pikaSellPageHTML();
     return;
   }
 

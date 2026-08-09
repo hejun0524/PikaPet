@@ -10,7 +10,6 @@ import { initEvents } from "./hub/initEvents.js";
 import { initBridge } from "./hub/initBridge.js";
 import { initSync } from "./hub/initSync.js";
 import { boot } from "./hub/boot.js";
-import { initAdventureClock } from "./adventure.js";
 
 installErrorLogging(jlog);
 
@@ -18,7 +17,6 @@ initSplitter();
 initEvents();
 initBridge();
 initSync();
-initAdventureClock();
 boot();
 
 window.addEventListener("contextmenu", (e) => e.preventDefault());

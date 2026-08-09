@@ -57,8 +57,8 @@ export const VIEW_EMOJI = {
   achievements: "🏆",
   government: "💖",
   pika: "🐱",
-  adventure: "⚔️",
-  arena: "🥊",
+  fightclub: "🥊",
+  kitchen: "🍳",
   addons: "🧩",
 };
 

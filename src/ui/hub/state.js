@@ -51,6 +51,8 @@ export const state = {
   tickets: {},
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
+  kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
+  fightclub: { books: [] },
   addonsInstalled: [],
   pinnedAddons: [],
 };
@@ -73,6 +75,8 @@ export const ui = {
   achTab: ACH_TABS[0].key,
   pikaTab: PIKA_TABS[0].key,
   petcenterTab: PETCENTER_TABS[0].key,
+  kitchenTab: "orders",
+  fightclubTab: "club",
   pendingMagic: null, // species key awaiting purchase confirmation
   resetPending: false, // Settings page showing the reset confirmation
   addonMsg: "", // last install/uninstall result shown in the manager drawer
@@ -86,6 +90,9 @@ export const tradeSell = new Set();
 
 /** Pika trade basket, buy side: offer id -> offer object. */
 export const tradeBuy = new Map();
+
+/** Pika trade basket, grocery side: ingredient key -> quantity staged. */
+export const tradeIng = new Map();
 
 /**
  * The two stage-then-commit lists that get reassigned wholesale:

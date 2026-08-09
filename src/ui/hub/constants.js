@@ -21,6 +21,21 @@ export const ACH_TABS = [
 export const PIKA_TABS = [
   { key: "sell", label: "Sell to Pika", tabEmoji: "🎁" },
   { key: "buy", label: "Buy from Pika", tabEmoji: "🎫" },
+  { key: "market", label: "Organic Market", tabEmoji: "🥬" },
+];
+
+/** Noonie's-Kitchen-view tabs. */
+export const KITCHEN_TABS = [
+  { key: "orders", label: "Orders", tabEmoji: "📋" },
+  { key: "recipes", label: "Recipes", tabEmoji: "📜" },
+  { key: "pantry", label: "Pantry", tabEmoji: "🧺" },
+  { key: "bots", label: "Paw-Bots", tabEmoji: "🤖" },
+];
+
+/** Fight-Club-view tabs. */
+export const FIGHTCLUB_TABS = [
+  { key: "club", label: "Fight Club", tabEmoji: "🥊" },
+  { key: "skills", label: "Skills", tabEmoji: "📖" },
 ];
 
 /** Pet-Center-view tabs. */
@@ -43,8 +58,8 @@ export const VIEWS = {
   achievements: { emoji: "🏆" },
   government: { emoji: "💖" },
   pika: { emoji: "🐱" },
-  adventure: { emoji: "⚔️" },
-  arena: { emoji: "🥊" },
+  fightclub: { emoji: "🥊" },
+  kitchen: { emoji: "🍳" },
   addons: { emoji: "🧩" },
   settings: { emoji: "⚙️" },
 };

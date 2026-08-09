@@ -15,7 +15,7 @@ export function renderTabs() {
   document.getElementById("tabs").innerHTML = tabs
     ? tabs.source
         .map(
-          // push: true starts a right-aligned group (adventure's cat tabs)
+          // push: true starts a right-aligned tab group
           (c) => `
     <button data-tab="${c.key}" class="${c.key === tabs.active ? "active" : ""}${c.push ? " tab-push" : ""}">
       ${c.tabEmoji} ${tabs.prefix ? tOr(tabs.prefix + c.key, c.label) : c.label}

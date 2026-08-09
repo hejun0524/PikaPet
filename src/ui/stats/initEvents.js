@@ -15,6 +15,9 @@ import {
   findSellable,
 } from "../items.js";
 import { SOUVENIR_SELL_PRICE, findTour, ticketOfferKey } from "../touring.js";
+import { DELIVER_MINUTES, findIngredient, findRecipe, nextBotPrice } from "../kitchen.js";
+import { MAX_SKILL_LEVEL, SKILLS } from "../fightclub.js";
+import { schoolMinuteMs } from "../school.js";
 import { pet, runtime, widgetStates } from "./state.js";
 import { GOV_FEE } from "./constants.js";
 import { render } from "./render.js";
@@ -24,6 +27,8 @@ import { rescanAddons } from "./rescanAddons.js";
 import { widgetBox } from "./widgetBox.js";
 import { showWidget } from "./showWidget.js";
 import { hideWidget } from "./hideWidget.js";
+import { autoShowWidgets } from "./autoShowWidgets.js";
+import { handleWidgetRequest } from "./handleWidgetRequest.js";
 import { processPlan } from "./processPlan.js";
 import { canAfford } from "./canAfford.js";
 import { applyItemEffects } from "./applyItemEffects.js";
@@ -99,6 +104,7 @@ export function initEvents() {
         hideWidget(box.dataset.addon);
       }
     }
+    autoShowWidgets();
     render();
     save();
     broadcastState();
@@ -115,15 +121,27 @@ export function initEvents() {
       ?.contentWindow?.postMessage({ type: "widget-state", state: payload.state }, "*");
   });
 
-  // Messages FROM widget iframes: a ready handshake (replay the latest state so
+  // Messages FROM widget iframes: bridge requests (answered right here, see
+  // handleWidgetRequest.js), a ready handshake (replay the latest state so
   // a freshly loaded widget isn't blank) and button actions for the main page.
-  window.addEventListener("message", (e) => {
+  window.addEventListener("message", async (e) => {
     const frame = [...document.querySelectorAll(".widget-box iframe")].find(
       (f) => f.contentWindow === e.source
     );
     if (!frame) return;
     const id = frame.closest(".widget-box").dataset.addon;
-    const { type, payload } = e.data ?? {};
+    const { reqId, type, payload } = e.data ?? {};
+    if (typeof reqId !== "undefined") {
+      let result = null;
+      let error = null;
+      try {
+        result = await handleWidgetRequest(type, payload);
+      } catch (err) {
+        error = String(err?.message ?? err);
+      }
+      frame.contentWindow.postMessage({ reqId, result, error }, "*");
+      return;
+    }
     if (type === "widget-ready") {
       const state = widgetStates.get(id);
       if (state !== undefined) {
@@ -144,12 +162,21 @@ export function initEvents() {
     ];
     const boughtIds = [...new Set(payload.bought ?? [])];
     const bought = pet.pika.sells.filter((o) => boughtIds.includes(o.id));
-    if ((!sold.length && !bought.length) || bought.length !== boughtIds.length) {
+    // Organic Market groceries ride along in the same checkout.
+    const groceries = (payload.ingredients ?? [])
+      .map(({ key, qty }) => ({ ing: findIngredient(key), qty: Math.floor(qty) }))
+      .filter(({ ing, qty }) => ing && qty > 0 && qty <= 99);
+    if (
+      (!sold.length && !bought.length && !groceries.length) ||
+      bought.length !== boughtIds.length
+    ) {
       emit("pika-result", { ok: false, reason: "stale" });
       return;
     }
     const gain = sold.length * SOUVENIR_SELL_PRICE;
-    const cost = bought.reduce((sum, o) => sum + o.price, 0);
+    const cost =
+      bought.reduce((sum, o) => sum + o.price, 0) +
+      groceries.reduce((sum, { ing, qty }) => sum + ing.price * qty, 0);
     if (pet.coins + gain - cost < 0) {
       emit("pika-result", { ok: false, reason: "coins" });
       return;
@@ -160,8 +187,17 @@ export function initEvents() {
       pet.pika.wants = pet.pika.wants.filter((c) => c !== city); // want fulfilled
     }
     for (const offer of bought) {
+      if (offer.kind === "recipe") {
+        // A recipe scroll: learn the city dish (no-op if somehow known).
+        const key = `dish:${offer.city}`;
+        if (!pet.kitchen.recipes.includes(key)) pet.kitchen.recipes.push(key);
+        continue;
+      }
       const key = ticketOfferKey(offer);
       pet.tickets[key] = (pet.tickets[key] ?? 0) + 1;
+    }
+    for (const { ing, qty } of groceries) {
+      pet.kitchen.pantry[ing.key] = (pet.kitchen.pantry[ing.key] ?? 0) + qty;
     }
     pet.pika.sells = pet.pika.sells.filter((o) => !boughtIds.includes(o.id));
     pet.coins += gain - cost;
@@ -182,6 +218,71 @@ export function initEvents() {
     save();
     broadcastState();
   });
+
+  // ── Noonie's Kitchen (see doc/hub.md) ────────────────────────────────────
+  // Spend a Training Manual: unlock or level up a random non-maxed skill.
+  listen("fightclub-use-book", () => {
+    if (pet.fightclub.books < 1) return;
+    const open = SKILLS.filter((s) => (pet.fightclub.skills[s.key] ?? 0) < MAX_SKILL_LEVEL);
+    if (!open.length) return;
+    const skill = open[Math.floor(Math.random() * open.length)];
+    pet.fightclub.books -= 1;
+    pet.fightclub.skills[skill.key] = (pet.fightclub.skills[skill.key] ?? 0) + 1;
+    render();
+    save();
+    broadcastState();
+  });
+
+  // Assign a free paw-bot to cook an open order (consumes the ingredients).
+  listen("kitchen-cook", ({ payload }) => {
+    const order = pet.kitchen.orders.find((o) => o.id === payload.id);
+    const recipe = order && findRecipe(order.recipe);
+    if (!recipe || order.status !== "open") return;
+    const bot = freeBot();
+    if (bot === null) return;
+    const pantry = pet.kitchen.pantry;
+    const entries = Object.entries(recipe.ingredients);
+    if (entries.some(([key, qty]) => (pantry[key] ?? 0) < qty)) return;
+    for (const [key, qty] of entries) pantry[key] -= qty;
+    order.status = "cooking";
+    order.bot = bot;
+    order.endsAt = Date.now() + recipe.cookMinutes * schoolMinuteMs(pet.settings.devMode);
+    render();
+    save();
+    broadcastState();
+  });
+
+  // Assign a free paw-bot to deliver a cooked order.
+  listen("kitchen-deliver", ({ payload }) => {
+    const order = pet.kitchen.orders.find((o) => o.id === payload.id);
+    if (!order || order.status !== "ready") return;
+    const bot = freeBot();
+    if (bot === null) return;
+    order.status = "delivering";
+    order.bot = bot;
+    order.endsAt = Date.now() + DELIVER_MINUTES * schoolMinuteMs(pet.settings.devMode);
+    render();
+    save();
+    broadcastState();
+  });
+
+  // Unlock the next paw-bot slot (prices rise per slot).
+  listen("kitchen-unlock-bot", () => {
+    const price = nextBotPrice(pet.kitchen.bots);
+    if (price === null || pet.coins < price) return;
+    pet.coins -= price;
+    pet.kitchen.bots += 1;
+    render();
+    save();
+    broadcastState();
+  });
+
+  /** Lowest unlocked bot index not currently on an order, or null. */
+  function freeBot() {
+    const busy = new Set(pet.kitchen.orders.map((o) => o.bot).filter((b) => b !== null));
+    for (let i = 0; i < pet.kitchen.bots; i++) if (!busy.has(i)) return i;
+    return null;
+  }
 
   // ── Item use (requested by the hub's Home view) ──────────────────────────
   listen("use-item", ({ payload }) => {
@@ -361,8 +462,8 @@ export function initEvents() {
     "achievements",
     "government",
     "pika",
-    "adventure",
-    "arena",
+    "fightclub",
+    "kitchen",
     "addons",
     "settings",
   ]) {

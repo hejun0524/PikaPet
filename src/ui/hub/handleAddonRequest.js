@@ -1,8 +1,8 @@
 // hub/handleAddonRequest.js — Add-on bridge: add-on pages run in sandboxed
 // iframes and talk to the app through postMessage: {reqId, type, payload} in,
 // {reqId, result, error} out. Supported requests: pick-folder, list-music,
-// file-url, say, notify, open-window, widget-set, widget-push, get-locale.
-// (See doc/addons.md.)
+// file-url, say, notify, open-window, widget-set, widget-push, get-locale,
+// keep-awake, keep-awake-status. (See doc/addons.md.)
 
 import { invoke, convertFileSrc, emit } from "../shared/tauri.js";
 import { t, getLocale } from "../shared/i18n.js";
@@ -69,6 +69,14 @@ export async function handleAddonRequest(id, type, payload) {
   if (type === "widget-push") {
     await emit("addon-widget-state", { id, state: payload?.state ?? null });
     return true;
+  }
+  // Keep the Mac awake (Caffeine add-on): toggles a `caffeinate` child in
+  // Rust; the status query lets every surface (page, widget) stay in sync.
+  if (type === "keep-awake") {
+    return invoke("set_keep_awake", { on: !!payload?.on });
+  }
+  if (type === "keep-awake-status") {
+    return invoke("keep_awake_status");
   }
   throw new Error(`unknown bridge request: ${type}`);
 }

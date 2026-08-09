@@ -20,6 +20,12 @@ import {
   TRAIN_PRICE_VAR,
   pickRandomCities,
 } from "../touring.js";
+import {
+  CITY_DISHES,
+  PIKA_RECIPE_OFFERS,
+  RECIPE_PRICE_BASE,
+  RECIPE_PRICE_VAR,
+} from "../kitchen.js";
 import { pet } from "./state.js";
 import { pikaSlot } from "./pikaSlot.js";
 
@@ -61,6 +67,15 @@ export function refreshPika() {
       dest: randomLeague.key,
       price: LEAGUE_PASS_PRICE_BASE + Math.floor(Math.random() * (LEAGUE_PASS_PRICE_VAR + 1)),
     },
+    // Recipe scrolls: city dishes the kitchen hasn't learned yet.
+    ...pickRandomCities(
+      Object.keys(CITY_DISHES).filter((c) => !pet.kitchen.recipes.includes(`dish:${c}`)),
+      PIKA_RECIPE_OFFERS
+    ).map((city) => ({
+      kind: "recipe",
+      city,
+      price: RECIPE_PRICE_BASE + Math.floor(Math.random() * (RECIPE_PRICE_VAR + 1)),
+    })),
   ];
   pet.pika = {
     date: slot,
