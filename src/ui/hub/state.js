@@ -52,7 +52,15 @@ export const state = {
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
   kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
-  fightclub: { books: [] },
+  fightclub: {
+    books: {},
+    potions: {},
+    skills: {},
+    level: 1,
+    xp: 0,
+    hp: 100,
+    record: { wins: 0, losses: 0 },
+  },
   addonsInstalled: [],
   pinnedAddons: [],
 };
@@ -77,6 +85,10 @@ export const ui = {
   petcenterTab: PETCENTER_TABS[0].key,
   kitchenTab: "orders",
   fightclubTab: "club",
+  fightBet: 0, // side-bet stake selected on the Fight Club page
+  battle: null, // live fight replay: the "fight-result" payload + {idx, done}
+  trainMsg: null, // last "fightclub-result" payload shown in the Training Room
+  pickerBook: null, // choice-book key awaiting a skill pick (wild/master)
   pendingMagic: null, // species key awaiting purchase confirmation
   resetPending: false, // Settings page showing the reset confirmation
   addonMsg: "", // last install/uninstall result shown in the manager drawer

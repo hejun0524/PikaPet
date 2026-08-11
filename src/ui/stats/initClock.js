@@ -10,6 +10,7 @@ import { completeActivity } from "./completeActivity.js";
 import { processCaretaking } from "./processCaretaking.js";
 import { caretakerBrain } from "./caretakerBrain.js";
 import { kitchenBrain } from "./kitchenBrain.js";
+import { fightclubRegen } from "./fightclubRegen.js";
 import { render } from "./render.js";
 import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
@@ -35,6 +36,11 @@ export function initClock() {
       runtime.lastDecayAt = Date.now();
       tick();
       return;
+    }
+    // Fight HP recovers a little every game-minute after a battle.
+    if (fightclubRegen()) {
+      save();
+      broadcastState();
     }
     // Paw-bot work resolves on the same clock (and streams countdowns below).
     if (kitchenBrain()) {

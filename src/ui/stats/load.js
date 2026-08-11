@@ -6,7 +6,7 @@ import { invoke } from "../shared/tauri.js";
 import { SPECIES, findCaretaker } from "../items.js";
 import { ALL_CITIES, ALL_PLACES, findTour, ticketOfferKey } from "../touring.js";
 import { CITY_DISHES, MAX_BOTS, START_BOTS, findIngredient, findRecipe } from "../kitchen.js";
-import { MAX_SKILL_LEVEL, findSkill } from "../fightclub.js";
+import { MAX_SKILL_LEVEL, findBook, findPotion, findSkill } from "../fightclub.js";
 import { LEGACY_CARE_KEYS, pet, runtime } from "./state.js";
 import { activityDef } from "./activityDef.js";
 import { backfillAchievements } from "./backfillAchievements.js";
@@ -109,7 +109,13 @@ export async function load() {
               .filter(
                 (o) =>
                   typeof o.price === "number" &&
-                  (o.kind === "recipe" ? CITY_DISHES[o.city] : findTour(ticketOfferKey(o)))
+                  (o.kind === "recipe"
+                    ? CITY_DISHES[o.city]
+                    : o.kind === "book"
+                      ? findBook(o.item)
+                      : o.kind === "potion"
+                        ? findPotion(o.item)
+                        : findTour(ticketOfferKey(o)))
               )
               .map((o, i) => ({ id: `legacy#${i}`, ...o }))
           : [],
@@ -187,14 +193,37 @@ export async function load() {
         }));
     }
     if (saved.fightclub && typeof saved.fightclub === "object") {
-      // Manuals were briefly stored as an array of specific books; the count
-      // is all that matters now.
+      const fc = pet.fightclub;
       const b = saved.fightclub.books;
-      pet.fightclub.books = Array.isArray(b) ? b.length : Math.max(0, Math.floor(b ?? 0));
+      if (b && typeof b === "object" && !Array.isArray(b)) {
+        for (const key of Object.keys(fc.books)) {
+          if (typeof b[key] === "number") fc.books[key] = Math.max(0, Math.floor(b[key]));
+        }
+      } else {
+        // Legacy Training Manuals (a count, or briefly an array) become
+        // basic Skill Books.
+        fc.books.basic = Array.isArray(b) ? b.length : Math.max(0, Math.floor(b ?? 0));
+      }
+      for (const key of Object.keys(fc.potions)) {
+        const v = saved.fightclub.potions?.[key];
+        if (typeof v === "number") fc.potions[key] = Math.max(0, Math.floor(v));
+      }
       for (const [key, lv] of Object.entries(saved.fightclub.skills ?? {})) {
         if (findSkill(key) && typeof lv === "number") {
-          pet.fightclub.skills[key] = Math.min(MAX_SKILL_LEVEL, Math.max(1, Math.floor(lv)));
+          fc.skills[key] = Math.min(MAX_SKILL_LEVEL, Math.max(1, Math.floor(lv)));
         }
+      }
+      if (typeof saved.fightclub.level === "number") {
+        fc.level = Math.max(1, Math.floor(saved.fightclub.level));
+      }
+      if (typeof saved.fightclub.xp === "number") fc.xp = Math.max(0, Math.floor(saved.fightclub.xp));
+      // hp is clamped against the live max (level + fitness) wherever used.
+      if (typeof saved.fightclub.hp === "number") fc.hp = Math.max(0, Math.floor(saved.fightclub.hp));
+      if (saved.fightclub.record && typeof saved.fightclub.record === "object") {
+        fc.record = {
+          wins: Math.max(0, Math.floor(saved.fightclub.record.wins ?? 0)),
+          losses: Math.max(0, Math.floor(saved.fightclub.record.losses ?? 0)),
+        };
       }
     }
     if (saved.homework && typeof saved.homework === "object") {

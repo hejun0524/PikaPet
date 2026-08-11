@@ -22,6 +22,7 @@ export const PIKA_TABS = [
   { key: "sell", label: "Sell to Pika", tabEmoji: "🎁" },
   { key: "buy", label: "Buy from Pika", tabEmoji: "🎫" },
   { key: "market", label: "Organic Market", tabEmoji: "🥬" },
+  { key: "gym", label: "Fighter's Corner", tabEmoji: "🥊" },
 ];
 
 /** Noonie's-Kitchen-view tabs. */
@@ -36,6 +37,7 @@ export const KITCHEN_TABS = [
 export const FIGHTCLUB_TABS = [
   { key: "club", label: "Fight Club", tabEmoji: "🥊" },
   { key: "skills", label: "Skills", tabEmoji: "📖" },
+  { key: "train", label: "Training Room", tabEmoji: "🏋️" },
 ];
 
 /** Pet-Center-view tabs. */

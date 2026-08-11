@@ -3,6 +3,7 @@
 
 import { t } from "../shared/i18n.js";
 import { findIngredient, findRecipe, ingredientName, recipeName, botName } from "../kitchen.js";
+import { findBook, bookName } from "../fightclub.js";
 import { formatRemaining } from "../school.js";
 import { state } from "./state.js";
 import { escText as esc } from "../panel.js";
@@ -70,7 +71,7 @@ function logHTML() {
     .map((entry) => {
       const text =
         entry.k === "book"
-          ? t("klog.book")
+          ? t("klog.book", { book: bookName(findBook(entry.b) ?? findBook("basic")) })
           : t("klog.delivered", {
               customer: `${entry.e} ${esc(entry.c)}`,
               dish: esc(recipeName(findRecipe(entry.r))),

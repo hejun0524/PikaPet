@@ -5,6 +5,7 @@ import { state, tradeSell, tradeBuy, tradeIng } from "./state.js";
 import { escText as esc } from "../panel.js";
 import { SOUVENIR_SELL_PRICE, findTour, souvenirName, ticketOfferKey } from "../touring.js";
 import { CITY_DISHES, findIngredient, ingredientName } from "../kitchen.js";
+import { findBook, findPotion, bookName, potionName } from "../fightclub.js";
 
 /**
  * Render the Pika trade drawer: staged souvenir sales and ticket buys with
@@ -34,12 +35,19 @@ export function renderTradeDrawer() {
     .join("");
   const buyRows = [...tradeBuy.values()]
     .map((offer) => {
+      // Recipe scrolls and Fighter's Corner stock sit beside the tickets.
       const def =
         offer.kind === "recipe"
           ? { emoji: "📜", name: t("pika.recipeOffer", { dish: CITY_DISHES[offer.city] }) }
-          : findTour(ticketOfferKey(offer));
+          : offer.kind === "book"
+            ? { ...findBook(offer.item), name: bookName(findBook(offer.item)) }
+            : offer.kind === "potion"
+              ? { ...findPotion(offer.item), name: potionName(findPotion(offer.item)) }
+              : findTour(ticketOfferKey(offer));
       const label =
-        offer.kind === "recipe" ? esc(def.name) : t("trade.ticket", { name: esc(def.name) });
+        offer.kind === "flight" || offer.kind === "train"
+          ? t("trade.ticket", { name: esc(def.name) })
+          : esc(def.name);
       return `
       <div class="cart-row">
         <span>${def.emoji} ${label}</span>

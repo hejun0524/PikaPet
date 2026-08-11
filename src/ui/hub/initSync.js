@@ -32,10 +32,12 @@ export function initSync() {
     renderCartDrawer();
     renderPlanDrawer();
     renderAddonDrawer(); // pin toggles reflect the broadcast state
-    // Don't re-render form views under the user's cursor/keyboard.
+    // Don't re-render form views under the user's cursor/keyboard, or a
+    // fight replay mid-animation (fightReplay.js patches that DOM itself).
     const isForm =
       ui.view === "settings" ||
       ui.view.startsWith("addon:") ||
+      (ui.view === "fightclub" && ui.fightclubTab === "club" && ui.battle && !ui.battle.done) ||
       (ui.view === "government" && (ui.petcenterTab === "registry" || ui.petcenterTab === "bank"));
     if (!isForm) renderGrid();
     else if (ui.view === "government" && ui.petcenterTab === "registry") refreshGovApply();
@@ -57,6 +59,7 @@ export function initSync() {
     renderSidePanel();
     renderCartDrawer();
     renderPlanDrawer();
-    if (ui.view !== "settings" && ui.view !== "government") renderGrid();
+    const replaying = ui.view === "fightclub" && ui.battle && !ui.battle.done;
+    if (ui.view !== "settings" && ui.view !== "government" && !replaying) renderGrid();
   });
 }

@@ -32,7 +32,7 @@ const err = (msg) => { bad++; console.error("FAIL:", msg); };
 
 const en = LOCALES.en;
 const enKeys = new Set(Object.keys(en));
-const dataPrefixes = ["item.", "class.", "subject.", "stage.", "career.", "job.", "caretaker.", "species.", "dest.", "city.", "ing.", "ingcat.", "recipe.", "skill."];
+const dataPrefixes = ["item.", "class.", "subject.", "stage.", "career.", "job.", "caretaker.", "species.", "dest.", "city.", "ing.", "ingcat.", "recipe.", "skill.", "fcbook.", "potion."];
 
 // 1. Key parity: every locale covers en's UI keys; no unknown keys anywhere.
 for (const [code, dict] of Object.entries(LOCALES)) {
@@ -72,6 +72,8 @@ const sets = {
   "ingcat.": new Set(kitchen.INGREDIENT_CATS.map((c) => c.key)),
   "recipe.": new Set(kitchen.ALL_RECIPES.map((r) => r.key)),
   "skill.": new Set(fclub.SKILLS.map((s) => s.key)),
+  "fcbook.": new Set(fclub.BOOKS.map((b) => b.key)),
+  "potion.": new Set(fclub.POTIONS.map((p) => p.key)),
 };
 const stripSuffix = (base) => base.replace(/\.(desc|breed)$/, "");
 for (const [code, dict] of Object.entries(LOCALES)) {

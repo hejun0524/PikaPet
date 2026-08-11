@@ -14,7 +14,8 @@ import { escText as esc } from "../panel.js";
  * @returns {string} Page HTML for the grid.
  */
 export function pikaBuyPageHTML() {
-  const sells = state.pika.sells ?? [];
+  // Fighter's Corner stock (books/potions) has its own tab.
+  const sells = (state.pika.sells ?? []).filter((o) => o.kind !== "book" && o.kind !== "potion");
   if (!sells.length) {
     return `<div class="empty-note">${t("pika.buyEmpty")}</div>`;
   }

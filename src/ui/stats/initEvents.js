@@ -16,7 +16,6 @@ import {
 } from "../items.js";
 import { SOUVENIR_SELL_PRICE, findTour, ticketOfferKey } from "../touring.js";
 import { DELIVER_MINUTES, findIngredient, findRecipe, nextBotPrice } from "../kitchen.js";
-import { MAX_SKILL_LEVEL, SKILLS } from "../fightclub.js";
 import { schoolMinuteMs } from "../school.js";
 import { pet, runtime, widgetStates } from "./state.js";
 import { GOV_FEE } from "./constants.js";
@@ -40,6 +39,7 @@ import { endCaretaking } from "./endCaretaking.js";
 import { applyDevCoins } from "./applyDevCoins.js";
 import { applyTrayCompact } from "./applyTrayCompact.js";
 import { openHub } from "./openHub.js";
+import { initFightclub } from "./initFightclub.js";
 
 /**
  * Subscribe every Tauri event handler and DOM listener of the stats window
@@ -193,6 +193,15 @@ export function initEvents() {
         if (!pet.kitchen.recipes.includes(key)) pet.kitchen.recipes.push(key);
         continue;
       }
+      // Fighter's Corner stock goes to Darcy's training room.
+      if (offer.kind === "book") {
+        pet.fightclub.books[offer.item] += 1;
+        continue;
+      }
+      if (offer.kind === "potion") {
+        pet.fightclub.potions[offer.item] += 1;
+        continue;
+      }
       const key = ticketOfferKey(offer);
       pet.tickets[key] = (pet.tickets[key] ?? 0) + 1;
     }
@@ -219,20 +228,10 @@ export function initEvents() {
     broadcastState();
   });
 
-  // ── Noonie's Kitchen (see doc/hub.md) ────────────────────────────────────
-  // Spend a Training Manual: unlock or level up a random non-maxed skill.
-  listen("fightclub-use-book", () => {
-    if (pet.fightclub.books < 1) return;
-    const open = SKILLS.filter((s) => (pet.fightclub.skills[s.key] ?? 0) < MAX_SKILL_LEVEL);
-    if (!open.length) return;
-    const skill = open[Math.floor(Math.random() * open.length)];
-    pet.fightclub.books -= 1;
-    pet.fightclub.skills[skill.key] = (pet.fightclub.skills[skill.key] ?? 0) + 1;
-    render();
-    save();
-    broadcastState();
-  });
+  // ── Darcy's Fight Club (books, healing, fights — see initFightclub.js) ──
+  initFightclub();
 
+  // ── Noonie's Kitchen (see doc/hub.md) ────────────────────────────────────
   // Assign a free paw-bot to cook an open order (consumes the ingredients).
   listen("kitchen-cook", ({ payload }) => {
     const order = pet.kitchen.orders.find((o) => o.id === payload.id);

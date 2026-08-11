@@ -31,11 +31,15 @@ import { refreshGovApply } from "./refreshGovApply.js";
 import { pikaSellPageHTML } from "./pikaSellPageHTML.js";
 import { pikaBuyPageHTML } from "./pikaBuyPageHTML.js";
 import { pikaMarketPageHTML } from "./pikaMarketPageHTML.js";
+import { pikaGymPageHTML } from "./pikaGymPageHTML.js";
 import { kitchenOrdersHTML } from "./kitchenOrdersHTML.js";
 import { kitchenRecipesHTML } from "./kitchenRecipesHTML.js";
 import { kitchenPantryHTML } from "./kitchenPantryHTML.js";
 import { kitchenBotsHTML } from "./kitchenBotsHTML.js";
+import { fightclubClubHTML } from "./fightclubClubHTML.js";
 import { fightclubSkillsHTML } from "./fightclubSkillsHTML.js";
+import { fightclubTrainHTML } from "./fightclubTrainHTML.js";
+import { fightclubBattleHTML } from "./fightclubBattleHTML.js";
 import { settingsHTML } from "./settingsHTML.js";
 import { refreshHidePet } from "./refreshHidePet.js";
 import { refreshAutostart } from "./refreshAutostart.js";
@@ -125,13 +129,17 @@ export function renderGrid() {
     return;
   }
 
-  // Darcy's Fight Club: the fights are still coming soon, but the Skills tab
-  // (levels + Training Manuals from Noonie's deliveries) is live.
+  // Darcy's Fight Club: the challenger board (or a running battle replay),
+  // the 50-skill wall, and the Training Room (Skill Books + healing).
   if (ui.view === "fightclub") {
     grid.innerHTML =
       ui.fightclubTab === "skills"
         ? fightclubSkillsHTML()
-        : `<div class="empty-note">${t("fightclub.upcoming")}</div>`;
+        : ui.fightclubTab === "train"
+          ? fightclubTrainHTML()
+          : ui.battle
+            ? fightclubBattleHTML()
+            : fightclubClubHTML();
     return;
   }
 
@@ -218,7 +226,9 @@ export function renderGrid() {
         ? pikaBuyPageHTML()
         : ui.pikaTab === "market"
           ? pikaMarketPageHTML()
-          : pikaSellPageHTML();
+          : ui.pikaTab === "gym"
+            ? pikaGymPageHTML()
+            : pikaSellPageHTML();
     return;
   }
 

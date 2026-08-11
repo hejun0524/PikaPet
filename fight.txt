@@ -1,0 +1,25 @@
+It is time to build the Darcy's Fight Club:
+1. Use the same NPCs from Noonie's kitchen customers, they will be fighters (challengers) that match Darcy's skill set. Some of them are easy, some of them are hard
+2. Add more skills: 20-30 fun ones (such as water gun, throw coins, blow dust, pillow fight, sleep dart, electricity pad zap, drink vitamin juice for healing, throw dumbell/basketball, shock with balloon, energy drink for rage, and 20-30 MMA/Brazilian JiuJutsu/Karate/KungFu/others movement) Make the total skill number to be 50. And add a one-line description to each skill, make it sound fun (for example: for throw coins, you can say something like: when you are rich, you can splurge in fighting blah blah blah). For the skills display, make it list-view like in the achievements.
+Each skill will have its own damage dealing, special effect, boosting (buff pet or debuff opponent for a few rounds), effect (healing, disabling opponent for the next turn, etc), triggering condition (such as apparent death triggers only at KO with a probability for pet to survive the KO).
+3. Traning manuals are now renamed to Skill books, it comes with 5 forms (please give them better names):
+(i) basic: just unlock or upgrade one skill with one skill point at random
+(ii) double: unlock/upgrade two different skills for one skill point per skill at random
+(iii) double: unlock/upgrade one skill at random, but for two skill points at a time
+(iv) wild 1: it allows user to choose a skill to level up
+(v) master: it allows user to choose to maximize one skill
+With this, you have to re-design the chance of book dropping at Noonie's place, and also Pika can sell them at random (also better books show up with a lower probability) and price of skill books can be high. 
+4. The pet now comes with fight level with xp (higher level, more xp), when level up, a basic book is awarded, every 5 levels, award a double at random.
+5. To gain xp, the pet needs to fight with NPCs, winning gives more xp than losing, also hp is related with levels
+6. pet has hp for fighting. Since we do not have animation, this will be a turn-by-turn word fight, but the hp will be displayed as a bar as the battle proceeds.
+7. pet has 3 traits, we will use them here as well: 
+(i) fitness -> the attack (including basic attacks, and damage dealing bonus for any damage-related skills) and defense (defending can help reduce damage taken by a percentage) and bonus hp
+(ii) intelligence -> chance of dodging and critical
+(iii) charm -> chance of double turn and skill triggering. For double turn: after the pet takes its turn, there is a chance that it takes a second turn immediately after. 
+8. Turns: the battle is a turn-by-turn fight, start with Rock-paper-scissors, winner gets the first turn
+(i) each turn, the pet attacks. then next turn, opponent attacks. unless it is a double-turn.
+(ii) Skills should be either active or passive: active skill like throwing weapons, mr. vampire, shadow clone can be triggered when you attack; passive skills like thick skin, parry (which deflect attack), apparent death can be triggered when opponents attack you
+(iii) Critical deals 3x damage for both basic attacks and any active or passive skills (including ) that can deal damage to opponent.
+9. After each battle, pet need time to recover. You can purchase healing materials (come up with a couple names for me) from Pika but the price can be high. Put it and skills books in a separate tab in Pika's page. 
+After buying, one can go to Darcy's page, add a training room tab that shows your stock of books and healing materials. When you use a book, it should show a message that your skill has been unlocked, or upgraded. similar for healing.
+10. There are two ways to earn cois from Darcy: normal winning/losing let you earn/lose coins, and betting that comes with odds (odds can be determined by traits & skillsets, you can use American Odds (Moneyline) like in DraftKings)

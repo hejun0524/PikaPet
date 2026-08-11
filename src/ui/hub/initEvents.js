@@ -26,6 +26,8 @@ import { renderAddonDrawer } from "./renderAddonDrawer.js";
 import { installAddonFlow } from "./installAddonFlow.js";
 import { uninstallAddonFlow } from "./uninstallAddonFlow.js";
 import { refreshGovApply } from "./refreshGovApply.js";
+import { CHOICE_BOOKS } from "../fightclub.js";
+import { startFightReplay, skipFightReplay } from "./fightReplay.js";
 
 /**
  * Wire every DOM event listener of the hub window, in the original source
@@ -246,6 +248,24 @@ export function initEvents() {
     }
   });
 
+  // A fight was simulated by the stats window — replay it line by line.
+  listen("fight-result", ({ payload }) => {
+    ui.battle = { ...payload, idx: 0, done: false };
+    if (ui.view === "fightclub") {
+      ui.fightclubTab = "club";
+      renderTabs();
+      renderGrid();
+    }
+    startFightReplay();
+  });
+
+  // Book/heal actions answer here; the Training Room shows the message.
+  listen("fightclub-result", ({ payload }) => {
+    ui.trainMsg = payload;
+    ui.pickerBook = null;
+    if (ui.view === "fightclub") renderGrid();
+  });
+
   document.getElementById("tabs").addEventListener("click", (e) => {
     const tab = e.target.closest("[data-tab]");
     if (!tab) return;
@@ -398,8 +418,54 @@ export function initEvents() {
       emit("kitchen-unlock-bot", {});
       return;
     }
-    if (e.target.id === "use-manual") {
-      emit("fightclub-use-book", {});
+
+    // ── Darcy's Fight Club ──────────────────────────────────────────────
+    const betChip = e.target.closest("[data-bet]");
+    if (betChip) {
+      ui.fightBet = Number(betChip.dataset.bet);
+      renderGrid();
+      return;
+    }
+    const fightBtn = e.target.closest("[data-fight]");
+    if (fightBtn) {
+      emit("fightclub-fight", { opponent: fightBtn.dataset.fight, bet: ui.fightBet });
+      return;
+    }
+    const bookBtn = e.target.closest("[data-use-book]");
+    if (bookBtn) {
+      const key = bookBtn.dataset.useBook;
+      if (CHOICE_BOOKS.has(key)) {
+        // Wild/master books first open the skill picker.
+        ui.pickerBook = key;
+        ui.trainMsg = null;
+        renderGrid();
+      } else {
+        emit("fightclub-use-book", { book: key });
+      }
+      return;
+    }
+    const pickBtn = e.target.closest("[data-pick-skill]");
+    if (pickBtn) {
+      emit("fightclub-use-book", { book: ui.pickerBook, skill: pickBtn.dataset.pickSkill });
+      return;
+    }
+    if (e.target.id === "picker-cancel") {
+      ui.pickerBook = null;
+      renderGrid();
+      return;
+    }
+    const potionBtn = e.target.closest("[data-use-potion]");
+    if (potionBtn) {
+      emit("fightclub-use-potion", { key: potionBtn.dataset.usePotion });
+      return;
+    }
+    if (e.target.id === "fight-skip") {
+      skipFightReplay();
+      return;
+    }
+    if (e.target.id === "fight-back") {
+      ui.battle = null;
+      renderGrid();
       return;
     }
 

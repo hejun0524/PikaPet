@@ -7,6 +7,7 @@ import { ALL_ITEMS, CARE_META, DEFAULT_ITEM_QTY, TRAIT_META } from "../items.js"
 import { SUBJECTS } from "../school.js";
 import { CAREERS } from "../career.js";
 import { ALL_PLACES } from "../touring.js";
+import { BOOKS, POTIONS } from "../fightclub.js";
 
 /**
  * The pet: the authoritative game state. Mutate through the stats window's
@@ -48,9 +49,18 @@ export const pet = {
   // Noonie's Kitchen: paw-bots, the 3h order board, the pantry (ingredient
   // key -> count), learned city-recipe keys, and the delivery log.
   kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
-  // Darcy's Fight Club: Training Manuals (count) the delivery bots bring
-  // home, and skill levels (skill key -> 1..MAX_SKILL_LEVEL).
-  fightclub: { books: 0, skills: {} },
+  // Darcy's Fight Club: Skill Books and healing supplies (key -> count),
+  // skill levels (skill key -> 1..MAX_SKILL_LEVEL), the fight level + XP,
+  // current fight HP (recovers over time after battles), and the W/L record.
+  fightclub: {
+    books: Object.fromEntries(BOOKS.map((b) => [b.key, 0])),
+    potions: Object.fromEntries(POTIONS.map((p) => [p.key, 0])),
+    skills: {},
+    level: 1,
+    xp: 0,
+    hp: 100, // = maxHpFor(1, fitness 0); clamped against the live max on use
+    record: { wins: 0, losses: 0 },
+  },
 };
 
 /**
@@ -72,6 +82,8 @@ export const LEGACY_CARE_KEYS = {
  * - `trayCompact`: the ▾ minimized-popover toggle (persisted in localStorage).
  * - `scheduleStep`: rotation cursor of the caretaker schedule layer.
  * - `lastDecayAt`: timestamp of the last care-decay tick.
+ * - `lastFcRegenAt`: timestamp of the last fight-HP regeneration tick
+ *   (recovery pauses while the app is closed, like activities).
  */
 export const runtime = {
   saveEnabled: true,
@@ -80,6 +92,7 @@ export const runtime = {
   trayCompact: localStorage.getItem("trayCompact") === "1",
   scheduleStep: 0,
   lastDecayAt: Date.now(),
+  lastFcRegenAt: Date.now(),
 };
 
 /** Add-on tray widgets: addon id -> last pushed widget state. */

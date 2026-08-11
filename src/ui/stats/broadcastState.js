@@ -42,6 +42,14 @@ export function broadcastState() {
       orders: pet.kitchen.orders.map((o) => ({ ...o })),
       log: [...pet.kitchen.log],
     },
-    fightclub: { books: pet.fightclub.books, skills: { ...pet.fightclub.skills } },
+    fightclub: {
+      books: { ...pet.fightclub.books },
+      potions: { ...pet.fightclub.potions },
+      skills: { ...pet.fightclub.skills },
+      level: pet.fightclub.level,
+      xp: pet.fightclub.xp,
+      hp: pet.fightclub.hp,
+      record: { ...pet.fightclub.record },
+    },
   });
 }

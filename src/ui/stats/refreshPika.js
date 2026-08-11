@@ -26,8 +26,12 @@ import {
   RECIPE_PRICE_BASE,
   RECIPE_PRICE_VAR,
 } from "../kitchen.js";
+import { POTIONS, findBook, rollBookOffer } from "../fightclub.js";
 import { pet } from "./state.js";
 import { pikaSlot } from "./pikaSlot.js";
+
+/** Random Skill Book offers per Fighter's Corner refresh. */
+const PIKA_BOOK_OFFERS = 3;
 
 /**
  * Re-roll Pika's store (souvenir wants + flight/train/team/league-pass
@@ -76,6 +80,23 @@ export function refreshPika() {
       city,
       price: RECIPE_PRICE_BASE + Math.floor(Math.random() * (RECIPE_PRICE_VAR + 1)),
     })),
+    // Fighter's Corner: a weighted-random handful of Skill Books (better
+    // books show up less often) plus the healing shelf, restocked every slot.
+    ...Array.from({ length: PIKA_BOOK_OFFERS }, () => {
+      const book = findBook(rollBookOffer());
+      return {
+        kind: "book",
+        item: book.key,
+        price: book.price + Math.floor(Math.random() * (book.priceVar + 1)),
+      };
+    }),
+    ...POTIONS.flatMap((p) =>
+      Array.from({ length: p.stock }, () => ({
+        kind: "potion",
+        item: p.key,
+        price: p.price + Math.floor(Math.random() * (p.priceVar + 1)),
+      }))
+    ),
   ];
   pet.pika = {
     date: slot,

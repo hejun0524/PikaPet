@@ -242,8 +242,6 @@ export const CUSTOMERS = [
 export const ORDER_COUNT = 10;
 /** Chance per visited city that the pet brings its recipe home. */
 export const RECIPE_DROP_CHANCE = 0.2;
-/** Chance per finished delivery that the bot finds a Training Manual. */
-export const BOOK_DROP_CHANCE = 0.15;
 /** Recipe scrolls in Pika's shop per store refresh. */
 export const PIKA_RECIPE_OFFERS = 2;
 /** Recipe scroll price: base + random 0..VAR. */

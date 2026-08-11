@@ -874,3 +874,233 @@ footer button.active,
   font-size: 13px;
   color: var(--muted);
 }
+
+/* ── Darcy's Fight Club ── */
+/* Full-width cards on the Club tab (fight card, bet selector). */
+.fc-head {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.fc-head-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fc-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-right: auto;
+}
+
+.fc-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fc-bets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fc-sub {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.fc-recover {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fill-low);
+}
+
+/* HP fill states on the shared .credit-bar track. */
+.credit-bar .fill.fc-hp {
+  background: var(--fill);
+}
+
+.credit-bar .fill.fc-hp.low {
+  background: var(--fill-critical);
+}
+
+/* Challenger / skill / training-room list rows (achievements-style). */
+.fc-chal,
+.fc-skill {
+  gap: 12px;
+}
+
+.fc-chal-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fc-chal-name {
+  font-weight: 600;
+}
+
+.fc-lvbadge {
+  margin-left: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.fc-pips {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-fight-btn {
+  padding: 5px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.fc-fight-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ach.fc-skill[data-pick-skill] {
+  cursor: pointer;
+}
+
+/* Training-room result banner. */
+.fc-msg {
+  grid-column: 1 / -1;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--chip);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+}
+
+/* ── The battle view ── */
+.fc-battle {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fc-fighters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fc-fighter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.fc-fname {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fc-vs {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.fc-hptrack {
+  height: 10px;
+  background: var(--track);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.fc-hpfill {
+  height: 100%;
+  background: var(--fill);
+  border-radius: 5px;
+  transition: width 0.45s ease;
+}
+
+.fc-hpfill.low {
+  background: var(--fill-critical);
+}
+
+.fc-log {
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.fc-line.crit {
+  font-weight: 700;
+  color: var(--fill-low);
+}
+
+.fc-outcome {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.7;
+  background: var(--chip);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+}
+
+.fc-outcome.loss {
+  border-color: var(--fill-critical);
+}
+
+.fc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fc-actions button,
+#picker-cancel {
+  align-self: flex-start;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}

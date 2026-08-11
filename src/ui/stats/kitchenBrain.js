@@ -1,8 +1,9 @@
 // stats/kitchenBrain.js — resolves paw-bot work on the 1-second master
 // clock: cooking finishes into "ready", deliveries finish into coins (and,
-// with a little luck, a skill book for Darcy's bookshelf).
+// with a little luck, a Skill Book for Darcy's training room — rarer tiers
+// are rarer finds, see fightclub/books.js).
 
-import { BOOK_DROP_CHANCE } from "../kitchen.js";
+import { rollBookDrop } from "../fightclub.js";
 import { pet } from "./state.js";
 
 /** Kitchen log entries kept (newest first). */
@@ -11,7 +12,7 @@ const LOG_MAX = 8;
 /**
  * Advance every in-progress order whose stage timer has elapsed:
  * cooking → ready (bot freed), delivering → order fulfilled (coins paid,
- * BOOK_DROP_CHANCE roll for a skill book, log entry written, order removed).
+ * Skill Book drop roll, log entry written, order removed).
  * Side effects: mutates pet.kitchen / pet.fightclub / pet.coins.
  *
  * @returns {boolean} True if anything changed (callers render/save/broadcast).
@@ -29,9 +30,10 @@ export function kitchenBrain() {
     } else if (order.status === "delivering") {
       pet.coins += order.reward;
       const log = [{ k: "delivered", c: order.customer.name, e: order.customer.emoji, r: order.recipe, w: order.reward }];
-      if (Math.random() < BOOK_DROP_CHANCE) {
-        pet.fightclub.books += 1; // a Training Manual for Darcy's skill tab
-        log.push({ k: "book" });
+      const book = rollBookDrop();
+      if (book) {
+        pet.fightclub.books[book] += 1; // a Skill Book for Darcy's training room
+        log.push({ k: "book", b: book });
       }
       pet.kitchen.log = [...log.reverse(), ...pet.kitchen.log].slice(0, LOG_MAX);
       pet.kitchen.orders = pet.kitchen.orders.filter((o) => o.id !== order.id);
