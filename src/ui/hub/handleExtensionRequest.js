@@ -1,4 +1,4 @@
-// hub/handleAddonRequest.js — Add-on bridge: add-on pages run in sandboxed
+// hub/handleExtensionRequest.js — Extension bridge: extension pages run in sandboxed
 // iframes and talk to the app through postMessage: {reqId, type, payload} in,
 // {reqId, result, error} out. Supported requests: pick-folder, list-music,
 // file-url, say, notify, open-window, widget-set, widget-push, get-locale,
@@ -9,19 +9,19 @@ import { t, getLocale } from "../shared/i18n.js";
 import { state } from "./state.js";
 
 /**
- * Handle one bridge request from an add-on iframe.
+ * Handle one bridge request from an extension iframe.
  *
  * Side effects: may invoke Rust commands (dialogs, notifications, windows)
- * and emit app events (pet-say, addon-widget-set, addon-widget-state).
+ * and emit app events (pet-say, extension-widget-set, extension-widget-state).
  *
- * @param {string} id - The requesting add-on's id.
+ * @param {string} id - The requesting extension's id.
  * @param {string} type - Request type (see the list above).
  * @param {Object|undefined} payload - Request payload, shape varies by type.
  * @returns {Promise<*>} The request's result; rejects on unknown types or
  *   invalid payloads.
  */
-export async function handleAddonRequest(id, type, payload) {
-  // The app's active locale ("en", "zh", …) so add-ons can render their own
+export async function handleExtensionRequest(id, type, payload) {
+  // The app's active locale ("en", "zh", …) so extensions can render their own
   // pages in the user's language. Changes arrive as an "app-locale" message.
   if (type === "get-locale") {
     return getLocale();
@@ -38,7 +38,7 @@ export async function handleAddonRequest(id, type, payload) {
     return convertFileSrc(String(payload?.path ?? ""));
   }
   if (type === "say") {
-    // Add-ons can't read pet data; the app fills in {callMe} / {petName}.
+    // Extensions can't read pet data; the app fills in {callMe} / {petName}.
     const text = String(payload?.text ?? "")
       .replaceAll("{callMe}", state.callMe || "Owner")
       .replaceAll("{petName}", state.name || "your pet")
@@ -54,7 +54,7 @@ export async function handleAddonRequest(id, type, payload) {
     });
   }
   if (type === "open-window") {
-    return invoke("open_addon_window", {
+    return invoke("open_extension_window", {
       id,
       page: String(payload?.page ?? ""),
       width: Number(payload?.width) || 480,
@@ -63,14 +63,14 @@ export async function handleAddonRequest(id, type, payload) {
     });
   }
   if (type === "widget-set") {
-    await emit("addon-widget-set", { id, on: !!payload?.on });
+    await emit("extension-widget-set", { id, on: !!payload?.on });
     return true;
   }
   if (type === "widget-push") {
-    await emit("addon-widget-state", { id, state: payload?.state ?? null });
+    await emit("extension-widget-state", { id, state: payload?.state ?? null });
     return true;
   }
-  // Keep the Mac awake (Caffeine add-on): toggles a `caffeinate` child in
+  // Keep the Mac awake (Caffeine extension): toggles a `caffeinate` child in
   // Rust; the status query lets every surface (page, widget) stay in sync.
   if (type === "keep-awake") {
     return invoke("set_keep_awake", { on: !!payload?.on });

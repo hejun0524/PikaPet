@@ -1,6 +1,6 @@
 // stats/applyTrayCompact.js — Compact (minimized) popover: the ▾ toggle
 // collapses the popover to the essentials: slim emoji+bar care meters (no
-// numbers) and Home / Add-ons / Settings buttons.
+// numbers) and Home / Extensions / Settings buttons.
 
 import { t } from "../shared/i18n.js";
 import { runtime } from "./state.js";

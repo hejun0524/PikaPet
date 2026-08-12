@@ -8,11 +8,11 @@ import {
   ITEM_CATALOG,
   HOMEWORK_DAILY_LIMIT,
   SHOP_CATALOG,
-  addonList,
+  extensionList,
   findSellable,
 } from "../items.js";
 import { escText as esc } from "../panel.js";
-import { addonFrame } from "./addonFrame.js";
+import { extensionFrame } from "./extensionFrame.js";
 import { homeCardHTML } from "./homeCardHTML.js";
 import { shopCardHTML } from "./shopCardHTML.js";
 import { souvenirsPageHTML } from "./souvenirsPageHTML.js";
@@ -36,6 +36,8 @@ import { kitchenOrdersHTML } from "./kitchenOrdersHTML.js";
 import { kitchenRecipesHTML } from "./kitchenRecipesHTML.js";
 import { kitchenPantryHTML } from "./kitchenPantryHTML.js";
 import { kitchenBotsHTML } from "./kitchenBotsHTML.js";
+import { extensionManagerHTML } from "./extensionManagerHTML.js";
+import { loadMarketplace, marketplaceHTML } from "./marketplace.js";
 import { fightclubClubHTML } from "./fightclubClubHTML.js";
 import { fightclubSkillsHTML } from "./fightclubSkillsHTML.js";
 import { fightclubTrainHTML } from "./fightclubTrainHTML.js";
@@ -47,11 +49,11 @@ import { refreshAutostart } from "./refreshAutostart.js";
 /**
  * Render the main grid for the current view (`ui.view`) and its active tab:
  * Home item cards, the shop, career pages, touring pages, achievements, the
- * coming-soon cat pages (Fight Club, Delivery), add-on tiles/iframes, Pet
+ * coming-soon cat pages (Fight Club, Delivery), extension tiles/iframes, Pet
  * Center pages, Pika's Trading Post, and Settings.
  *
- * Side effects: rewrites #grid, toggles #grid/#addon-host visibility, may
- * create add-on iframes inside #addon-host, and kicks off the async
+ * Side effects: rewrites #grid, toggles #grid/#extension-host visibility, may
+ * create extension iframes inside #extension-host, and kicks off the async
  * hide-pet/autostart checkbox refreshes on the Settings page.
  *
  * @returns {void}
@@ -59,14 +61,14 @@ import { refreshAutostart } from "./refreshAutostart.js";
 export function renderGrid() {
   const grid = document.getElementById("grid");
 
-  // Add-on iframes live OUTSIDE the grid in #addon-host so they survive view
+  // Extension iframes live OUTSIDE the grid in #extension-host so they survive view
   // switches (music keeps playing while you browse other pages). Grid and
   // host are flex siblings, so exactly one of them must be hidden at a time
   // or they split the panel — do it up here because most views return early
-  // below. (The add-on branch un-hides the grid again for its error notes.)
-  const host = document.getElementById("addon-host");
-  host.hidden = !ui.view.startsWith("addon:");
-  grid.hidden = ui.view.startsWith("addon:");
+  // below. (The extension branch un-hides the grid again for its error notes.)
+  const host = document.getElementById("extension-host");
+  host.hidden = !ui.view.startsWith("extension:");
+  grid.hidden = ui.view.startsWith("extension:");
 
   if (ui.view === "home") {
     if (ui.homeTab === "souvenirs") {
@@ -156,15 +158,24 @@ export function renderGrid() {
     return;
   }
 
-  // Add-ons homepage: an iPhone-style springboard of app tiles. The 🧰
-  // manager (top right) installs/uninstalls.
+  // Extensions: springboard of installed extensions (My Extensions), the
+  // GitHub-release Marketplace, and the Manager tab (pin/uninstall/zip).
   if (ui.view === "addons") {
-    const addons = addonList(state.addonsInstalled);
-    grid.innerHTML = addons.length
-      ? `<div class="app-grid">${addons
+    if (ui.extensionsTab === "manager") {
+      grid.innerHTML = extensionManagerHTML();
+      return;
+    }
+    if (ui.extensionsTab === "market") {
+      loadMarketplace();
+      grid.innerHTML = marketplaceHTML();
+      return;
+    }
+    const extensions = extensionList(state.extensionsInstalled);
+    grid.innerHTML = extensions.length
+      ? `<div class="app-grid">${extensions
           .map(
             (a) => `
-        <button class="app-tile" data-open-addon="${esc(a.id)}">
+        <button class="app-tile" data-open-extension="${esc(a.id)}">
           <span class="app-icon">${esc(a.emoji)}</span>
           <span class="app-name">${esc(a.name)}</span>
         </button>`
@@ -185,37 +196,37 @@ export function renderGrid() {
     return;
   }
 
-  // One live iframe per opened add-on: switching between add-ons hides the
+  // One live iframe per opened extension: switching between extensions hides the
   // others instead of destroying them, so several can keep running at once
-  // (music playing while another add-on's page stays active).
-  if (ui.view.startsWith("addon:")) {
-    const id = ui.view.slice(6);
-    const addon = state.addonsInstalled.find((a) => a.id === id);
+  // (music playing while another extension's page stays active).
+  if (ui.view.startsWith("extension:")) {
+    const id = ui.view.slice("extension:".length);
+    const extension = state.extensionsInstalled.find((a) => a.id === id);
     grid.innerHTML = "";
-    if (!addon) {
+    if (!extension) {
       host.hidden = true;
       grid.hidden = false;
       grid.innerHTML = `<div class="empty-note">${t("addons.notInstalled")}</div>`;
-    } else if (addon.entry && addon.dir) {
-      let frame = addonFrame(id);
+    } else if (extension.entry && extension.dir) {
+      let frame = extensionFrame(id);
       if (!frame) {
         frame = document.createElement("iframe");
-        frame.className = "addon-frame";
-        frame.dataset.addon = id;
+        frame.className = "extension-frame";
+        frame.dataset.extension = id;
         frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
-        frame.src = convertFileSrc(`${addon.dir}/${addon.entry}`);
+        frame.src = convertFileSrc(`${extension.dir}/${extension.entry}`);
         host.appendChild(frame);
       }
       for (const f of host.querySelectorAll("iframe")) {
         f.classList.toggle("bg", f !== frame);
       }
-      // Keyboard-driven add-ons (piano, games) need key events to land inside
+      // Keyboard-driven extensions (piano, games) need key events to land inside
       // their iframe document, which only happens once the frame has focus.
       frame.focus();
     } else {
       host.hidden = true;
       grid.hidden = false;
-      grid.innerHTML = `<div class="empty-note">${t("addons.noPage", { name: esc(addon.name ?? id) })}</div>`;
+      grid.innerHTML = `<div class="empty-note">${t("addons.noPage", { name: esc(extension.name ?? id) })}</div>`;
     }
     return;
   }

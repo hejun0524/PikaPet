@@ -2,14 +2,14 @@
 // source of truth; every other window renders from the "pet-state" event.
 
 import { emit } from "../shared/tauri.js";
-import { findSpecies } from "../items.js";
 import { pet, runtime } from "./state.js";
 import { activityView } from "./activityView.js";
 import { caretakingView } from "./caretakingView.js";
+import { formInfo } from "./formInfo.js";
 
 /**
  * Emit the full "pet-state" snapshot (pet data, activity/caretaking views,
- * installed add-ons, settings) to all windows.
+ * installed extensions, settings) to all windows.
  * Side effects: broadcasts a Tauri event.
  *
  * @returns {void}
@@ -17,9 +17,10 @@ import { caretakingView } from "./caretakingView.js";
 export function broadcastState() {
   emit("pet-state", {
     name: pet.name,
-    breed: findSpecies(pet.species).breed,
+    breed: formInfo(pet.species).breed,
     species: pet.species,
     forms: [...pet.forms],
+    customForms: pet.customForms.map((c) => ({ ...c })),
     callMe: pet.callMe,
     coins: pet.coins,
     achievements: [...pet.achievements],
@@ -31,7 +32,7 @@ export function broadcastState() {
     activity: activityView(),
     caretaking: caretakingView(),
     bank: { ...pet.bank },
-    addonsInstalled: runtime.installedAddons,
+    extensionsInstalled: runtime.installedExtensions,
     pinnedAddons: [...pet.pinnedAddons],
     homework: { ...pet.homework },
     settings: { ...pet.settings },

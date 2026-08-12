@@ -1,6 +1,6 @@
 # 🌐 Languages
 
-The whole UI is localized into **English, Chinese (中文), French, Spanish, German, and Japanese**. Settings → 🌐 **Language** picks one; the default, **System language**, follows the OS (unsupported system languages fall back to English). Changes apply live to every window — popover, hub, speech bubbles, the pet's right-click menu, and localized add-ons — no restart.
+The whole UI is localized into **twelve languages: English, Chinese (中文), French, Spanish, German, Japanese, Italian, Portuguese, Arabic (العربية), Hindi (हिन्दी), Greek (Ελληνικά), and Korean (한국어)**. Settings → 🌐 **Language** picks one; the default, **System language**, follows the OS (unsupported system languages fall back to English). Changes apply live to every window — popover, hub, speech bubbles, the pet's right-click menu, and localized extensions — no restart. The six newest languages (it/pt/ar/hi/el/ko) currently translate the UI strings only — data-catalog names (items, dishes, skills, …) fall back to English there, while zh/fr/es/de/ja also translate the catalogs. Arabic renders in the app's LTR layout for now.
 
 ## How it works
 

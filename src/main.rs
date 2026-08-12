@@ -12,6 +12,62 @@ fn quit(app: tauri::AppHandle) {
     app.exit(0);
 }
 
+// ── Pet click-through ───────────────────────────────────────────────────────
+// The pet window is a transparent rectangle much larger than the sprite; the
+// desktop underneath must stay clickable. The webview reports the sprite's
+// bounding box (logical px, window-relative) and a background thread polls
+// the global cursor: outside the box the window ignores mouse events
+// (clicks fall through to the desktop), inside it they're accepted so
+// dragging and the right-click menu keep working.
+struct PetHitbox(std::sync::Mutex<Option<(f64, f64, f64, f64)>>);
+
+#[tauri::command]
+fn set_pet_hitbox(state: tauri::State<PetHitbox>, x: f64, y: f64, w: f64, h: f64) {
+    if let Ok(mut hit) = state.0.lock() {
+        *hit = Some((x, y, w, h));
+    }
+}
+
+fn spawn_click_through_watcher(handle: tauri::AppHandle) {
+    std::thread::spawn(move || {
+        let mut ignoring: Option<bool> = None;
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(80));
+            let Some(win) = handle.get_webview_window("main") else {
+                continue;
+            };
+            if !win.is_visible().unwrap_or(false) {
+                continue;
+            }
+            let (Ok(cursor), Ok(pos)) = (handle.cursor_position(), win.outer_position()) else {
+                continue;
+            };
+            let scale = win.scale_factor().unwrap_or(1.0);
+            let hitbox = handle
+                .state::<PetHitbox>()
+                .0
+                .lock()
+                .ok()
+                .and_then(|guard| *guard);
+            // Until the webview reports a hitbox, keep the whole window live.
+            let inside = match hitbox {
+                Some((hx, hy, hw, hh)) => {
+                    let lx = (cursor.x - pos.x as f64) / scale;
+                    let ly = (cursor.y - pos.y as f64) / scale;
+                    lx >= hx && lx <= hx + hw && ly >= hy && ly <= hy + hh
+                }
+                None => true,
+            };
+            let want_ignore = !inside;
+            if ignoring != Some(want_ignore)
+                && win.set_ignore_cursor_events(want_ignore).is_ok()
+            {
+                ignoring = Some(want_ignore);
+            }
+        }
+    });
+}
+
 // Webview consoles aren't visible when launched from a terminal; route
 // diagnostics through stdout instead.
 #[tauri::command]
@@ -19,20 +75,179 @@ fn log(msg: String) {
     println!("[webview] {msg}");
 }
 
-// ── Add-on management ───────────────────────────────────────────────────────
-// Add-ons live as folders under <app-data>/addons/<id>/ with a manifest.json.
-// Install = extract a zip there; uninstall = delete the folder.
-fn addons_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
+// ── Data directory ──────────────────────────────────────────────────────────
+// All user data (save.json, addons/, pets/) lives under one root. By default
+// that's the platform app-data dir; the user can relocate it from Settings →
+// Storage, in which case a small pointer file (data-dir.txt) in the DEFAULT
+// location records the custom root so it's found again at boot.
+fn default_data_root(app: &tauri::AppHandle) -> std::path::PathBuf {
     let dir = app
         .path()
         .app_data_dir()
-        .expect("app data dir unavailable")
-        .join("addons");
+        .expect("app data dir unavailable");
     let _ = std::fs::create_dir_all(&dir);
     dir
 }
 
-fn valid_addon_id(id: &str) -> bool {
+fn data_root(app: &tauri::AppHandle) -> std::path::PathBuf {
+    let default = default_data_root(app);
+    if let Ok(custom) = std::fs::read_to_string(default.join("data-dir.txt")) {
+        let path = std::path::PathBuf::from(custom.trim());
+        if path.is_dir() {
+            return path;
+        }
+    }
+    default
+}
+
+/// Uploaded custom pet spritesheets live here.
+fn pets_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
+    let dir = data_root(app).join("pets");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+}
+
+fn dir_is_writable(dir: &std::path::Path) -> bool {
+    if std::fs::create_dir_all(dir).is_err() {
+        return false;
+    }
+    let probe = dir.join(".pikapet-write-test");
+    let ok = std::fs::write(&probe, b"ok").is_ok();
+    let _ = std::fs::remove_file(&probe);
+    ok
+}
+
+fn copy_dir_all(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let to = dst.join(entry.file_name());
+        if entry.path().is_dir() {
+            copy_dir_all(&entry.path(), &to)?;
+        } else {
+            std::fs::copy(entry.path(), &to)?;
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn get_data_paths(app: tauri::AppHandle) -> serde_json::Value {
+    let root = data_root(&app);
+    serde_json::json!({
+        "root": root.to_string_lossy(),
+        "addons": root.join("addons").to_string_lossy(),
+        "pets": root.join("pets").to_string_lossy(),
+        "isDefault": root == default_data_root(&app),
+    })
+}
+
+// Relocate the data root: validate the target, copy save.json + addons/ +
+// pets/ over, delete the old copy (a true move), record the pointer, and
+// restart the app so every window reopens against the new location.
+#[tauri::command]
+fn change_data_dir(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    let new_root = std::path::PathBuf::from(path.trim());
+    if !new_root.is_absolute() {
+        return Err("pick an absolute folder path".into());
+    }
+    let current = data_root(&app);
+    let default = default_data_root(&app);
+    if new_root == current {
+        return Err("that is already the data folder".into());
+    }
+    // Never inside the app itself (wiped on update), nor nested in/around the
+    // current root (recursive copies and shadowed files).
+    if let Ok(exe) = std::env::current_exe() {
+        let app_dir = exe
+            .ancestors()
+            .find(|p| p.extension().is_some_and(|e| e == "app"))
+            .map(std::path::Path::to_path_buf)
+            .or_else(|| exe.parent().map(std::path::Path::to_path_buf));
+        if let Some(app_dir) = app_dir {
+            if new_root.starts_with(&app_dir) {
+                return Err("that folder is inside the app itself — pick one outside".into());
+            }
+        }
+    }
+    if new_root.starts_with(&current) || current.starts_with(&new_root) {
+        return Err("the new folder can't be inside the current data folder (or contain it)".into());
+    }
+    if !dir_is_writable(&new_root) {
+        return Err("that folder is not writable — pick another one".into());
+    }
+
+    // Migrate everything that exists today, then remove the old copy. The
+    // default root itself always survives (it hosts the pointer file).
+    let save = current.join("save.json");
+    if save.is_file() {
+        std::fs::copy(&save, new_root.join("save.json")).map_err(|e| e.to_string())?;
+    }
+    for sub in ["addons", "pets"] {
+        let from = current.join(sub);
+        if from.is_dir() {
+            copy_dir_all(&from, &new_root.join(sub)).map_err(|e| e.to_string())?;
+        }
+    }
+    let _ = std::fs::remove_file(&save);
+    for sub in ["addons", "pets"] {
+        let _ = std::fs::remove_dir_all(current.join(sub));
+    }
+    if current != default {
+        let _ = std::fs::remove_dir(&current); // only removed when now empty
+    }
+
+    if new_root == default {
+        let _ = std::fs::remove_file(default.join("data-dir.txt"));
+    } else {
+        std::fs::write(default.join("data-dir.txt"), new_root.to_string_lossy().as_bytes())
+            .map_err(|e| e.to_string())?;
+    }
+    app.restart();
+}
+
+// Magic Station "Create My Own Form": copy a user-picked spritesheet into
+// <data-root>/pets/ under a fresh custom-form key. The form still has to be
+// unlocked with coins afterwards (stats window owns that).
+#[tauri::command]
+fn import_custom_pet(app: tauri::AppHandle, path: String) -> Result<serde_json::Value, String> {
+    let src = std::path::PathBuf::from(&path);
+    let ext = src
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(str::to_lowercase)
+        .unwrap_or_default();
+    if !matches!(ext.as_str(), "webp" | "png") {
+        return Err("pick a .webp or .png spritesheet".into());
+    }
+    let stem = src
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("custom")
+        .to_string();
+    let key = format!(
+        "custom-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or(0)
+    );
+    let file = format!("{key}.{ext}");
+    std::fs::copy(&src, pets_dir(&app).join(&file)).map_err(|e| e.to_string())?;
+    Ok(serde_json::json!({ "key": key, "file": file, "name": stem }))
+}
+
+// ── Extension management ───────────────────────────────────────────────────────
+// Extensions live as folders under <data-root>/addons/<id>/ with a manifest.json.
+// (The on-disk folder keeps its historical "addons" name so existing installs
+// keep working.) Install = extract a zip there; uninstall = delete the folder.
+fn extensions_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
+    let dir = data_root(app).join("addons");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+}
+
+fn valid_extension_id(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 40
         && id
@@ -41,10 +256,36 @@ fn valid_addon_id(id: &str) -> bool {
 }
 
 #[tauri::command]
-fn install_addon(app: tauri::AppHandle, path: String) -> Result<serde_json::Value, String> {
-    use std::io::Read;
+fn install_extension(app: tauri::AppHandle, path: String) -> Result<serde_json::Value, String> {
     let file = std::fs::File::open(&path).map_err(|e| e.to_string())?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+    install_archive(&app, file)
+}
+
+// Marketplace installs: download the release-asset zip, then extract it
+// exactly like a local zip install.
+#[tauri::command]
+fn install_extension_from_url(app: tauri::AppHandle, url: String) -> Result<serde_json::Value, String> {
+    use std::io::Read;
+    if !url.starts_with("https://") {
+        return Err("only https downloads are allowed".into());
+    }
+    let mut bytes = Vec::new();
+    ureq::get(&url)
+        .call()
+        .map_err(|e| e.to_string())?
+        .into_reader()
+        .take(20 * 1024 * 1024) // sanity cap: no extension is anywhere near 20 MB
+        .read_to_end(&mut bytes)
+        .map_err(|e| e.to_string())?;
+    install_archive(&app, std::io::Cursor::new(bytes))
+}
+
+fn install_archive<R: std::io::Read + std::io::Seek>(
+    app: &tauri::AppHandle,
+    reader: R,
+) -> Result<serde_json::Value, String> {
+    use std::io::Read;
+    let mut archive = zip::ZipArchive::new(reader).map_err(|e| e.to_string())?;
 
     // Find manifest.json at the zip root or inside a single top-level folder.
     let mut manifest_entry: Option<(usize, String)> = None;
@@ -74,13 +315,13 @@ fn install_addon(app: tauri::AppHandle, path: String) -> Result<serde_json::Valu
         .and_then(|v| v.as_str())
         .ok_or("manifest is missing \"id\"")?
         .to_string();
-    if !valid_addon_id(&id) {
-        return Err("invalid add-on id (use letters, digits, - or _)".into());
+    if !valid_extension_id(&id) {
+        return Err("invalid extension id (use letters, digits, - or _)".into());
     }
 
     // Extract everything that shares the manifest's folder prefix.
     let prefix = manifest_path.trim_end_matches("manifest.json").to_string();
-    let dest = addons_dir(&app).join(&id);
+    let dest = extensions_dir(app).join(&id);
     let _ = std::fs::remove_dir_all(&dest);
     std::fs::create_dir_all(&dest).map_err(|e| e.to_string())?;
     for i in 0..archive.len() {
@@ -108,17 +349,17 @@ fn install_addon(app: tauri::AppHandle, path: String) -> Result<serde_json::Valu
 }
 
 #[tauri::command]
-fn uninstall_addon(app: tauri::AppHandle, id: String) -> Result<(), String> {
-    if !valid_addon_id(&id) {
-        return Err("invalid add-on id".into());
+fn uninstall_extension(app: tauri::AppHandle, id: String) -> Result<(), String> {
+    if !valid_extension_id(&id) {
+        return Err("invalid extension id".into());
     }
-    std::fs::remove_dir_all(addons_dir(&app).join(&id)).map_err(|e| e.to_string())
+    std::fs::remove_dir_all(extensions_dir(&app).join(&id)).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn list_installed_addons(app: tauri::AppHandle) -> Vec<serde_json::Value> {
+fn list_installed_extensions(app: tauri::AppHandle) -> Vec<serde_json::Value> {
     let mut out = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(addons_dir(&app)) {
+    if let Ok(entries) = std::fs::read_dir(extensions_dir(&app)) {
         for entry in entries.flatten() {
             let path = entry.path();
             if !path.is_dir() {
@@ -141,7 +382,7 @@ fn list_installed_addons(app: tauri::AppHandle) -> Vec<serde_json::Value> {
     out
 }
 
-// Keep-awake (Caffeine add-on): while enabled, a `caffeinate -di` child
+// Keep-awake (Caffeine extension): while enabled, a `caffeinate -di` child
 // process holds display + idle sleep assertions. `-w <our pid>` ties the
 // child's lifetime to this app, so sleep behavior always returns to normal
 // when the app quits — even on a force quit.
@@ -189,7 +430,7 @@ fn keep_awake_status(state: tauri::State<KeepAwake>) -> bool {
     child.is_some()
 }
 
-// Add-on push notifications, sent through the system notification center.
+// Extension push notifications, sent through the system notification center.
 // osascript works from a bare debug binary (no signed .app bundle needed).
 #[tauri::command]
 fn notify(title: String, body: String) -> Result<(), String> {
@@ -214,11 +455,11 @@ fn notify(title: String, body: String) -> Result<(), String> {
     }
 }
 
-// Add-on popup windows: a native window per add-on, loading the
-// addon-window.html shell which iframes the requested page from the add-on's
+// Extension popup windows: a native window per extension, loading the
+// addon-window.html shell which iframes the requested page from the extension's
 // folder and provides the same postMessage bridge as the hub.
 #[tauri::command]
-fn open_addon_window(
+fn open_extension_window(
     app: tauri::AppHandle,
     id: String,
     page: String,
@@ -226,15 +467,17 @@ fn open_addon_window(
     height: f64,
     title: String,
 ) -> Result<(), String> {
-    if !valid_addon_id(&id) {
-        return Err("invalid add-on id".into());
+    if !valid_extension_id(&id) {
+        return Err("invalid extension id".into());
     }
     if page.is_empty() || page.contains("..") || page.starts_with('/') {
         return Err("invalid page path".into());
     }
-    if !addons_dir(&app).join(&id).join(&page).is_file() {
-        return Err(format!("no such page in add-on \"{id}\": {page}"));
+    if !extensions_dir(&app).join(&id).join(&page).is_file() {
+        return Err(format!("no such page in extension \"{id}\": {page}"));
     }
+    // Historical label prefix; must match the "addon-*" windows entry in
+    // capabilities/default.json.
     let label = format!("addon-{id}");
     if let Some(win) = app.get_webview_window(&label) {
         let _ = win.show();
@@ -261,7 +504,7 @@ fn open_addon_window(
     Ok(())
 }
 
-// Music add-on: list audio files under a folder (2 levels deep, capped).
+// Music extension: list audio files under a folder (2 levels deep, capped).
 fn collect_music(dir: &std::path::Path, depth: u32, out: &mut Vec<String>) {
     if depth > 2 || out.len() >= 500 {
         return;
@@ -342,12 +585,7 @@ fn reset_app(app: tauri::AppHandle) {
 }
 
 fn save_path(app: &tauri::AppHandle) -> std::path::PathBuf {
-    let dir = app
-        .path()
-        .app_data_dir()
-        .expect("app data dir unavailable");
-    let _ = std::fs::create_dir_all(&dir);
-    dir.join("save.json")
+    data_root(app).join("save.json")
 }
 
 #[tauri::command]
@@ -363,6 +601,7 @@ fn save_state(app: tauri::AppHandle, state: String) -> Result<(), String> {
 fn main() {
     tauri::Builder::default()
         .manage(KeepAwake(std::sync::Mutex::new(None)))
+        .manage(PetHitbox(std::sync::Mutex::new(None)))
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -415,6 +654,9 @@ fn main() {
                 }
                 let _ = main.show();
             }
+
+            // Desktop clicks pass through the pet window's transparent margins.
+            spawn_click_through_watcher(app.handle().clone());
 
             let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let tray_menu = MenuBuilder::new(app).item(&quit_item).build()?;
@@ -473,17 +715,22 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             quit,
+            set_pet_hitbox,
             show_window,
             finish_setup,
             reset_app,
             load_state,
             save_state,
+            get_data_paths,
+            change_data_dir,
+            import_custom_pet,
             list_music,
-            install_addon,
-            uninstall_addon,
-            list_installed_addons,
+            install_extension,
+            install_extension_from_url,
+            uninstall_extension,
+            list_installed_extensions,
             notify,
-            open_addon_window,
+            open_extension_window,
             set_keep_awake,
             keep_awake_status,
             log

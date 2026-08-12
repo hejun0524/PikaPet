@@ -6,8 +6,12 @@ import { installErrorLogging } from "./shared/jlog.js";
 import { jlog } from "./main/jlog.js";
 import { boot } from "./main/boot.js";
 import { initEvents } from "./main/initEvents.js";
+import { initHitbox } from "./main/initHitbox.js";
+import { initIdleVariety } from "./main/initIdleVariety.js";
 
 installErrorLogging(jlog);
 
 boot();
 initEvents();
+initHitbox();
+initIdleVariety();

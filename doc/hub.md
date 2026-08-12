@@ -1,6 +1,6 @@
 # 🏘️ The Hub
 
-The hub window ("*{pet}*'s World") holds eleven views, selected from its left panel, the tray popover's World buttons, or the pet's right-click menu. Three of them belong to the app's resident cats: **Pika** 🐱 (female, runs the trading post), **Darcy** 🐈‍⬛ (male, runs the fight club), and **Noonie** 🐈 (female, runs the kitchen).
+The hub window ("*{pet}*'s World") holds eleven views, selected from its left panel, the tray popover's World buttons, or the pet's right-click menu. The left panel is resizable (drag the splitter) and collapsible: the ⏴ button at its top shrinks it to an icon-only rail (the World nav + pinned-extension Quick Launch icons); the state persists. Three of them belong to the app's resident cats: **Pika** 🐱 (female, runs the trading post), **Darcy** 🐈‍⬛ (male, runs the fight club), and **Noonie** 🐈 (female, runs the kitchen).
 
 ## 🏠 Home
 
@@ -56,12 +56,17 @@ Four tabs:
 - **📋 Registry** — name + call-me changes, 💰50 fee (breed is preset by species).
 - **🏦 Bank** — savings 5.0% APR, loans 15.0% APR (limit 💰50k), daily compounding; panels show pocket cash only.
 - **🧑‍🍼 Caretakers** — six automated 4-game-hour services hired via the 🛎️ basket: Pet Sitter 💰300 (auto-feeds from inventory, buys at plain cost), Home Teacher 💰500 (advances the most-behind subject), Job Manager 💰500 (best-paying unlocked job in the top career), Tour Guide 🚩 💰800 (city tours, tickets first), Sports Agent 🎽 💰1000 (sports tours), Super AI Butler 🤖 💰1200 (sitter care + class→job→city tour→class→job→sports tour rotation). Behavior is data-driven from the catalog; End Service refunds prorated; caretakers outrank manual End Activity.
-- **🔮 Magic Station** — forms are owned: buy once (Toy Poodle 💰6666, White Cat 💰6767, Bichon Frisé 💰5888; purchase switches you immediately, with a confirmation page), then switch between owned forms anytime for free.
+- **🔮 Magic Station** — three sections of pet forms; forms are owned and switching between owned forms is always free and instant:
+  - **🐾 Classic Companions** — the purchasable species (all 💰8000; purchase switches you immediately, with a confirmation page).
+  - **🌟 Legendary Cats** — Pika, Darcy, and Noonie as EARNED forms, never sold: **Garden Cat** (Pika — visit every city and sports team), **Tuxedo Cat** (Darcy — master all 50 fight skills), **Calico Cat** (Noonie — learn every recipe). Locked cards show the quest with live progress; once earned, one click claims the form free. Cards show breeds only, like every other form. Their spritesheets currently borrow `pets/white_cat.webp` (placeholder until their own sheets exist).
+  - **🎨 My Own Creations** — "Create My Own Form" first asks for the creation's breed/display name (inline card), then opens a file picker for a spritesheet (`.webp`/`.png`, same 8×11 grid of 192×208 cells); the file is copied into `<data>/pets/` and appears as a locked card under the typed name (file name as fallback), unlocked for 💰8000 like a classic purchase.
 
-## 🧩 Add-ons
+  **Adding a special form (developer guide)**: add an entry to `SPECIAL_SPECIES` in `src/ui/items/specialForms.js` — `{key, label, breed, sheet, special: "<condition-id>", defaultName}` — then teach `specialFormProgress()` in the same file how to measure your new `<condition-id>` (return `{have, need}` from the pet-state snapshot), and add a `"magic.cond<ConditionId>"` line (with `{have}`/`{need}` placeholders) to every locale. The Magic Station cards, claim flow, and save validation pick the new form up automatically. To give a special form its real artwork later, just point its `sheet` field at the new file in `src/ui/pets/`.
 
-An iPhone-style springboard of installed add-on tiles with a 🧰 manager for installing/uninstalling/pinning zips — full user and developer guide in [addons.md](addons.md).
+## 🧩 Extensions
+
+Three tabs: **🧩 My Extensions** (the iPhone-style springboard of installed extension tiles), **🛍️ Marketplace** (official extension zips published as assets on the project's GitHub Release — set `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`; Install downloads over https and installs in place), and **🧰 Manager** (📌 pin to the tray/side panel, 🗑️ uninstall, "📦 Install extension from zip…"). Full user and developer guide in [addons.md](addons.md).
 
 ## ⚙️ Settings
 
-Two boxless sections — **General** (pet size as a % number field, 🌐 Language dropdown, show-on-all-desktops, launch-at-startup, Hide-my-pet checkbox, plus "Quit the app" / "Reset all data…" as red links; reset requires typing the pet's name and restarts into first-run) and **Developer mode** (fast game time — care decays every 10s, 1 game-minute = 5s — and auto-topped-up coins; applies live to newly started activities). Add-ons are managed from the 🧰 manager on the Add-ons homepage.
+Three boxless sections — **General** (pet size as a % number field, 🌐 Language dropdown, show-on-all-desktops, launch-at-startup, Hide-my-pet checkbox, plus "Quit the app" / "Reset all data…" as red links; reset requires typing the pet's name and restarts into first-run), **Storage** (shows the data folder that holds `save.json`, `addons/`, and uploaded `pets/`; "Change folder…" validates the target is writable and outside the app, MOVES everything over — copy, then delete the old files — records the new location in a `data-dir.txt` pointer at the default location, and restarts), and **Developer mode** (fast game time — care decays every 10s, 1 game-minute = 5s — and auto-topped-up coins; applies live to newly started activities).

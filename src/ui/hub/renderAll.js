@@ -7,7 +7,6 @@ import { renderCartDrawer } from "./renderCartDrawer.js";
 import { renderPlanDrawer } from "./renderPlanDrawer.js";
 import { renderTradeDrawer } from "./renderTradeDrawer.js";
 import { renderServiceDrawer } from "./renderServiceDrawer.js";
-import { renderAddonDrawer } from "./renderAddonDrawer.js";
 import { renderTabs } from "./renderTabs.js";
 import { renderGrid } from "./renderGrid.js";
 
@@ -27,7 +26,6 @@ export function renderAll() {
   renderPlanDrawer();
   renderTradeDrawer();
   renderServiceDrawer();
-  renderAddonDrawer();
   renderTabs();
   renderGrid();
 }

@@ -2,9 +2,18 @@
 // (side panel, top-bar basket buttons, drawers, tabs, grid) plus the drawer
 // checkout result listeners ("pika-result", "cart-result").
 
-import { invoke, emit, listen, WebviewWindow } from "../shared/tauri.js";
-import { setLanguage, getLocale } from "../shared/i18n.js";
+import {
+  invoke,
+  emit,
+  listen,
+  WebviewWindow,
+  getCurrentWindow,
+  LogicalSize,
+  PhysicalPosition,
+} from "../shared/tauri.js";
+import { t, setLanguage, getLocale } from "../shared/i18n.js";
 import { state, ui, cart, tradeSell, tradeBuy, tradeIng, baskets, appSettings } from "./state.js";
+import { findForm } from "../items.js";
 import { findIngredient } from "../kitchen.js";
 import { renderAll } from "./renderAll.js";
 import { findSellable, findCaretaker } from "../items.js";
@@ -22,9 +31,10 @@ import { renderTradeBadge } from "./renderTradeBadge.js";
 import { renderTradeDrawer } from "./renderTradeDrawer.js";
 import { renderServiceBadge } from "./renderServiceBadge.js";
 import { renderServiceDrawer } from "./renderServiceDrawer.js";
-import { renderAddonDrawer } from "./renderAddonDrawer.js";
-import { installAddonFlow } from "./installAddonFlow.js";
-import { uninstallAddonFlow } from "./uninstallAddonFlow.js";
+import { installExtensionFlow } from "./installExtensionFlow.js";
+import { uninstallExtensionFlow } from "./uninstallExtensionFlow.js";
+import { marketInstallFlow } from "./marketInstallFlow.js";
+import { applySideCollapsed } from "./applySideCollapsed.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { CHOICE_BOOKS } from "../fightclub.js";
 import { startFightReplay, skipFightReplay } from "./fightReplay.js";
@@ -52,9 +62,37 @@ export function initEvents() {
     else if (e.target.id === "side-stop-care") emit("end-caretaking");
   });
 
-  document.getElementById("side-addons").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-addon]");
-    if (btn) setView(`addon:${btn.dataset.addon}`);
+  // Collapse the side panel into an icon-only rail (persisted).
+  document.getElementById("side-collapse").addEventListener("click", () => {
+    // Keep the CONTENT panel fixed on screen: the window's LEFT edge moves
+    // by the rail delta while the right edge stays put, so visually the
+    // side panel shrinks/grows into place and the pages never shift.
+    const content = document.getElementById("content");
+    const before = content.offsetWidth;
+    const collapsed = document.getElementById("layout").classList.toggle("collapsed");
+    try {
+      localStorage.setItem("sideCollapsed", collapsed ? "1" : "0");
+    } catch {}
+    applySideCollapsed();
+    const delta = content.offsetWidth - before; // reflow happened above
+    if (delta === 0) return;
+    (async () => {
+      try {
+        const win = getCurrentWindow();
+        const [pos, scale] = await Promise.all([win.outerPosition(), win.scaleFactor()]);
+        await Promise.all([
+          win.setPosition(new PhysicalPosition(pos.x + Math.round(delta * scale), pos.y)),
+          win.setSize(new LogicalSize(window.innerWidth - delta, window.innerHeight)),
+        ]);
+      } catch (err) {
+        console.error("collapse resize failed:", err);
+      }
+    })();
+  });
+
+  document.getElementById("side-extensions").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-extension]");
+    if (btn) setView(`extension:${btn.dataset.extension}`);
   });
 
   document.getElementById("cart-btn").addEventListener("click", () => {
@@ -63,31 +101,9 @@ export function initEvents() {
     renderCartDrawer();
   });
 
-  // Back to the Add-ons homepage from an open add-on page. The add-on's iframe
-  // stays alive in #addon-host, so this doesn't interrupt whatever it's doing.
-  document.getElementById("addons-home-btn").addEventListener("click", () => setView("addons"));
-
-  document.getElementById("manager-btn").addEventListener("click", () => {
-    const drawer = document.getElementById("addon-drawer");
-    drawer.hidden = !drawer.hidden;
-    renderAddonDrawer();
-  });
-
-  // Add-on manager drawer: install, uninstall, pin.
-  document.getElementById("addon-drawer").addEventListener("click", (e) => {
-    if (e.target.id === "addon-install") {
-      installAddonFlow();
-      return;
-    }
-    const pinBtn = e.target.closest("[data-pin]");
-    if (pinBtn) {
-      const id = pinBtn.dataset.pin;
-      emit("addon-pin", { id, pinned: !state.pinnedAddons.includes(id) });
-      return;
-    }
-    const uninstallBtn = e.target.closest("[data-uninstall]");
-    if (uninstallBtn) uninstallAddonFlow(uninstallBtn.dataset.uninstall);
-  });
+  // Back to the Extensions homepage from an open extension page. The iframe
+  // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.
+  document.getElementById("extensions-home-btn").addEventListener("click", () => setView("addons"));
 
   document.getElementById("plan-btn").addEventListener("click", () => {
     const drawer = document.getElementById("plan-drawer");
@@ -277,18 +293,41 @@ export function initEvents() {
     else if (ui.view === "pika") ui.pikaTab = tab.dataset.tab;
     else if (ui.view === "kitchen") ui.kitchenTab = tab.dataset.tab;
     else if (ui.view === "fightclub") ui.fightclubTab = tab.dataset.tab;
+    else if (ui.view === "addons") ui.extensionsTab = tab.dataset.tab;
     else if (ui.view === "government") {
       ui.petcenterTab = tab.dataset.tab;
       ui.pendingMagic = null;
+      ui.createPending = false;
     }
     renderTabs();
     renderGrid();
   });
 
   document.getElementById("grid").addEventListener("click", (e) => {
-    const appTile = e.target.closest("[data-open-addon]");
+    const appTile = e.target.closest("[data-open-extension]");
     if (appTile) {
-      setView(`addon:${appTile.dataset.openAddon}`);
+      setView(`extension:${appTile.dataset.openExtension}`);
+      return;
+    }
+
+    // ── Extensions: Manager tab + Marketplace tab ───────────────────────
+    if (e.target.id === "extension-install") {
+      installExtensionFlow();
+      return;
+    }
+    const pinBtn = e.target.closest("[data-pin]");
+    if (pinBtn) {
+      emit("extension-pin", { id: pinBtn.dataset.pin, pinned: !state.pinnedAddons.includes(pinBtn.dataset.pin) });
+      return;
+    }
+    const uninstallBtn = e.target.closest("[data-uninstall]");
+    if (uninstallBtn) {
+      uninstallExtensionFlow(uninstallBtn.dataset.uninstall);
+      return;
+    }
+    const marketBtn = e.target.closest("[data-market-install]");
+    if (marketBtn) {
+      marketInstallFlow(marketBtn.dataset.marketInstall);
       return;
     }
 
@@ -489,12 +528,53 @@ export function initEvents() {
     const magicCard = e.target.closest("[data-magic]");
     if (magicCard) {
       const key = magicCard.dataset.magic;
-      if (state.forms.includes(key)) {
-        emit("gov-magic", { species: key }); // owned: switch instantly, free
+      if (state.forms.includes(key) || findForm(key)?.special) {
+        // Owned forms switch instantly; earned Legendary Cats claim free
+        // (their card is only clickable once the condition is met).
+        emit("gov-magic", { species: key });
       } else {
         ui.pendingMagic = key; // purchases ask for confirmation first
         renderGrid();
       }
+      return;
+    }
+    // Magic Station: create a custom form — first name the breed, then pick
+    // the spritesheet file.
+    if (e.target.closest("#create-form")) {
+      ui.createPending = true;
+      ui.magicMsg = "";
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "create-cancel") {
+      ui.createPending = false;
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "create-continue") {
+      const typed = document.getElementById("create-name").value.trim();
+      (async () => {
+        try {
+          const path = await invoke("plugin:dialog|open", {
+            options: {
+              title: t("magic.pickSheet"),
+              filters: [{ name: "Spritesheet", extensions: ["webp", "png"] }],
+              multiple: false,
+              directory: false,
+            },
+          });
+          if (!path) return;
+          const form = await invoke("import_custom_pet", { path });
+          ui.magicMsg = "";
+          ui.createPending = false;
+          // The typed breed name wins; the file stem is only the fallback.
+          emit("custom-form-added", { ...form, name: typed || form.name });
+        } catch (err) {
+          ui.magicMsg = t("magic.importFailed", { err });
+          ui.createPending = false;
+          renderGrid();
+        }
+      })();
       return;
     }
     if (e.target.id === "magic-confirm") {
@@ -506,6 +586,24 @@ export function initEvents() {
     if (e.target.id === "magic-cancel") {
       ui.pendingMagic = null;
       renderGrid();
+      return;
+    }
+
+    // Settings → Storage: pick a new data folder; Rust validates, migrates,
+    // and restarts the app. Errors come back here and render inline.
+    if (e.target.id === "storage-change") {
+      (async () => {
+        try {
+          const path = await invoke("plugin:dialog|open", {
+            options: { title: t("settings.storagePick"), directory: true, multiple: false },
+          });
+          if (!path) return;
+          await invoke("change_data_dir", { path });
+        } catch (err) {
+          ui.storageMsg = t("settings.storageFailed", { err });
+          renderGrid();
+        }
+      })();
       return;
     }
 
@@ -575,8 +673,8 @@ export function initEvents() {
       appSettings.language = e.target.value;
       setLanguage(appSettings.language);
       emit("settings-changed", { ...appSettings });
-      // Live add-on pages get told too, so they can re-render themselves.
-      for (const frame of document.querySelectorAll("#addon-host iframe")) {
+      // Live extension pages get told too, so they can re-render themselves.
+      for (const frame of document.querySelectorAll("#extension-host iframe")) {
         frame.contentWindow?.postMessage({ type: "app-locale", locale: getLocale() }, "*");
       }
       renderAll();

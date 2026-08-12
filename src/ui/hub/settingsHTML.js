@@ -2,12 +2,14 @@
 
 import { t, LANGUAGE_OPTIONS, languageSetting } from "../shared/i18n.js";
 import { ui, appSettings } from "./state.js";
+import { escText as esc } from "../panel.js";
 import { resetConfirmHTML } from "./resetConfirmHTML.js";
 
 /**
  * The Settings page: pet size, all-desktops, autostart, hide-pet, language,
- * quit/reset links, and developer-mode toggles — or the reset confirmation
- * while `ui.resetPending` is set.
+ * quit/reset links, the Storage section (data folder + relocation), and
+ * developer-mode toggles — or the reset confirmation while `ui.resetPending`
+ * is set.
  *
  * @returns {string} Page HTML for the grid.
  */
@@ -47,6 +49,16 @@ export function settingsHTML() {
         <a id="quit" class="danger-link">${t("settings.quit")}</a>
         <a id="reset-btn" class="danger-link">${t("settings.reset")}</a>
       </div>
+
+      <div class="ach-section">${t("settings.storageTitle")}</div>
+      <div class="gov-note">${t("settings.storageNote")}</div>
+      <div class="settings-row"><code class="storage-path">${esc(ui.dataPaths?.root ?? "…")}</code></div>
+      <div class="settings-row">
+        <button id="storage-change">${t("settings.storageChange")}</button>
+      </div>
+      <div class="gov-note">${t("settings.storageHint")}${
+        ui.storageMsg ? `<br/><b>${esc(ui.storageMsg)}</b>` : ""
+      }</div>
 
       <div class="ach-section">${t("settings.devTitle")}</div>
       <div class="settings-row">

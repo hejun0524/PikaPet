@@ -2,7 +2,7 @@
 
 import { setLanguage } from "../shared/i18n.js";
 import { state, appSettings } from "./state.js";
-import { SPECIES } from "../items.js";
+import { findForm } from "../items.js";
 import { liveActivity } from "./liveActivity.js";
 import { liveCaretaking } from "./liveCaretaking.js";
 
@@ -18,7 +18,9 @@ import { liveCaretaking } from "./liveCaretaking.js";
  */
 export function applyState(saved) {
   if (typeof saved.name === "string" && saved.name.trim()) state.name = saved.name.trim();
-  if (SPECIES.some((s) => s.key === saved.species)) state.species = saved.species;
+  if (Array.isArray(saved.customForms)) state.customForms = saved.customForms;
+  const knownForm = (k) => findForm(k) || state.customForms.some((c) => c.key === k);
+  if (typeof saved.species === "string" && knownForm(saved.species)) state.species = saved.species;
   if (Array.isArray(saved.forms)) state.forms = saved.forms;
   if (!state.forms.includes(state.species)) state.forms.push(state.species);
   if (typeof saved.callMe === "string" && saved.callMe.trim()) state.callMe = saved.callMe.trim();
@@ -74,8 +76,8 @@ export function applyState(saved) {
   if (saved.fightclub && typeof saved.fightclub === "object") {
     state.fightclub = { ...state.fightclub, ...saved.fightclub };
   }
-  if (Array.isArray(saved.addonsInstalled)) {
-    state.addonsInstalled = saved.addonsInstalled;
+  if (Array.isArray(saved.extensionsInstalled)) {
+    state.extensionsInstalled = saved.extensionsInstalled;
   }
   if (Array.isArray(saved.pinnedAddons)) {
     state.pinnedAddons = saved.pinnedAddons;

@@ -7,7 +7,9 @@
   </head>
   <body>
     <div id="bubble" hidden></div>
-    <div id="pet" data-anim="idle"></div>
+    <!-- #pet is a one-cell viewport; #sheet is the full spritesheet, moved
+         behind it by compositor-driven transform animations (style.css). -->
+    <div id="pet" data-anim="idle"><div id="sheet"></div></div>
     <!-- main.js is an ES module entry point: it imports the per-function
          files under main/. -->
     <script type="module" src="main.js"></script>

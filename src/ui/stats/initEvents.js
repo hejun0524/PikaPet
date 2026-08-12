@@ -1,5 +1,5 @@
 // stats/initEvents.js — ALL event wiring of the stats window: the Tauri
-// event listeners (bank ops, add-on registry + tray widgets, Pika checkout,
+// event listeners (bank ops, extension registry + tray widgets, Pika checkout,
 // tickets, item use, cart checkout, activity plans, caretaking, government
 // registry, setup, settings) and the popover's own DOM listeners.
 
@@ -7,12 +7,16 @@ import { emit, listen } from "../shared/tauri.js";
 import { setLanguage } from "../shared/i18n.js";
 import {
   ALL_ITEMS,
+  ITEM_CATALOG,
+  CUSTOM_FORM_PRICE,
   HOMEWORK_DAILY_LIMIT,
   HOMEWORK_ITEM_KEYS,
   LOAN_LIMIT,
   SPECIES,
   findCaretaker,
+  findForm,
   findSellable,
+  specialFormUnlocked,
 } from "../items.js";
 import { SOUVENIR_SELL_PRICE, findTour, ticketOfferKey } from "../touring.js";
 import { DELIVER_MINUTES, findIngredient, findRecipe, nextBotPrice } from "../kitchen.js";
@@ -22,7 +26,7 @@ import { GOV_FEE } from "./constants.js";
 import { render } from "./render.js";
 import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
-import { rescanAddons } from "./rescanAddons.js";
+import { rescanExtensions } from "./rescanExtensions.js";
 import { widgetBox } from "./widgetBox.js";
 import { showWidget } from "./showWidget.js";
 import { hideWidget } from "./hideWidget.js";
@@ -86,10 +90,10 @@ export function initEvents() {
     broadcastState();
   });
 
-  // Pin/unpin an add-on to the quick-launch rows (popover + hub side panel).
-  listen("addon-pin", ({ payload }) => {
+  // Pin/unpin an extension to the quick-launch rows (popover + hub side panel).
+  listen("extension-pin", ({ payload }) => {
     const id = payload.id;
-    if (!runtime.installedAddons.some((a) => a.id === id)) return;
+    if (!runtime.installedExtensions.some((a) => a.id === id)) return;
     pet.pinnedAddons = pet.pinnedAddons.filter((p) => p !== id);
     if (payload.pinned) pet.pinnedAddons.push(id);
     render();
@@ -97,11 +101,11 @@ export function initEvents() {
     broadcastState();
   });
 
-  listen("addons-changed", async () => {
-    await rescanAddons();
+  listen("extensions-changed", async () => {
+    await rescanExtensions();
     for (const box of document.querySelectorAll(".widget-box")) {
-      if (!runtime.installedAddons.some((a) => a.id === box.dataset.addon)) {
-        hideWidget(box.dataset.addon);
+      if (!runtime.installedExtensions.some((a) => a.id === box.dataset.extension)) {
+        hideWidget(box.dataset.extension);
       }
     }
     autoShowWidgets();
@@ -110,11 +114,11 @@ export function initEvents() {
     broadcastState();
   });
 
-  listen("addon-widget-set", ({ payload }) => {
+  listen("extension-widget-set", ({ payload }) => {
     payload.on ? showWidget(payload.id) : hideWidget(payload.id);
   });
 
-  listen("addon-widget-state", ({ payload }) => {
+  listen("extension-widget-state", ({ payload }) => {
     widgetStates.set(payload.id, payload.state);
     widgetBox(payload.id)
       ?.querySelector("iframe")
@@ -129,7 +133,7 @@ export function initEvents() {
       (f) => f.contentWindow === e.source
     );
     if (!frame) return;
-    const id = frame.closest(".widget-box").dataset.addon;
+    const id = frame.closest(".widget-box").dataset.extension;
     const { reqId, type, payload } = e.data ?? {};
     if (typeof reqId !== "undefined") {
       let result = null;
@@ -148,7 +152,7 @@ export function initEvents() {
         frame.contentWindow.postMessage({ type: "widget-state", state }, "*");
       }
     } else if (type === "widget-action") {
-      emit("addon-widget-action", { id, payload });
+      emit("extension-widget-action", { id, payload });
     }
   });
 
@@ -302,6 +306,10 @@ export function initEvents() {
 
     pet.bag[item.key] -= 1;
     applyItemEffects(item);
+    // Toys are playtime — the desktop sprite reacts with a pounce.
+    if (ITEM_CATALOG.find((c) => c.items.includes(item))?.key === "toys") {
+      emit("pet-react", { kind: "play" });
+    }
     render();
     save();
     broadcastState();
@@ -417,17 +425,45 @@ export function initEvents() {
     broadcastState();
   });
 
-  // Magic Station: buy a form once at its full price (switches immediately);
-  // switching between owned forms is free.
+  // Magic Station: classic forms are bought once at their price, Legendary
+  // Cats are claimed free once their condition is met (never purchasable),
+  // custom uploads unlock for CUSTOM_FORM_PRICE. Switching owned forms is
+  // always free and instant.
   listen("gov-magic", ({ payload }) => {
-    const species = SPECIES.find((s) => s.key === payload.species);
-    if (!species || species.key === pet.species) return;
-    const owned = pet.forms.includes(species.key);
-    const cost = owned ? 0 : species.price;
+    const key = payload.species;
+    if (typeof key !== "string" || key === pet.species) return;
+    const builtin = findForm(key);
+    const custom = pet.customForms.find((c) => c.key === key);
+    if (!builtin && !custom) return;
+    const owned = pet.forms.includes(key);
+    let cost = 0;
+    if (!owned) {
+      if (builtin?.special) {
+        if (!specialFormUnlocked(builtin.special, pet)) return; // still locked
+      } else {
+        cost = builtin ? builtin.price : CUSTOM_FORM_PRICE;
+      }
+    }
     if (pet.coins < cost) return;
     pet.coins -= cost;
-    if (!owned) pet.forms.push(species.key);
-    pet.species = species.key;
+    if (!owned) pet.forms.push(key);
+    pet.species = key;
+    render();
+    save();
+    broadcastState();
+  });
+
+  // Magic Station "Create My Own Form": the hub copied the spritesheet into
+  // <data>/pets/ (import_custom_pet) — register it (still locked until paid).
+  listen("custom-form-added", ({ payload }) => {
+    const { key, file, name } = payload;
+    if (typeof key !== "string" || !key.startsWith("custom-") || typeof file !== "string") return;
+    if (pet.customForms.some((c) => c.key === key)) return;
+    pet.customForms.push({
+      key,
+      file,
+      breed: (typeof name === "string" && name.trim() ? name.trim() : "Custom Pet").slice(0, 40),
+    });
     render();
     save();
     broadcastState();
@@ -471,7 +507,7 @@ export function initEvents() {
 
   // Compact-mode shortcut row.
   document.getElementById("mini-home").addEventListener("click", () => openHub("home"));
-  document.getElementById("mini-addons").addEventListener("click", () => openHub("addons"));
+  document.getElementById("mini-extensions").addEventListener("click", () => openHub("addons"));
   document.getElementById("mini-settings").addEventListener("click", () => openHub("settings"));
 
   // End/call-back the current activity or caretaker straight from the popover.
@@ -480,10 +516,10 @@ export function initEvents() {
     else if (e.target.id === "stop-caretaking") endCaretaking();
   });
 
-  // Add-on buttons open their page in the hub.
-  document.getElementById("addon-row").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-addon]");
-    if (btn) openHub(`addon:${btn.dataset.addon}`);
+  // Extension buttons open their page in the hub.
+  document.getElementById("extension-row").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-extension]");
+    if (btn) openHub(`extension:${btn.dataset.extension}`);
   });
 
   // A popover shouldn't have its own context menu.

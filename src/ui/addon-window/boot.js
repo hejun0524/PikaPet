@@ -2,10 +2,10 @@
 
 import { convertFileSrc, invoke } from "../shared/tauri.js";
 import { setLanguage } from "../shared/i18n.js";
-import { addonId, addonPage } from "./params.js";
+import { extensionId, extensionPage } from "./params.js";
 
 /**
- * Load the requested add-on page: verify the add-on is installed, then mount
+ * Load the requested extension page: verify the extension is installed, then mount
  * its page in a sandboxed iframe. On any failure the window shows an error
  * note instead.
  *
@@ -21,14 +21,14 @@ export async function boot() {
     // First run / unreadable save: stay on the system language.
   }
   try {
-    const installed = await invoke("list_installed_addons");
-    const addon = installed.find((a) => a.id === addonId);
-    if (!addon?.dir || !addonPage) throw new Error("add-on not installed");
+    const installed = await invoke("list_installed_extensions");
+    const extension = installed.find((a) => a.id === extensionId);
+    if (!extension?.dir || !extensionPage) throw new Error("extension not installed");
     const frame = document.createElement("iframe");
     frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
-    frame.src = convertFileSrc(`${addon.dir}/${addonPage}`);
+    frame.src = convertFileSrc(`${extension.dir}/${extensionPage}`);
     document.body.appendChild(frame);
   } catch (e) {
-    document.body.innerHTML = `<div class="err">Could not load this add-on page 😿<br/>${String(e)}</div>`;
+    document.body.innerHTML = `<div class="err">Could not load this extension page 😿<br/>${String(e)}</div>`;
   }
 }

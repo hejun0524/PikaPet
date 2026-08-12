@@ -17,9 +17,10 @@ export {
 export { CARETAKER_MINUTES, CARETAKERS } from "./items/caretakers.js";
 export { findCaretaker } from "./items/findCaretaker.js";
 export { SAVINGS_APR, LOAN_APR, LOAN_LIMIT } from "./items/bank.js";
-export { addonList } from "./items/addonList.js";
-export { SPECIES } from "./items/species.js";
-export { findSpecies } from "./items/findSpecies.js";
+export { extensionList } from "./items/extensionList.js";
+export { SPECIES, CUSTOM_FORM_PRICE } from "./items/species.js";
+export { SPECIAL_SPECIES, specialFormProgress, specialFormUnlocked } from "./items/specialForms.js";
+export { findSpecies, findForm } from "./items/findSpecies.js";
 export { SERVICES } from "./items/services.js";
 export { SHOP_CATALOG, CAREER_CATALOG, TOURING_TABS } from "./items/shopCatalog.js";
 export { findSellable } from "./items/findSellable.js";

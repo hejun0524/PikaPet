@@ -30,8 +30,9 @@ export function fightclubSkillsHTML() {
         <span class="fc-chal-mid">
           <span class="fc-chal-name">${skillName(skill)}
             <span class="fc-lvbadge">${kind === "active" ? t("fightclub.typeActive") : t("fightclub.typePassive")}</span>
+            ${lv === 0 ? `<span class="fc-lvbadge" title="${t("fightclub.skillLocked")}">🔒</span>` : ""}
           </span>
-          <span class="fc-sub">${lv === 0 ? t("fightclub.skillLocked") : skillDesc(skill)}</span>
+          <span class="fc-sub">${skillDesc(skill)}</span>
         </span>
         <span class="fc-pips">${pips}${lv >= MAX_SKILL_LEVEL ? ` ${t("fightclub.skillMax")}` : ""}</span>
       </div>`;

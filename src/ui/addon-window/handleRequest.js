@@ -2,17 +2,17 @@
 
 import { convertFileSrc, emit, invoke } from "../shared/tauri.js";
 import { getLocale, t } from "../shared/i18n.js";
-import { addonId } from "./params.js";
+import { extensionId } from "./params.js";
 
 /**
- * Serve one postMessage bridge request from the hosted add-on iframe — the
+ * Serve one postMessage bridge request from the hosted extension iframe — the
  * same protocol the hub serves (see doc/addons.md). Note: widget-action messages
- * are only delivered to the add-on's page in the hub, not here.
+ * are only delivered to the extension's page in the hub, not here.
  *
  * @param {string} type - Request type: "pick-folder" | "list-music" |
  *   "file-url" | "notify" | "open-window" | "widget-set" | "widget-push".
  * @param {object|undefined} payload - Request-specific payload from the
- *   add-on.
+ *   extension.
  * @returns {Promise<*>} The request's result (dialog path, file URL, etc.);
  *   rejects with an Error for unknown request types.
  */
@@ -39,8 +39,8 @@ export async function handleRequest(type, payload) {
     });
   }
   if (type === "open-window") {
-    return invoke("open_addon_window", {
-      id: addonId,
+    return invoke("open_extension_window", {
+      id: extensionId,
       page: String(payload?.page ?? ""),
       width: Number(payload?.width) || 480,
       height: Number(payload?.height) || 360,
@@ -48,14 +48,14 @@ export async function handleRequest(type, payload) {
     });
   }
   if (type === "widget-set") {
-    await emit("addon-widget-set", { id: addonId, on: !!payload?.on });
+    await emit("extension-widget-set", { id: extensionId, on: !!payload?.on });
     return true;
   }
   if (type === "widget-push") {
-    await emit("addon-widget-state", { id: addonId, state: payload?.state ?? null });
+    await emit("extension-widget-state", { id: extensionId, state: payload?.state ?? null });
     return true;
   }
-  // Keep the Mac awake (Caffeine add-on) — same contract as the hub bridge.
+  // Keep the Mac awake (Caffeine extension) — same contract as the hub bridge.
   if (type === "keep-awake") {
     return invoke("set_keep_awake", { on: !!payload?.on });
   }

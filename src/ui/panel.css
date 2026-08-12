@@ -45,7 +45,7 @@ h2 {
   margin-right: 5px;
 }
 
-/* World nav buttons and add-on buttons share one 4-per-row metric. */
+/* World nav buttons and extension buttons share one 4-per-row metric. */
 footer {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +54,7 @@ footer {
 }
 
 footer button,
-.addon-btn {
+.extension-btn {
   flex: 0 0 calc(25% - 6px);
   padding: 7px 0;
   font-family: inherit;
@@ -68,7 +68,7 @@ footer button,
 }
 
 footer button:active,
-.addon-btn:active {
+.extension-btn:active {
   filter: brightness(0.92);
 }
 
@@ -171,8 +171,8 @@ footer button:active,
   border-radius: 7px;
 }
 
-#addon-row,
-#side-addons {
+#extension-row,
+#side-extensions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

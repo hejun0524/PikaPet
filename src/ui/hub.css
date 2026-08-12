@@ -102,12 +102,12 @@ body {
 }
 
 footer button.active,
-.addon-btn.active {
+.extension-btn.active {
   border-color: var(--accent);
   font-weight: 600;
 }
 
-/* Pin toggle in the add-on manager: dim until pinned. */
+/* Pin toggle in the extension manager: dim until pinned. */
 .icon-btn.pin {
   opacity: 0.35;
 }
@@ -121,6 +121,9 @@ footer button.active,
   align-items: center;
   gap: 8px;
   padding: 12px 14px 0;
+  /* Reserve the basket buttons' height even on views without one, so the
+     title and page content sit at the same y on every view. */
+  min-height: 35px;
 }
 
 .topbar-spacer {
@@ -187,8 +190,7 @@ footer button.active,
   border-radius: 8px;
 }
 
-#cart-drawer,
-#addon-drawer {
+#cart-drawer {
   margin: 8px 14px 0;
   padding: 8px 10px;
   font-size: 13px;
@@ -197,7 +199,7 @@ footer button.active,
   border-radius: 10px;
 }
 
-/* Add-ons homepage: iPhone-style springboard of app tiles. */
+/* Extensions homepage: iPhone-style springboard of app tiles. */
 .app-grid {
   grid-column: 1 / -1;
   display: grid;
@@ -486,7 +488,7 @@ footer button.active,
 }
 
 /* `display: grid` above outranks the UA [hidden] rule, so restate it —
-   add-on views hide the grid to give #addon-host the whole panel. */
+   extension views hide the grid to give #extension-host the whole panel. */
 #grid[hidden] {
   display: none;
 }
@@ -567,7 +569,7 @@ footer button.active,
 #trade-btn,
 #service-btn,
 #manager-btn,
-#addons-home-btn {
+#extensions-home-btn {
   position: relative;
   padding: 6px 10px;
   font-size: 17px;
@@ -818,7 +820,7 @@ footer button.active,
   font-size: 13px;
 }
 
-.addon-line-label {
+.extension-line-label {
   flex: 1;
 }
 
@@ -847,13 +849,13 @@ footer button.active,
   border-radius: 7px;
 }
 
-#addon-host {
+#extension-host {
   flex: 1;
   padding: 14px;
   overflow: hidden;
 }
 
-.addon-frame {
+.extension-frame {
   width: 100%;
   height: 100%;
   border: 1px solid var(--border);
@@ -861,9 +863,9 @@ footer button.active,
   background: var(--chip);
 }
 
-/* Add-ons other than the one on screen stay loaded (music keeps playing)
+/* Extensions other than the one on screen stay loaded (music keeps playing)
    but are invisible. */
-.addon-frame.bg {
+.extension-frame.bg {
   display: none;
 }
 
@@ -1103,4 +1105,74 @@ footer button.active,
   border: 1px solid var(--border);
   border-radius: 9px;
   cursor: pointer;
+}
+
+/* Settings → Storage: the data-folder path. */
+.storage-path {
+  padding: 6px 10px;
+  font-size: 12px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  user-select: text;
+  -webkit-user-select: text;
+  word-break: break-all;
+}
+
+#storage-change {
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+/* ── Collapsible side panel: an icon-only rail ── */
+#side {
+  position: relative;
+}
+
+#side-collapse {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#layout.collapsed #side {
+  flex: 0 0 58px !important; /* outranks the splitter's inline flex-basis */
+  padding: 30px 7px 12px;
+  overflow-x: hidden;
+}
+
+/* Collapsed: only the essential icons remain — the World nav buttons and
+   the pinned-extension Quick Launch icons, one per row. */
+#layout.collapsed #side header,
+#layout.collapsed #side-status,
+#layout.collapsed #side section:not(#side-extensions-section),
+#layout.collapsed #side > h2,
+#layout.collapsed #side-extensions-section h2 {
+  display: none;
+}
+
+#layout.collapsed #side footer button,
+#layout.collapsed .extension-btn {
+  flex: 0 0 100%;
+}
+
+/* The hidden "Quick Launch" h2 used to provide this breathing room; 8px
+   matches the footer's own icon gap so the rail reads as one column. */
+#layout.collapsed #side-extensions-section {
+  margin-top: 8px;
+}
+
+#layout.collapsed #splitter {
+  display: none;
 }

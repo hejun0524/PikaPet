@@ -40,6 +40,13 @@ export const FIGHTCLUB_TABS = [
   { key: "train", label: "Training Room", tabEmoji: "🏋️" },
 ];
 
+/** Extensions-view tabs. */
+export const EXTENSIONS_TABS = [
+  { key: "mine", label: "My Extensions", tabEmoji: "🧩" },
+  { key: "market", label: "Marketplace", tabEmoji: "🛍️" },
+  { key: "manager", label: "Manager", tabEmoji: "🧰" },
+];
+
 /** Pet-Center-view tabs. */
 export const PETCENTER_TABS = [
   { key: "registry", label: "Registry", tabEmoji: "📋" },

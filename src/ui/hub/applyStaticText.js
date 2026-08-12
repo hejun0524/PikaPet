@@ -3,6 +3,7 @@
 // buttons. Called from renderAll() so a language change repaints them too.
 
 import { t } from "../shared/i18n.js";
+import { applySideCollapsed } from "./applySideCollapsed.js";
 
 /**
  * Write the active locale's text into the hub's static DOM: side-panel
@@ -19,10 +20,10 @@ export function applyStaticText() {
   careH2.textContent = t("chrome.care");
   traitsH2.textContent = t("chrome.traits");
   side.querySelector(":scope > h2").textContent = t("chrome.world");
-  document.querySelector("#side-addons-section h2").textContent = t("chrome.quickLaunch");
+  document.querySelector("#side-extensions-section h2").textContent = t("chrome.quickLaunch");
   for (const btn of side.querySelectorAll("footer [data-view]")) {
     btn.title = t(`view.${btn.dataset.view}`);
   }
-  document.getElementById("addons-home-btn").title = t("chrome.backToAddons");
-  document.getElementById("manager-btn").title = t("chrome.manageAddons");
+  document.getElementById("extensions-home-btn").title = t("chrome.backToAddons");
+  applySideCollapsed(); // restores the icon-rail state + localizes its tooltip
 }

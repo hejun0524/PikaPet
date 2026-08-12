@@ -19,12 +19,12 @@ export function applyStaticText() {
   document.querySelector("#care-section h2").textContent = t("chrome.care");
   document.querySelector("#traits-section h2").textContent = t("chrome.traits");
   document.getElementById("world-title").textContent = t("chrome.world");
-  document.querySelector("#addons-section h2").textContent = t("chrome.quickLaunch");
+  document.querySelector("#extensions-section h2").textContent = t("chrome.quickLaunch");
   for (const btn of document.querySelectorAll("#panel footer button")) {
     btn.title = t(`view.${btn.id}`);
   }
   document.getElementById("mini-home").title = t("view.home");
-  document.getElementById("mini-addons").title = t("view.addons");
+  document.getElementById("mini-extensions").title = t("view.addons");
   document.getElementById("mini-settings").title = t("view.settings");
   document.getElementById("tray-collapse").title = runtime.trayCompact
     ? t("chrome.expand")

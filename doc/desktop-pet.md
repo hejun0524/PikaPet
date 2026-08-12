@@ -2,9 +2,14 @@
 
 ## Desktop pet
 
-- Transparent, frameless, always-on-top sprite; hidden from the Dock (menu bar app only). Species swappable at the Magic Station.
+- Transparent, frameless, always-on-top sprite; hidden from the Dock (menu bar app only). Species swappable at the Magic Station (custom uploads and the earned Legendary Cats load their sheets from `<data>/pets/` / the catalog `sheet` field).
+- **Click-through margins**: only the sprite itself catches the mouse. The webview reports the pet's bounding box (`set_pet_hitbox`, refreshed every 500 ms), and a Rust watcher polls the global cursor at ~12 Hz, toggling `set_ignore_cursor_events` so clicks on the window's transparent padding (the speech-bubble headroom and side margins) fall through to the desktop underneath.
 - Native drag with direction-facing run animation; snaps back on-screen if dropped off an edge; spawns where it was last left (bottom-right fallback if that spot is now off-screen).
-- Sad animation when Mood < 35%; **speech bubbles** (with a pointer arrow) greet you by time of day, complain when needs run low (3-min cooldown), announce tours, and list the cities visited on return — always addressing you by your chosen `callMe`.
+- **Speech bubbles** (with a pointer arrow) greet you by time of day, complain when needs run low (3-min cooldown), announce tours, and list the cities visited on return — always addressing you by your chosen `callMe`.
+- **Animations** (all 11 spritesheet rows wired; the row map lives atop `src/ui/style.css`). Design goal: a *calm* pet that mostly sits in plain idle and never distracts.
+  - *Resting states* (most urgent wins, `main/idleAnim.js`): 😴 sleep when Energy < 15%, 🥺 beg when Energy < 35%, 😞 sad when Mood < 35%, else idle.
+  - *Idle variants* (`main/initIdleVariety.js`): every 1–3 min, only while showing plain idle, a few seconds of 👀 look-around; while an activity/caretaker runs, mostly 🤔 thinking (a busy pet still looks idle); at night (22:00–07:00) or after 20 min without the user touching the pet, occasional short 😴 naps.
+  - *Reactions* (`main/playOnce.js` one-shots, never interrupting drags or travel): 👋 wave on boot greeting, double-click, and tour return; 🎾 pounce on toy use ("pet-react" from stats) and Fight Club wins; 😊 shy on a Pet Center rename or a caretaker hire.
 - During tours the pet **runs off the nearer screen edge**, disappears, and later runs back in from a random edge.
 - Right-click menu: all hub views, 🛑 End Activity / 📢 Call Back, 🛎️ End Caretaking, ⚙️ Settings…, Quit — rebuilt per popup so End items grey out when there's nothing to end (and End Activity greys while a caretaker is on duty).
 - Double-click opens the hub's Home view.

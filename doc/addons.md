@@ -1,12 +1,26 @@
-# 🧩 Add-ons
+# 🧩 Extensions (add-ons)
+
+> Naming: UI and code identifiers now say **extension**; only the
+> persisted/external contracts keep the historical "addon" name — the save key
+> `pinnedAddons`, the `addons/` data dir, the manifest format, the
+> `addon-pause` message, the `addon-*` window label, locale key prefixes
+> (`addons.*`, `addonmgr.*`, `addonstab.*`, `view.addons`), and
+> `addon-window.html`.
 
 ## The in-app experience
 
-- **🧩 Add-ons homepage**: an iPhone-style springboard of app tiles in the hub; its 🧰 manager (top-right, like the cart button) is where add-ons are installed ("📦 Install add-on from zip…", native file picker), uninstalled (🗑️), and 📌 **pinned** — only pinned add-ons appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open add-on's Quick Launch button highlights like the World buttons. Zips extract to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`; the app rescans at startup and after every change.
+The 🧩 Extensions view has three tabs:
+
+- **🧩 My Extensions**: an iPhone-style springboard of installed extension tiles.
+- **🛍️ Marketplace**: official extension zips published as assets on a GitHub Release. The list comes straight from the GitHub API (latest release of `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`); ⬇️ Install downloads the zip over https (Rust `install_addon_from_url`) and installs it like a local zip. **Publishing**: create a release on that repo and attach the zips from `addons/` — the asset filename must be `<id>.zip` matching the manifest `id` (that's how installed state is detected). Until the repo exists the tab shows a friendly "unreachable" note.
+- **🧰 Manager**: install ("📦 Install extension from zip…", native file picker), uninstall (🗑️), and 📌 **pin** — only pinned extensions appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open extension's Quick Launch button highlights like the World buttons.
+
+Zips extract to `<data-root>/addons/<id>/` (default `~/Library/Application Support/com.junhe.mypet/addons/`; relocatable from Settings → Storage); the app rescans at startup and after every change.
 - Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
 - **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
 - **☕ Caffeine** (`addons/caffeine.zip`): keeps the Mac from auto-sleeping (and the screen from dimming) while its switch is on — a `caffeinate` process held by the app and released when the app quits. Once installed, its toggle box hangs below the tray popover permanently (`widgetAuto`); the same switch lives on its hub page. The reference for `widgetAuto` + the widget bridge subset.
-- **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized in all six app languages (the reference for the `get-locale` / `app-locale` bridge contract). Updating the add-on = reinstalling the zip — no app rebuild or restart.
+- **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized (the reference for the `get-locale` / `app-locale` bridge contract). Updating an extension = reinstalling the zip — no app rebuild or restart.
+- **Localization**: every bundled extension (all ten zips) carries an `STR` table covering the app's twelve languages (en, zh, fr, es, de, ja, it, pt, ar, hi, el, ko) and follows the locale contract below.
 
 # Preparing an add-on zip
 
@@ -38,6 +52,7 @@ folder and extracts everything beside it.
 {
   "id": "yourthing",
   "name": "Your Thing",
+  "names": { "zh": "你的东西", "fr": "Ton truc" },
   "emoji": "🧩",
   "version": "1.0.0",
   "entry": "index.html",
@@ -49,8 +64,9 @@ folder and extracts everything beside it.
 
 | Field | Required | Rules |
 |---|---|---|
-| `id` | ✅ | Unique, stable, ≤40 chars, only `a-z A-Z 0-9 - _`. Keys the install folder and the hub view (`addon:<id>`). |
-| `name` | ✅ | Display name, shown under the app tile and as the page title. |
+| `id` | ✅ | Unique, stable, ≤40 chars, only `a-z A-Z 0-9 - _`. Keys the install folder and the hub view (`extension:<id>`). |
+| `name` | ✅ | Display name, shown under the app tile and as the page title (English / fallback). |
+| `names` | optional | `{<locale>: "name"}` map for localized display names — the app language's entry wins, then `names.en`, then `name`. All ten bundled extensions ship all twelve app locales. |
 | `emoji` | ✅ | Button/tile emoji — pick a bright one; it sits on dark and light panels. |
 | `version` | ✅ | Semver string; used for upgrade hints. |
 | `entry` | ✅ (in practice) | HTML page rendered when the add-on opens; an add-on without one shows "has no page". |

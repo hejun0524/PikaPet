@@ -125,7 +125,7 @@ body.compact #care-section h2,
 body.compact #traits-section,
 body.compact #world-title,
 body.compact footer,
-body.compact #addons-section {
+body.compact #extensions-section {
   display: none;
 }
 
@@ -203,8 +203,8 @@ body.compact #mini-actions {
   background: var(--fill-critical);
 }
 
-/* Add-on mini-widgets: rounded boxes hanging below the main popover,
-   stacked in the order their add-ons became active. */
+/* Extension mini-widgets: rounded boxes hanging below the main popover,
+   stacked in the order their extensions became active. */
 #widgets {
   display: flex;
   flex-direction: column;

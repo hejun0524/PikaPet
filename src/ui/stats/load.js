@@ -3,7 +3,7 @@
 // catalogs and accepting legacy formats.
 
 import { invoke } from "../shared/tauri.js";
-import { SPECIES, findCaretaker } from "../items.js";
+import { findCaretaker, findForm } from "../items.js";
 import { ALL_CITIES, ALL_PLACES, findTour, ticketOfferKey } from "../touring.js";
 import { CITY_DISHES, MAX_BOTS, START_BOTS, findIngredient, findRecipe } from "../kitchen.js";
 import { MAX_SKILL_LEVEL, findBook, findPotion, findSkill } from "../fightclub.js";
@@ -31,9 +31,24 @@ export async function load() {
     }
     const saved = JSON.parse(raw);
     if (typeof saved.name === "string" && saved.name.trim()) pet.name = saved.name.trim();
-    if (SPECIES.some((s) => s.key === saved.species)) pet.species = saved.species;
+    // Custom forms first: species/forms validation below accepts their keys.
+    if (Array.isArray(saved.customForms)) {
+      pet.customForms = saved.customForms
+        .filter(
+          (c) =>
+            c &&
+            typeof c.key === "string" &&
+            c.key.startsWith("custom-") &&
+            typeof c.file === "string" &&
+            !c.file.includes("/") &&
+            typeof c.breed === "string"
+        )
+        .map((c) => ({ key: c.key, breed: c.breed.slice(0, 40), file: c.file }));
+    }
+    const knownForm = (k) => !!findForm(k) || pet.customForms.some((c) => c.key === k);
+    if (typeof saved.species === "string" && knownForm(saved.species)) pet.species = saved.species;
     if (Array.isArray(saved.forms)) {
-      pet.forms = saved.forms.filter((k) => SPECIES.some((s) => s.key === k));
+      pet.forms = saved.forms.filter(knownForm);
     }
     if (!pet.forms.includes(pet.species)) pet.forms.push(pet.species);
     if (typeof saved.callMe === "string" && saved.callMe.trim()) pet.callMe = saved.callMe.trim();

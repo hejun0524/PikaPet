@@ -32,6 +32,7 @@ export const state = {
   callMe: "Owner",
   coins: 1000,
   achievements: [],
+  customForms: [], // user-uploaded pet forms: {key, breed, file}
   care: Object.fromEntries(CARE_META.map((m) => [m.key, 100])),
   traits: Object.fromEntries(TRAIT_META.map((m) => [m.key, 0])),
   bag: Object.fromEntries(ALL_ITEMS.map((i) => [i.key, i.startQty ?? DEFAULT_ITEM_QTY])),
@@ -61,14 +62,14 @@ export const state = {
     hp: 100,
     record: { wins: 0, losses: 0 },
   },
-  addonsInstalled: [],
-  pinnedAddons: [],
+  extensionsInstalled: [],
+  pinnedAddons: [], // pinned extension ids; name mirrors the historical save.json key
 };
 
 /**
  * UI navigation/mode state: the current view, the active tab of each tabbed
  * view, and transient page modes (pending Magic Station purchase, reset
- * confirmation, add-on manager message).
+ * confirmation, extension manager message).
  */
 export const ui = {
   view: "home",
@@ -85,13 +86,19 @@ export const ui = {
   petcenterTab: PETCENTER_TABS[0].key,
   kitchenTab: "orders",
   fightclubTab: "club",
+  extensionsTab: "mine",
+  market: null, // marketplace fetch state: {status: "loading"|"ready"|"error", assets: []}
   fightBet: 0, // side-bet stake selected on the Fight Club page
   battle: null, // live fight replay: the "fight-result" payload + {idx, done}
   trainMsg: null, // last "fightclub-result" payload shown in the Training Room
   pickerBook: null, // choice-book key awaiting a skill pick (wild/master)
   pendingMagic: null, // species key awaiting purchase confirmation
+  createPending: false, // Magic Station showing the name-your-creation card
   resetPending: false, // Settings page showing the reset confirmation
-  addonMsg: "", // last install/uninstall result shown in the manager drawer
+  extensionMsg: "", // last install/uninstall result shown on the Manager tab
+  dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
+  storageMsg: "", // last change-folder error shown on the Settings page
+  magicMsg: "", // last custom-form import error shown at the Magic Station
 };
 
 /** Shopping cart: item key -> quantity. Local until "buy-cart" checkout. */

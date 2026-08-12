@@ -1,5 +1,5 @@
-// addon-window.js — entry point for add-on popup windows (opened via the
-// "open-window" bridge request). Loads ?id=<addon>&page=<file> in a
+// addon-window.js — entry point for extension popup windows (opened via the
+// "open-window" bridge request). Loads ?id=<extension>&page=<file> in a
 // sandboxed iframe and serves the same postMessage bridge as the hub (see
 // doc/addons.md).
 //

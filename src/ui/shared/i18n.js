@@ -23,9 +23,15 @@ import { messages as fr } from "../locales/fr.js";
 import { messages as es } from "../locales/es.js";
 import { messages as de } from "../locales/de.js";
 import { messages as ja } from "../locales/ja.js";
+import { messages as it } from "../locales/it.js";
+import { messages as pt } from "../locales/pt.js";
+import { messages as ar } from "../locales/ar.js";
+import { messages as hi } from "../locales/hi.js";
+import { messages as el } from "../locales/el.js";
+import { messages as ko } from "../locales/ko.js";
 
 /** Every bundled dictionary, keyed by locale code. */
-export const LOCALES = { en, zh, fr, es, de, ja };
+export const LOCALES = { en, zh, fr, es, de, ja, it, pt, ar, hi, el, ko };
 
 /**
  * The Settings dropdown's choices. Labels are deliberately written in their
@@ -40,6 +46,12 @@ export const LANGUAGE_OPTIONS = [
   { key: "es", label: "Español" },
   { key: "de", label: "Deutsch" },
   { key: "ja", label: "日本語" },
+  { key: "it", label: "Italiano" },
+  { key: "pt", label: "Português" },
+  { key: "ar", label: "العربية" },
+  { key: "hi", label: "हिन्दी" },
+  { key: "el", label: "Ελληνικά" },
+  { key: "ko", label: "한국어" },
 ];
 
 // Mutable module state (imports are read-only bindings, hence the object).

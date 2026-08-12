@@ -9,7 +9,6 @@ import { applyState } from "./applyState.js";
 import { renderSidePanel } from "./renderSidePanel.js";
 import { renderCartDrawer } from "./renderCartDrawer.js";
 import { renderPlanDrawer } from "./renderPlanDrawer.js";
-import { renderAddonDrawer } from "./renderAddonDrawer.js";
 import { renderGrid } from "./renderGrid.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { refreshBankNumbers } from "./refreshBankNumbers.js";
@@ -31,12 +30,11 @@ export function initSync() {
     renderSidePanel();
     renderCartDrawer();
     renderPlanDrawer();
-    renderAddonDrawer(); // pin toggles reflect the broadcast state
     // Don't re-render form views under the user's cursor/keyboard, or a
     // fight replay mid-animation (fightReplay.js patches that DOM itself).
     const isForm =
       ui.view === "settings" ||
-      ui.view.startsWith("addon:") ||
+      ui.view.startsWith("extension:") ||
       (ui.view === "fightclub" && ui.fightclubTab === "club" && ui.battle && !ui.battle.done) ||
       (ui.view === "government" && (ui.petcenterTab === "registry" || ui.petcenterTab === "bank"));
     if (!isForm) renderGrid();

@@ -36,40 +36,39 @@ export function fightclubTrainHTML() {
   const note = `<div class="ach-section caretaker-title">${t("fightclub.trainNote")}</div>`;
   const msg = ui.trainMsg ? `<div class="fc-msg">${trainMsgHTML()}</div>` : "";
 
-  const bookRows = BOOKS.map((book) => {
+  // Stock as item cards, like the shopping pages.
+  const bookCards = BOOKS.map((book) => {
     const n = fc.books?.[book.key] ?? 0;
     return `
-      <div class="ach ${n > 0 ? "earned" : ""} fc-skill">
-        <span class="ach-emoji">${book.emoji}</span>
-        <span class="fc-chal-mid">
-          <span class="fc-chal-name">${bookName(book)} <span class="fc-lvbadge">×${n}</span></span>
-          <span class="fc-sub">${bookDesc(book)}</span>
-        </span>
-        <button class="fc-fight-btn" data-use-book="${book.key}" ${n > 0 && anyOpen ? "" : "disabled"}>${t("fightclub.use")}</button>
+      <div class="item ${n > 0 ? "" : "locked"}">
+        <span class="qty">×${n}</span>
+        <span class="icon">${book.emoji}</span>
+        <span class="name">${bookName(book)}</span>
+        <span class="effects">${bookDesc(book)}</span>
+        <span class="effects"><button class="fc-fight-btn" data-use-book="${book.key}" ${n > 0 && anyOpen ? "" : "disabled"}>${t("fightclub.use")}</button></span>
       </div>`;
   }).join("");
 
   const hpFull = petF.hp >= petF.maxHp;
-  const potionRows = POTIONS.map((p) => {
+  const potionCards = POTIONS.map((p) => {
     const n = fc.potions?.[p.key] ?? 0;
     return `
-      <div class="ach ${n > 0 ? "earned" : ""} fc-skill">
-        <span class="ach-emoji">${p.emoji}</span>
-        <span class="fc-chal-mid">
-          <span class="fc-chal-name">${potionName(p)} <span class="fc-lvbadge">×${n}</span></span>
-          <span class="fc-sub">${potionDesc(p)}</span>
-        </span>
-        <button class="fc-fight-btn" data-use-potion="${p.key}" ${n > 0 && !hpFull ? "" : "disabled"}>${t("fightclub.use")}</button>
+      <div class="item ${n > 0 ? "" : "locked"}">
+        <span class="qty">×${n}</span>
+        <span class="icon">${p.emoji}</span>
+        <span class="name">${potionName(p)}</span>
+        <span class="effects">${potionDesc(p)}</span>
+        <span class="effects"><button class="fc-fight-btn" data-use-potion="${p.key}" ${n > 0 && !hpFull ? "" : "disabled"}>${t("fightclub.use")}</button></span>
       </div>`;
   }).join("");
 
   return (
     note +
     msg +
-    `<div class="ach-list">
-      <div class="ach-section">${t("fightclub.booksSection")}</div>${bookRows}
-      <div class="ach-section">${t("fightclub.healSection", { hp: petF.hp, max: petF.maxHp })}</div>${potionRows}
-    </div>`
+    `<div class="ach-section">${t("fightclub.booksSection")}</div>` +
+    bookCards +
+    `<div class="ach-section">${t("fightclub.healSection", { hp: petF.hp, max: petF.maxHp })}</div>` +
+    potionCards
   );
 }
 
@@ -96,27 +95,25 @@ function trainMsgHTML() {
     .join("<br/>");
 }
 
-/** The choose-a-skill page for wild/master books. */
+/** The choose-a-skill page for wild/master books (item cards, click one). */
 function pickerHTML() {
   const book = findBook(ui.pickerBook);
   if (!book || !CHOICE_BOOKS.has(book.key)) return "";
   const fc = state.fightclub;
-  const rows = SKILLS.filter((s) => (fc.skills?.[s.key] ?? 0) < MAX_SKILL_LEVEL)
+  const cards = SKILLS.filter((s) => (fc.skills?.[s.key] ?? 0) < MAX_SKILL_LEVEL)
     .map((skill) => {
       const lv = fc.skills?.[skill.key] ?? 0;
       return `
-      <div class="ach earned fc-skill" data-pick-skill="${skill.key}">
-        <span class="ach-emoji">${skill.emoji}</span>
-        <span class="fc-chal-mid">
-          <span class="fc-chal-name">${skillName(skill)}</span>
-          <span class="fc-sub">${"●".repeat(lv)}${"○".repeat(MAX_SKILL_LEVEL - lv)}</span>
-        </span>
-        <span class="fc-pips">${book.key === "master" ? t("fightclub.pickToMax") : t("fightclub.pickPlusOne")}</span>
+      <div class="item" data-pick-skill="${skill.key}">
+        <span class="qty">${book.key === "master" ? t("fightclub.pickToMax") : t("fightclub.pickPlusOne")}</span>
+        <span class="icon">${skill.emoji}</span>
+        <span class="name">${skillName(skill)}</span>
+        <span class="effects">${"●".repeat(lv)}${"○".repeat(MAX_SKILL_LEVEL - lv)}</span>
       </div>`;
     })
     .join("");
   return `
     <div class="ach-section caretaker-title">${t("fightclub.pickTitle", { book: bookName(book) })}</div>
     <div class="fc-head"><button id="picker-cancel">${t("fightclub.pickCancel")}</button></div>
-    <div class="ach-list">${rows}</div>`;
+    ${cards}`;
 }

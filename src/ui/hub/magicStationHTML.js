@@ -1,32 +1,127 @@
-// hub/magicStationHTML.js
+// hub/magicStationHTML.js — the Magic Station in three sections:
+//   🐾 Classic Companions — the purchasable species catalog
+//   🌟 Legendary Cats — Pika / Darcy / Noonie, earned (never sold; see
+//      items/specialForms.js for the developer guide on adding one)
+//   🎨 My Own Creations — user-uploaded spritesheets, unlocked for a fee
 
 import { t } from "../shared/i18n.js";
 import { speciesBreed } from "../shared/names.js";
 import { state, ui } from "./state.js";
-import { SPECIES, findSpecies } from "../items.js";
+import {
+  CUSTOM_FORM_PRICE,
+  SPECIES,
+  SPECIAL_SPECIES,
+  findForm,
+  specialFormProgress,
+} from "../items.js";
 import { escText as esc } from "../panel.js";
+import { formInfo } from "./formInfo.js";
 
 /**
  * The Magic Station page: either the purchase-confirmation card for
- * `ui.pendingMagic`, or one card per species (current / owned / purchasable).
+ * `ui.pendingMagic`, or the three form sections plus the
+ * create-your-own-form card.
  *
  * @returns {string} Page HTML for the grid.
  */
 export function magicStationHTML() {
-  if (ui.pendingMagic) {
-    const target = findSpecies(ui.pendingMagic);
-    const fee = target.price;
-    return `
+  if (ui.pendingMagic) return confirmHTML();
+  if (ui.createPending) return createFormHTML();
+
+  const classic = SPECIES.map((s) => formCardHTML(s.key, `💰${s.price}`, t("magic.purchase"))).join("");
+
+  const legends = SPECIAL_SPECIES.map((s) => {
+    const progress = specialFormProgress(s.special, state);
+    const unlocked = progress.have >= progress.need;
+    if (state.forms.includes(s.key) || !unlocked) {
+      // Owned/current cards render normally; locked ones show the quest.
+      const condKey = `magic.cond${s.special[0].toUpperCase()}${s.special.slice(1)}`;
+      return formCardHTML(s.key, "🔒", t(condKey, progress), !unlocked);
+    }
+    return formCardHTML(s.key, "✨", t("magic.specialReady"));
+  }).join("");
+
+  const customs = (state.customForms ?? [])
+    .map((c) => formCardHTML(c.key, `💰${CUSTOM_FORM_PRICE}`, t("magic.purchase")))
+    .join("");
+  const createCard = `
+      <div class="item" id="create-form">
+        <span class="qty">➕</span>
+        <span class="icon">🖼️</span>
+        <span class="name">${t("magic.createOwn")}</span>
+        <span class="effects">${t("magic.createHint", { fee: CUSTOM_FORM_PRICE })}</span>
+      </div>`;
+
+  return (
+    `<div class="ach-section caretaker-title">${t("magic.note")}${
+      ui.magicMsg ? `<br/><b>${esc(ui.magicMsg)}</b>` : ""
+    }</div>` +
+    `<div class="ach-section">${t("magic.sectionClassic")}</div>` +
+    classic +
+    `<div class="ach-section">${t("magic.sectionLegend")}</div>` +
+    legends +
+    `<div class="ach-section">${t("magic.sectionCustom")}</div>` +
+    customs +
+    createCard
+  );
+}
+
+/**
+ * One form card. Current/owned states win over the passed badge/line;
+ * `locked` renders the card disabled (unmet legendary condition).
+ */
+function formCardHTML(key, badge, line, locked = false) {
+  const info = formInfo(key);
+  const current = key === state.species;
+  const owned = state.forms.includes(key);
+  const shownBadge = current
+    ? `<span class="qty">${t("magic.now")}</span>`
+    : owned
+      ? `<span class="qty">${t("magic.owned")}</span>`
+      : `<span class="qty ${badge.startsWith("💰") ? "price" : ""}">${badge}</span>`;
+  const shownLine = current ? t("magic.current") : owned ? t("magic.switch") : line;
+  const clickable = !current && !locked;
+  return `
+      <div class="item ${current || locked ? "disabled" : ""}" ${clickable ? `data-magic="${esc(key)}"` : ""}>
+        ${shownBadge}
+        <span class="species-thumb" style="background-image:url('${info.sheet}')"></span>
+        <span class="name">${esc(info.breed)}</span>
+        <span class="effects">${shownLine}</span>
+      </div>`;
+}
+
+/** "Create My Own Form" step 1: name the breed, then pick the spritesheet. */
+function createFormHTML() {
+  return `
+      <div class="settings-card">
+        <div class="gov-note">${t("magic.createOwn")} — ${t("magic.createHint", { fee: CUSTOM_FORM_PRICE })}</div>
+        <div class="settings-row">
+          <label for="create-name">${t("magic.createNameQ")}</label>
+          <input type="text" id="create-name" maxlength="40" placeholder="${t("magic.createNamePh")}" />
+        </div>
+        <div class="settings-actions">
+          <button id="create-cancel">${t("magic.cancel")}</button>
+          <button id="create-continue">${t("magic.createContinue")}</button>
+        </div>
+      </div>`;
+}
+
+/** The purchase confirmation for a classic or custom form. */
+function confirmHTML() {
+  const key = ui.pendingMagic;
+  const info = formInfo(key);
+  const fee = findForm(key)?.price ?? CUSTOM_FORM_PRICE;
+  return `
       <div class="settings-card">
         <div class="gov-note">${t("magic.confirm")}</div>
         <div class="magic-confirm-row">
-          <span class="species-thumb" style="background-image:url('${target.sheet}')"></span>
+          <span class="species-thumb" style="background-image:url('${info.sheet}')"></span>
           <div>
-            <b>${t("magic.confirmQ", { breed: esc(speciesBreed(target)), name: esc(state.name) })}</b><br/>
+            <b>${t("magic.confirmQ", { breed: esc(info.breed), name: esc(state.name) })}</b><br/>
             <span class="gov-note">${t("magic.confirmLine", {
               fee,
               name: esc(state.name),
-              breed: esc(speciesBreed(target)),
+              breed: esc(info.breed),
             })}</span>
           </div>
         </div>
@@ -37,27 +132,4 @@ export function magicStationHTML() {
           </button>
         </div>
       </div>`;
-  }
-  const cards = SPECIES.map((s) => {
-    const current = s.key === state.species;
-    const owned = state.forms.includes(s.key);
-    const badge = current
-      ? `<span class="qty">${t("magic.now")}</span>`
-      : owned
-        ? `<span class="qty">${t("magic.owned")}</span>`
-        : `<span class="qty price">💰${s.price}</span>`;
-    const line = current
-      ? t("magic.current")
-      : owned
-        ? t("magic.switch")
-        : t("magic.purchase");
-    return `
-      <div class="item ${current ? "disabled" : ""}" ${current ? "" : `data-magic="${s.key}"`}>
-        ${badge}
-        <span class="species-thumb" style="background-image:url('${s.sheet}')"></span>
-        <span class="name">${esc(speciesBreed(s))}</span>
-        <span class="effects">${line}</span>
-      </div>`;
-  }).join("");
-  return `<div class="ach-section caretaker-title">${t("magic.note")}</div>` + cards;
 }

@@ -1,14 +1,14 @@
 // hub/renderSidePanel.js — Side panel: avatar, status rows, care meters,
-// coins, traits, footer nav, and pinned add-on shortcuts.
+// coins, traits, footer nav, and pinned extension shortcuts.
 
 import { getCurrentWindow } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
-import { speciesBreed } from "../shared/names.js";
 import { state, ui } from "./state.js";
-import { CARE_META, TRAIT_META, addonList, findSpecies } from "../items.js";
+import { CARE_META, TRAIT_META, extensionList } from "../items.js";
+import { formInfo } from "./formInfo.js";
 import {
   activityStatusHTML,
-  addonButtonsHTML,
+  extensionButtonsHTML,
   careCardsHTML,
   caretakingStatusHTML,
   traitCardsHTML,
@@ -17,7 +17,7 @@ import {
 /**
  * Render the left side panel: window title, pet name/breed/avatar, running
  * activity + caretaking status rows (with End buttons), care meters, coins,
- * traits, footer view buttons, and pinned add-on shortcuts.
+ * traits, footer view buttons, and pinned extension shortcuts.
  *
  * Side effects: sets the window title and rewrites the #side-* DOM nodes.
  *
@@ -26,8 +26,9 @@ import {
 export function renderSidePanel() {
   getCurrentWindow().setTitle(t("hub.windowTitle", { name: state.name })).catch(() => {});
   document.getElementById("side-name").textContent = state.name;
-  document.getElementById("side-breed").textContent = speciesBreed(findSpecies(state.species));
-  document.getElementById("avatar").style.backgroundImage = `url("${findSpecies(state.species).sheet}")`;
+  const form = formInfo(state.species);
+  document.getElementById("side-breed").textContent = form.breed;
+  document.getElementById("avatar").style.backgroundImage = `url("${form.sheet}")`;
   // Status rows with End buttons live here (and in the popover/right-click
   // menu) — not in the content pages.
   const av = state.activity;
@@ -52,12 +53,12 @@ export function renderSidePanel() {
   document.querySelectorAll("#side footer button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === ui.view);
   });
-  const pinned = addonList(state.addonsInstalled).filter((a) =>
+  const pinned = extensionList(state.extensionsInstalled).filter((a) =>
     state.pinnedAddons.includes(a.id)
   );
-  document.getElementById("side-addons-section").hidden = pinned.length === 0;
-  document.getElementById("side-addons").innerHTML = addonButtonsHTML(
+  document.getElementById("side-extensions-section").hidden = pinned.length === 0;
+  document.getElementById("side-extensions").innerHTML = extensionButtonsHTML(
     pinned,
-    ui.view.startsWith("addon:") ? ui.view.slice(6) : null
+    ui.view.startsWith("extension:") ? ui.view.slice("extension:".length) : null
   );
 }

@@ -74,32 +74,31 @@ export function fightclubClubHTML() {
       <div class="fc-sub">${t("fightclub.betNote")}</div>
     </div>`;
 
-  const rows = CHALLENGERS.map((c) => {
+  // Challenger board: item cards like the shopping / job pages.
+  const cards = CHALLENGERS.map((c) => {
     const oppF = makeChallengerFighter(c);
     const ml = moneyline(winProbability(petF, oppF));
     const purse = fightPurse(c.level);
-    const oddsBits = [
-      t("fightclub.oddsLine", { ml: formatMoneyline(ml) }),
-      t("fightclub.purseLine", {
-        win: purse.win,
-        loss: purse.loss,
-        xp: fightXp(c.level, fc.level ?? 1, true),
-      }),
-    ];
-    if (ui.fightBet > 0) {
-      oddsBits.push(t("fightclub.betPays", { bet: ui.fightBet, profit: betProfit(ui.fightBet, ml) }));
-    }
+    const betLine =
+      ui.fightBet > 0
+        ? `<span class="effects">${t("fightclub.betPays", { bet: ui.fightBet, profit: betProfit(ui.fightBet, ml) })}</span>`
+        : "";
     return `
-      <div class="ach earned fc-chal">
-        <span class="ach-emoji">${c.emoji}</span>
-        <span class="fc-chal-mid">
-          <span class="fc-chal-name">${esc(c.name)} <span class="fc-lvbadge">${t("fightclub.lvBadge", { n: c.level })}</span></span>
-          <span class="fc-sub">${oddsBits.join(" · ")}</span>
-        </span>
-        <button class="fc-fight-btn" data-fight="${esc(c.key)}" ${recovering || ui.fightBet > state.coins ? "disabled" : ""}>${t("fightclub.fight")}</button>
+      <div class="item">
+        <span class="qty">${t("fightclub.lvBadge", { n: c.level })}</span>
+        <span class="icon">${c.emoji}</span>
+        <span class="name">${esc(c.name)}</span>
+        <span class="effects">${t("fightclub.oddsLine", { ml: formatMoneyline(ml) })}</span>
+        <span class="effects">${t("fightclub.purseLine", {
+          win: purse.win,
+          loss: purse.loss,
+          xp: fightXp(c.level, fc.level ?? 1, true),
+        })}</span>
+        ${betLine}
+        <span class="effects"><button class="fc-fight-btn" data-fight="${esc(c.key)}" ${recovering || ui.fightBet > state.coins ? "disabled" : ""}>${t("fightclub.fight")}</button></span>
       </div>`;
   }).join("");
 
   const note = `<div class="ach-section caretaker-title">${t("fightclub.clubNote")}</div>`;
-  return note + head + bets + `<div class="ach-list">${rows}</div>`;
+  return note + head + bets + cards;
 }

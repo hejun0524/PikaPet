@@ -3,10 +3,10 @@
 
 import { invoke, currentMonitor } from "../shared/tauri.js";
 import { setLanguage } from "../shared/i18n.js";
-import { appWindow, latest, trip } from "./state.js";
+import { appWindow, latest, rt, trip } from "./state.js";
 import { applySettings } from "./applySettings.js";
 import { applySpecies } from "./applySpecies.js";
-import { updateMood } from "./updateMood.js";
+import { updateResting } from "./updateResting.js";
 import { greet } from "./greet.js";
 
 /**
@@ -31,12 +31,19 @@ export async function boot() {
   }
   setLanguage(saved.settings?.language);
   applySettings(saved.settings ?? {});
+  // Custom-form sheets resolve against <data>/pets/ — fetch before applying.
+  if (Array.isArray(saved.customForms)) rt.customForms = saved.customForms;
+  try {
+    rt.petsDir = (await invoke("get_data_paths")).pets;
+  } catch (e) {
+    console.error("get_data_paths failed:", e);
+  }
   applySpecies(saved.species);
   if (typeof saved.callMe === "string" && saved.callMe.trim()) {
     latest.callMe = saved.callMe.trim();
   }
-  // Old saves may still call mood "happiness".
-  updateMood(saved.care?.mood ?? saved.care?.happiness);
+  updateResting(saved.care);
+  if (typeof saved.name === "string") rt.lastName = saved.name;
   latest.activity = saved.activity?.active ?? null;
   latest.caretaking = saved.caretaking?.active ?? null;
   // If the app starts mid-trip, the pet is already away: hide without fanfare.

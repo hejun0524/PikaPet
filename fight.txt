@@ -1,25 +1,31 @@
-It is time to build the Darcy's Fight Club:
-1. Use the same NPCs from Noonie's kitchen customers, they will be fighters (challengers) that match Darcy's skill set. Some of them are easy, some of them are hard
-2. Add more skills: 20-30 fun ones (such as water gun, throw coins, blow dust, pillow fight, sleep dart, electricity pad zap, drink vitamin juice for healing, throw dumbell/basketball, shock with balloon, energy drink for rage, and 20-30 MMA/Brazilian JiuJutsu/Karate/KungFu/others movement) Make the total skill number to be 50. And add a one-line description to each skill, make it sound fun (for example: for throw coins, you can say something like: when you are rich, you can splurge in fighting blah blah blah). For the skills display, make it list-view like in the achievements.
-Each skill will have its own damage dealing, special effect, boosting (buff pet or debuff opponent for a few rounds), effect (healing, disabling opponent for the next turn, etc), triggering condition (such as apparent death triggers only at KO with a probability for pet to survive the KO).
-3. Traning manuals are now renamed to Skill books, it comes with 5 forms (please give them better names):
-(i) basic: just unlock or upgrade one skill with one skill point at random
-(ii) double: unlock/upgrade two different skills for one skill point per skill at random
-(iii) double: unlock/upgrade one skill at random, but for two skill points at a time
-(iv) wild 1: it allows user to choose a skill to level up
-(v) master: it allows user to choose to maximize one skill
-With this, you have to re-design the chance of book dropping at Noonie's place, and also Pika can sell them at random (also better books show up with a lower probability) and price of skill books can be high. 
-4. The pet now comes with fight level with xp (higher level, more xp), when level up, a basic book is awarded, every 5 levels, award a double at random.
-5. To gain xp, the pet needs to fight with NPCs, winning gives more xp than losing, also hp is related with levels
-6. pet has hp for fighting. Since we do not have animation, this will be a turn-by-turn word fight, but the hp will be displayed as a bar as the battle proceeds.
-7. pet has 3 traits, we will use them here as well: 
-(i) fitness -> the attack (including basic attacks, and damage dealing bonus for any damage-related skills) and defense (defending can help reduce damage taken by a percentage) and bonus hp
-(ii) intelligence -> chance of dodging and critical
-(iii) charm -> chance of double turn and skill triggering. For double turn: after the pet takes its turn, there is a chance that it takes a second turn immediately after. 
-8. Turns: the battle is a turn-by-turn fight, start with Rock-paper-scissors, winner gets the first turn
-(i) each turn, the pet attacks. then next turn, opponent attacks. unless it is a double-turn.
-(ii) Skills should be either active or passive: active skill like throwing weapons, mr. vampire, shadow clone can be triggered when you attack; passive skills like thick skin, parry (which deflect attack), apparent death can be triggered when opponents attack you
-(iii) Critical deals 3x damage for both basic attacks and any active or passive skills (including ) that can deal damage to opponent.
-9. After each battle, pet need time to recover. You can purchase healing materials (come up with a couple names for me) from Pika but the price can be high. Put it and skills books in a separate tab in Pika's page. 
-After buying, one can go to Darcy's page, add a training room tab that shows your stock of books and healing materials. When you use a book, it should show a message that your skill has been unlocked, or upgraded. similar for healing.
-10. There are two ways to earn cois from Darcy: normal winning/losing let you earn/lose coins, and betting that comes with odds (odds can be determined by traits & skillsets, you can use American Odds (Moneyline) like in DraftKings)
+The next fix is as follows:
+1. I want the mouse to be able to click through the transparent background of the pet. 
+The pet right now sits on my desktop but my mouse should not be blocked by the transparent background
+
+2. For Darcy's fight club UI: training room & opponents should be card-style (like in the shopping, job, etc), not list-view style.
+For the skills (keep it list-view), even it is not unlocked, show the description as well.
+
+3. Add Italian, Portugese, Arabic, Hindi, Greek, Korean to Locale
+
+4. For all add-ons, complete the locale
+
+5. In the magic station, add Pika, Darcy and Noonie to the list, but they are special forms: they cannot be unlocked through purchasing, you have to unlock them by:
+(i) Pika: a Garden Cat, unlock all cities & sports teams
+(ii) Darcy: a Tuxedo Cat, master all skills
+(iii) Noonie: a Calico Cat, unlock all recipes
+Since I do not have their sprite sheets ready, for now just use my white cat's, I will change it later by myself. When displaying in the magic station, do not display their names, just display their breed like the rest.
+
+6. Also in the magic station, allow users to create their own forms of pets. 
+We just assume users have the correct spritesheet, and all they do in the app is to click Create My Own Form.
+By uploading, the app adds it to the list, but the user still needs to pay 8000 to unlock it.
+
+7. Magic station will be organized into 3 categories: the OG forms, the special forms, and the customized forms. Give them better names.
+Document in the corresponding .md file so in future I know how to manually change the code such as adding a special form with unlock conditions.
+
+8. File management: in setting, you should display where is the folder that stores the user data, add-ons, and uploaded pets.
+I assume they all stored under the same directory? Users can choose to change it to a different folder, by doing so, all existing data will also be migrated there. 
+Make sure that the user does not select a non-writable folder such as the directory under this app. If they select, you can just pop out an error or warning message prompt.
+
+9. Be ready that we will move add-on zips to github release, so that we can manage those add-ons seperately. 
+Our add-on page now will have 3 tabs: My Add-ons, Marketplace, and Add-on manager (yes, change that to a tab)
+Finally, we need to rename Add-on to Extension.

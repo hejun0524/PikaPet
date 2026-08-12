@@ -17,6 +17,7 @@ export const pet = {
   name: "Huanhuan",
   species: "toy_poodle", // breed label derives from the species
   forms: ["toy_poodle"], // species the pet owns and can transform into
+  customForms: [], // user-uploaded pet forms: {key, breed, file in <data>/pets/}
   callMe: "Owner",
   coins: 1000,
   achievements: [],
@@ -45,7 +46,7 @@ export const pet = {
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
   homework: { date: "", count: 0 }, // daily homework limit tracking
-  pinnedAddons: [], // add-on ids pinned to the popover + hub quick-launch rows
+  pinnedAddons: [], // pinned extension ids (name mirrors the historical save.json key)
   // Noonie's Kitchen: paw-bots, the 3h order board, the pantry (ingredient
   // key -> count), learned city-recipe keys, and the delivery log.
   kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
@@ -77,7 +78,7 @@ export const LEGACY_CARE_KEYS = {
  * Non-persistent runtime flags of the stats window:
  * - `saveEnabled`: false during a first run until the setup window finishes,
  *   so quitting mid-setup keeps the app in the first-run state.
- * - `installedAddons`: raw manifest entries from the Rust add-on scan.
+ * - `installedExtensions`: raw manifest entries from the Rust extension scan.
  * - `lastPopoverH`: last applied popover height (skip no-op resizes).
  * - `trayCompact`: the ▾ minimized-popover toggle (persisted in localStorage).
  * - `scheduleStep`: rotation cursor of the caretaker schedule layer.
@@ -87,13 +88,14 @@ export const LEGACY_CARE_KEYS = {
  */
 export const runtime = {
   saveEnabled: true,
-  installedAddons: [],
+  installedExtensions: [],
   lastPopoverH: 0,
   trayCompact: localStorage.getItem("trayCompact") === "1",
   scheduleStep: 0,
   lastDecayAt: Date.now(),
   lastFcRegenAt: Date.now(),
+  dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
 };
 
-/** Add-on tray widgets: addon id -> last pushed widget state. */
+/** Extension tray widgets: extension id -> last pushed widget state. */
 export const widgetStates = new Map();
