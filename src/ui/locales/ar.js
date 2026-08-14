@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "بدون رهان",
   "fightclub.betNote": "احتمالات أمريكية كما في اللوحات الكبيرة: −150 تعني المخاطرة بـ150 لربح 100، و+200 تعني المخاطرة بـ100 لربح 200. إن فزت فالأرباح لك؛ وإن خسرت فالرهان يذهب إلى دارسي.",
   "fightclub.oddsLine": "الاحتمالات {ml}",
-  "fightclub.purseLine": "فوز +💰{win} · +{xp} خبرة · خسارة −💰{loss}",
+  "fightclub.purseLine": "فوز +{win} +{xp} خبرة · خسارة −{loss}",
   "fightclub.betPays": "💰{bet} يجلب +💰{profit}",
   "fightclub.lvBadge": "مستوى {n}",
   "fightclub.fight": "🥊 قاتل",

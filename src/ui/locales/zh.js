@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "不下注",
   "fightclub.betNote": "美式赔率，和大盘口一样：−150 表示押150赢100，+200 表示押100赢200。赢了奖金归你；输了本金归达西。",
   "fightclub.oddsLine": "赔率 {ml}",
-  "fightclub.purseLine": "胜 +💰{win} · +{xp} 经验 · 负 −💰{loss}",
+  "fightclub.purseLine": "胜 +{win}（+{xp} 经验） · 负 −{loss}",
   "fightclub.betPays": "💰{bet} 可赢 +💰{profit}",
   "fightclub.lvBadge": "Lv {n}",
   "fightclub.fight": "🥊 开打",

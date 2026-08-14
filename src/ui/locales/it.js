@@ -34,7 +34,7 @@ export const messages = {
   "fightclub.betNone": "Nessuna scommessa",
   "fightclub.betNote": "Quote americane, come sui grandi tabelloni: −150 significa puntare 150 per vincerne 100, +200 significa puntare 100 per vincerne 200. Se vinci la vincita è tua; se perdi la posta va a Darcy.",
   "fightclub.oddsLine": "Quota {ml}",
-  "fightclub.purseLine": "Vittoria +💰{win} · +{xp} XP · sconfitta −💰{loss}",
+  "fightclub.purseLine": "Vittoria +{win} (+{xp} XP) · sconfitta −{loss}",
   "fightclub.betPays": "💰{bet} paga +💰{profit}",
   "fightclub.lvBadge": "Lv {n}",
   "fightclub.fight": "🥊 Combatti",

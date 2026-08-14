@@ -34,7 +34,7 @@ export const messages = {
   "fightclub.betNone": "Χωρίς στοίχημα",
   "fightclub.betNote": "Αμερικανικές αποδόσεις, όπως στους μεγάλους πίνακες: −150 σημαίνει ρισκάρεις 150 για να κερδίσεις 100, +200 σημαίνει ρισκάρεις 100 για να κερδίσεις 200. Αν νικήσεις, το κέρδος είναι δικό σου· αν χάσεις, το ποντάρισμα πάει στον Darcy.",
   "fightclub.oddsLine": "Αποδόσεις {ml}",
-  "fightclub.purseLine": "Νίκη +💰{win} · +{xp} XP · ήττα −💰{loss}",
+  "fightclub.purseLine": "Νίκη +{win} (+{xp} XP) · ήττα −{loss}",
   "fightclub.betPays": "💰{bet} αποδίδει +💰{profit}",
   "fightclub.lvBadge": "Επ. {n}",
   "fightclub.fight": "🥊 Μάχη",

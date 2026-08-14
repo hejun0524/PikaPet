@@ -34,7 +34,7 @@ export const messages = {
   "fightclub.betNone": "베팅 없음",
   "fightclub.betNote": "큰 전광판처럼 미국식 배당률이에요: −150은 150을 걸어 100을 따는 것, +200은 100을 걸어 200을 따는 것. 이기면 상금은 내 것, 지면 판돈은 Darcy에게 넘어가요.",
   "fightclub.oddsLine": "배당률 {ml}",
-  "fightclub.purseLine": "승리 +💰{win} · +{xp} XP · 패배 −💰{loss}",
+  "fightclub.purseLine": "승리 +{win} (+{xp} XP) · 패배 −{loss}",
   "fightclub.betPays": "💰{bet} 걸면 +💰{profit}",
   "fightclub.lvBadge": "Lv {n}",
   "fightclub.fight": "🥊 대결",

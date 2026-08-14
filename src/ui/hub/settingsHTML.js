@@ -26,7 +26,7 @@ export function settingsHTML() {
       <div class="ach-section">${t("settings.general")}</div>
       <div class="settings-row">
         <label for="size">${t("settings.size")}</label>
-        <input type="number" id="size" class="num-input" min="50" max="150" step="5"
+        <input type="number" id="size" class="num-input" min="60" max="150" step="5"
           value="${Math.round(appSettings.scale * 100)}" />
       </div>
       <div class="settings-row">

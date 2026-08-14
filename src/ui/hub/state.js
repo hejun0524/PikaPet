@@ -127,7 +127,7 @@ export const baskets = {
 
 /** Mirrors save.json's settings; edited here, persisted by the stats window. */
 export const appSettings = {
-  scale: 0.5,
+  scale: 0.6,
   allDesktops: true,
   devMode: false,
   devCoins: false,

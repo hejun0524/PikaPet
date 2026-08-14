@@ -34,7 +34,7 @@ export const messages = {
   "fightclub.betNone": "Sem aposta",
   "fightclub.betNote": "Odds americanas, como nos grandes placares: −150 significa arriscar 150 para ganhar 100, +200 significa arriscar 100 para ganhar 200. Se vencer, o prêmio é seu; se perder, a aposta fica com o Darcy.",
   "fightclub.oddsLine": "Odds {ml}",
-  "fightclub.purseLine": "Vitória +💰{win} · +{xp} XP · derrota −💰{loss}",
+  "fightclub.purseLine": "Vitória +{win} (+{xp} XP) · derrota −{loss}",
   "fightclub.betPays": "💰{bet} paga +💰{profit}",
   "fightclub.lvBadge": "Nv {n}",
   "fightclub.fight": "🥊 Lutar",

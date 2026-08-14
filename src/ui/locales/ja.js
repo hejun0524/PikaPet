@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "ベットなし",
   "fightclub.betNote": "本場と同じアメリカ式オッズ：−150は150賭けて100の儲け、+200は100賭けて200の儲け。勝てば配当はあなたのもの、負ければ賭け金はダーシーのもの。",
   "fightclub.oddsLine": "オッズ {ml}",
-  "fightclub.purseLine": "勝ち +💰{win} · +{xp} XP · 負け −💰{loss}",
+  "fightclub.purseLine": "勝ち +{win} （+{xp} XP） · 負け −{loss}",
   "fightclub.betPays": "💰{bet} で +💰{profit}",
   "fightclub.lvBadge": "Lv {n}",
   "fightclub.fight": "🥊 対戦",

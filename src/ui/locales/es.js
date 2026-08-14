@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "Sin apuesta",
   "fightclub.betNote": "Cuotas americanas, como en los grandes tableros: −150 = arriesgar 150 para ganar 100; +200 = arriesgar 100 para ganar 200. Si ganas, el premio es tuyo; si pierdes, la apuesta se la queda Darcy.",
   "fightclub.oddsLine": "Cuota {ml}",
-  "fightclub.purseLine": "Victoria +💰{win} · +{xp} XP · derrota −💰{loss}",
+  "fightclub.purseLine": "Victoria +{win} (+{xp} XP) · derrota −{loss}",
   "fightclub.betPays": "💰{bet} paga +💰{profit}",
   "fightclub.lvBadge": "Nv {n}",
   "fightclub.fight": "🥊 Luchar",

@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "Keine Wette",
   "fightclub.betNote": "Amerikanische Quoten wie auf den großen Tafeln: −150 heißt 150 riskieren, um 100 zu gewinnen; +200 heißt 100 riskieren, um 200 zu gewinnen. Beim Sieg gehört der Gewinn dir, bei Niederlage geht der Einsatz an Darcy.",
   "fightclub.oddsLine": "Quote {ml}",
-  "fightclub.purseLine": "Sieg +💰{win} · +{xp} XP · Niederlage −💰{loss}",
+  "fightclub.purseLine": "Sieg +{win} (+{xp} XP) · Niederlage −{loss}",
   "fightclub.betPays": "💰{bet} zahlt +💰{profit}",
   "fightclub.lvBadge": "St. {n}",
   "fightclub.fight": "🥊 Kämpfen",

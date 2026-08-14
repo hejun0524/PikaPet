@@ -34,7 +34,7 @@ export const messages = {
   "fightclub.betNone": "कोई दाँव नहीं",
   "fightclub.betNote": "अमेरिकी भाव, बड़े बोर्डों जैसे: −150 यानी 100 जीतने के लिए 150 लगाओ, +200 यानी 200 जीतने के लिए 100 लगाओ। जीते तो इनाम तुम्हारा; हारे तो दाँव डार्सी का।",
   "fightclub.oddsLine": "भाव {ml}",
-  "fightclub.purseLine": "जीत +💰{win} · +{xp} XP · हार −💰{loss}",
+  "fightclub.purseLine": "जीत +{win} (+{xp} XP) · हार −{loss}",
   "fightclub.betPays": "💰{bet} पर मिलेगा +💰{profit}",
   "fightclub.lvBadge": "Lv {n}",
   "fightclub.fight": "🥊 लड़ो",

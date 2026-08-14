@@ -35,7 +35,7 @@ export const messages = {
   "fightclub.betNone": "Sans pari",
   "fightclub.betNote": "Cotes américaines, comme sur les grands tableaux : −150 = miser 150 pour gagner 100, +200 = miser 100 pour gagner 200. Victoire : le gain est à toi ; défaite : la mise revient à Darcy.",
   "fightclub.oddsLine": "Cote {ml}",
-  "fightclub.purseLine": "Victoire +💰{win} · +{xp} XP · défaite −💰{loss}",
+  "fightclub.purseLine": "Victoire +{win} (+{xp} XP) · défaite −{loss}",
   "fightclub.betPays": "💰{bet} rapporte +💰{profit}",
   "fightclub.lvBadge": "Nv {n}",
   "fightclub.fight": "🥊 Combattre",

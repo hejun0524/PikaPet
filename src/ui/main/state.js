@@ -27,7 +27,7 @@ export const BUBBLE_SPACE = 96;
 export const MIN_WINDOW_W = 280; // also the speech bubble's max width
 
 /** Fallbacks applied when save.json has no settings yet. */
-export const DEFAULT_SETTINGS = { scale: 0.5, allDesktops: true };
+export const DEFAULT_SETTINGS = { scale: 0.6, allDesktops: true };
 
 /** Below this percent a meter triggers a complaint line. Matches the orange
  * "low" tier in panel/barLevels.js. */
