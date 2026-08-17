@@ -1129,7 +1129,7 @@ footer button.active,
   word-break: break-all;
 }
 
-#storage-change {
+#storage-change, #storage-open {
   padding: 6px 14px;
   font-family: inherit;
   font-size: 12px;
