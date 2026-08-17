@@ -15,6 +15,10 @@ export const messages = {
   "view.kitchen": "努尼的厨房",
   "view.addons": "扩展",
   "view.settings": "设置",
+  "view.cart": "购物车",
+  "view.plan": "计划册",
+  "view.trade": "皮卡交易",
+  "view.service": "看护服务",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "搏击俱乐部",
@@ -216,6 +220,7 @@ export const messages = {
   "chrome.world": "世界",
   "chrome.quickLaunch": "快捷启动",
   "chrome.backToAddons": "返回扩展主页",
+  "chrome.back": "返回",
   "chrome.minimize": "收起",
   "chrome.expand": "展开",
 
@@ -452,6 +457,8 @@ export const messages = {
   "settings.allDesktops": "在所有桌面显示",
   "settings.autostart": "开机时自动启动",
   "settings.hidePet": "隐藏我的宠物",
+  "settings.pauseOnSleep": "电脑休眠时暂停状态衰减",
+  "settings.pauseOnSleepHint": "勾选后，电脑休眠期间宠物的状态和活动会暂停；取消勾选则让时间照常流逝。",
   "settings.language": "🌐 语言",
   "settings.langAuto": "跟随系统",
   "settings.quit": "退出应用",

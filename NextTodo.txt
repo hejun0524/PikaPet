@@ -1,0 +1,17 @@
+The next fix is as follows:
+
+1. Issue: Shopping cart list display issue when many items are added
+When many items are added to Pika’s Trading Post, the list does not become scrollable.
+Instead, the items continue expanding the page/container and push the buttons further down, making the UI difficult to use.
+Expected behavior: The item list should have a maximum height and become scrollable when there are too many items to fit on screen.
+Current behavior: Adding several items makes the container expand vertically and pushes the buttons down instead of enabling scrolling.
+Suggested improvement: Set a maximum height for the item list. Enable vertical scrolling when the list exceeds that height. Keep the action buttons visible/fixed in their intended position.
+This is mainly a display/layout issue, but it becomes noticeable when there are many items.
+
+Final decision: for shopping cart, pika trading, and so on, clicking on the button should redirect us to a different page, where users can see a full list of items then have the choice of clear & checkout.
+In the meantime, add a go back button on top left so users can go back to the previous page to continue shopping.
+
+2. When the pet's size is 50, users may not be able to drag the pet, nor right click. This happens on my Macbook Pro 15-inch 2017 (which is an old Intel model).
+Right now, if I tune the size to 60 on my old model (not this computer), I can drag it around and right click works.
+
+3. Remove Pika, Darcy, Noonie and Achievements from Right Click menu.

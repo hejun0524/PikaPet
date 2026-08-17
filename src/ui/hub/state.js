@@ -99,6 +99,7 @@ export const ui = {
   dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
   storageMsg: "", // last change-folder error shown on the Settings page
   magicMsg: "", // last custom-form import error shown at the Magic Station
+  returnView: null, // view to restore when leaving a basket page (see BASKET_VIEWS)
 };
 
 /** Shopping cart: item key -> quantity. Local until "buy-cart" checkout. */
@@ -132,4 +133,5 @@ export const appSettings = {
   devMode: false,
   devCoins: false,
   language: "auto",
+  pauseOnSleep: true,
 };

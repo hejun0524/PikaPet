@@ -93,6 +93,9 @@ export function applyState(saved) {
     if (typeof saved.settings.devCoins === "boolean") {
       appSettings.devCoins = saved.settings.devCoins;
     }
+    if (typeof saved.settings.pauseOnSleep === "boolean") {
+      appSettings.pauseOnSleep = saved.settings.pauseOnSleep;
+    }
     if (typeof saved.settings.language === "string") {
       appSettings.language = saved.settings.language;
       setLanguage(appSettings.language);

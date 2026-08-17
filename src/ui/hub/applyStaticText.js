@@ -25,5 +25,6 @@ export function applyStaticText() {
     btn.title = t(`view.${btn.dataset.view}`);
   }
   document.getElementById("extensions-home-btn").title = t("chrome.backToAddons");
+  document.getElementById("back-btn").title = t("chrome.back");
   applySideCollapsed(); // restores the icon-rail state + localizes its tooltip
 }

@@ -14,6 +14,10 @@ export const messages = {
   "view.kitchen": "Noonie의 주방",
   "view.addons": "확장 기능",
   "view.settings": "설정",
+  "view.cart": "장바구니",
+  "view.plan": "계획표",
+  "view.trade": "피카 거래",
+  "view.service": "돌봄 서비스",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "파이트 클럽",
@@ -137,6 +141,7 @@ export const messages = {
   "chrome.world": "세상",
   "chrome.quickLaunch": "빠른 실행",
   "chrome.backToAddons": "확장 기능으로 돌아가기",
+  "chrome.back": "뒤로",
   "chrome.minimize": "최소화",
   "chrome.expand": "확대",
 
@@ -373,6 +378,8 @@ export const messages = {
   "settings.allDesktops": "모든 데스크톱에 표시",
   "settings.autostart": "컴퓨터 시작 시 함께 실행",
   "settings.hidePet": "내 펫 숨기기",
+  "settings.pauseOnSleep": "컴퓨터가 잠자는 동안 상태 저하 일시 정지",
+  "settings.pauseOnSleepHint": "체크하면 컴퓨터가 잠자는 동안 펫의 상태와 활동이 멈춥니다. 체크를 해제하면 시간이 그대로 흐릅니다.",
   "settings.language": "🌐 언어",
   "settings.langAuto": "시스템 언어",
   "settings.quit": "앱 종료",

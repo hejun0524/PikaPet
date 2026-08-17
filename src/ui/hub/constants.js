@@ -73,5 +73,18 @@ export const VIEWS = {
   settings: { emoji: "⚙️" },
 };
 
+/**
+ * Basket pages: full-page checkout views reached from the top-bar basket
+ * buttons (cart/plan/trade/service), each with a ← Back button returning to
+ * `ui.returnView`. Not real nav destinations (absent from VIEWS/the side
+ * footer), but valid `setView()` targets — see hub/setView.js.
+ */
+export const BASKET_VIEWS = {
+  cart: "🛒",
+  plan: "📔",
+  trade: "🤝",
+  service: "🛎️",
+};
+
 /** Coins charged for a Pet Registry change (name / call-me). */
 export const GOV_FEE = 50;

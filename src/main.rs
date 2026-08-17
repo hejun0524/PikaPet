@@ -3,7 +3,7 @@
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    Emitter, Manager,
 };
 use tauri_plugin_positioner::{Position, WindowExt};
 
@@ -64,6 +64,33 @@ fn spawn_click_through_watcher(handle: tauri::AppHandle) {
             {
                 ignoring = Some(want_ignore);
             }
+        }
+    });
+}
+
+// ── System sleep detection ──────────────────────────────────────────────────
+// No OS sleep/wake API is used here (macOS's is Objective-C-only); instead a
+// background thread sleeps in fixed steps and compares wall-clock time
+// before/after. std::thread::sleep is itself suspended for the duration of a
+// system sleep, so a step that took far longer than requested means the
+// machine was asleep in between — the excess IS the sleep duration. A
+// generous slack absorbs normal scheduler jitter without false-triggering.
+const SLEEP_POLL: std::time::Duration = std::time::Duration::from_secs(3);
+const SLEEP_SLACK: std::time::Duration = std::time::Duration::from_secs(10);
+
+fn spawn_sleep_watcher(handle: tauri::AppHandle) {
+    std::thread::spawn(move || {
+        let mut last = std::time::SystemTime::now();
+        loop {
+            std::thread::sleep(SLEEP_POLL);
+            let now = std::time::SystemTime::now();
+            if let Ok(elapsed) = now.duration_since(last) {
+                if elapsed > SLEEP_POLL + SLEEP_SLACK {
+                    let ms = (elapsed - SLEEP_POLL).as_millis() as u64;
+                    let _ = handle.emit("system-slept", ms);
+                }
+            }
+            last = now;
         }
     });
 }
@@ -657,6 +684,7 @@ fn main() {
 
             // Desktop clicks pass through the pet window's transparent margins.
             spawn_click_through_watcher(app.handle().clone());
+            spawn_sleep_watcher(app.handle().clone());
 
             let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let tray_menu = MenuBuilder::new(app).item(&quit_item).build()?;

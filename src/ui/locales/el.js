@@ -14,6 +14,10 @@ export const messages = {
   "view.kitchen": "Η Κουζίνα της Noonie",
   "view.addons": "Επεκτάσεις",
   "view.settings": "Ρυθμίσεις",
+  "view.cart": "Καλάθι",
+  "view.plan": "Βιβλίο σχεδίων",
+  "view.trade": "Συναλλαγή με την Pika",
+  "view.service": "Υπηρεσίες φροντίδας",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "Fight Club",
@@ -137,6 +141,7 @@ export const messages = {
   "chrome.world": "Κόσμος",
   "chrome.quickLaunch": "Γρήγορη Εκκίνηση",
   "chrome.backToAddons": "Πίσω στις Επεκτάσεις",
+  "chrome.back": "Πίσω",
   "chrome.minimize": "Ελαχιστοποίηση",
   "chrome.expand": "Ανάπτυξη",
 
@@ -373,6 +378,8 @@ export const messages = {
   "settings.allDesktops": "Εμφάνιση σε όλες τις επιφάνειες εργασίας",
   "settings.autostart": "Εμφάνιση με την εκκίνηση του υπολογιστή",
   "settings.hidePet": "Κρύψε το ζωάκι μου",
+  "settings.pauseOnSleep": "Παύση φθοράς όσο ο υπολογιστής κοιμάται",
+  "settings.pauseOnSleepHint": "Αν είναι επιλεγμένο, οι ανάγκες και οι δραστηριότητες του κατοικίδιου παγώνουν όσο ο υπολογιστής κοιμάται. Αποεπιλέξτε για να συνεχίσει ο χρόνος κανονικά.",
   "settings.language": "🌐 Γλώσσα",
   "settings.langAuto": "Γλώσσα συστήματος",
   "settings.quit": "Έξοδος από την εφαρμογή",

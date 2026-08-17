@@ -7,8 +7,6 @@ import { invoke, listen } from "../shared/tauri.js";
 import { ui } from "./state.js";
 import { applyState } from "./applyState.js";
 import { renderSidePanel } from "./renderSidePanel.js";
-import { renderCartDrawer } from "./renderCartDrawer.js";
-import { renderPlanDrawer } from "./renderPlanDrawer.js";
 import { renderGrid } from "./renderGrid.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { refreshBankNumbers } from "./refreshBankNumbers.js";
@@ -28,8 +26,6 @@ export function initSync() {
   listen("pet-state", ({ payload }) => {
     applyState(payload);
     renderSidePanel();
-    renderCartDrawer();
-    renderPlanDrawer();
     // Don't re-render form views under the user's cursor/keyboard, or a
     // fight replay mid-animation (fightReplay.js patches that DOM itself).
     const isForm =
@@ -55,8 +51,6 @@ export function initSync() {
       console.error("focus refresh failed:", e);
     }
     renderSidePanel();
-    renderCartDrawer();
-    renderPlanDrawer();
     const replaying = ui.view === "fightclub" && ui.battle && !ui.battle.done;
     if (ui.view !== "settings" && ui.view !== "government" && !replaying) renderGrid();
   });

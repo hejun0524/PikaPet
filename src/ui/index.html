@@ -7,9 +7,14 @@
   </head>
   <body>
     <div id="bubble" hidden></div>
-    <!-- #pet is a one-cell viewport; #sheet is the full spritesheet, moved
-         behind it by compositor-driven transform animations (style.css). -->
-    <div id="pet" data-anim="idle"><div id="sheet"></div></div>
+    <!-- #pet is a one-cell viewport, explicitly sized in px by
+         main/applySettings.js (never CSS zoom — old WebKit builds handle it
+         inconsistently at small values); #scaler applies the user's size as
+         a standard transform: scale(), and #sheet is the full spritesheet
+         slid behind it by compositor-driven transform animations, in native
+         (unscaled) pixels — nested transforms compose, so it comes out the
+         right size. See style.css. -->
+    <div id="pet" data-anim="idle"><div id="scaler"><div id="sheet"></div></div></div>
     <!-- main.js is an ES module entry point: it imports the per-function
          files under main/. -->
     <script type="module" src="main.js"></script>

@@ -19,6 +19,10 @@ export const messages = {
   "view.kitchen": "Noonie's Kitchen",
   "view.addons": "Extensions",
   "view.settings": "Settings",
+  "view.cart": "Cart",
+  "view.plan": "Plan Book",
+  "view.trade": "Pika Trade",
+  "view.service": "Caretaker Services",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "Fight Club",
@@ -142,6 +146,7 @@ export const messages = {
   "chrome.world": "World",
   "chrome.quickLaunch": "Quick Launch",
   "chrome.backToAddons": "Back to Extensions",
+  "chrome.back": "Back",
   "chrome.minimize": "Minimize",
   "chrome.expand": "Expand",
 
@@ -378,6 +383,8 @@ export const messages = {
   "settings.allDesktops": "Show on all desktops",
   "settings.autostart": "Show up when computer starts",
   "settings.hidePet": "Hide my pet",
+  "settings.pauseOnSleep": "Pause status decay while asleep",
+  "settings.pauseOnSleepHint": "When checked, your pet's needs and activities freeze while your computer is asleep. Uncheck to let time keep passing.",
   "settings.language": "🌐 Language",
   "settings.langAuto": "System language",
   "settings.quit": "Quit the app",

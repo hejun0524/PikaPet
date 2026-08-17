@@ -14,6 +14,10 @@ export const messages = {
   "view.kitchen": "नूनी की रसोई",
   "view.addons": "एक्सटेंशन",
   "view.settings": "सेटिंग्स",
+  "view.cart": "कार्ट",
+  "view.plan": "योजना पुस्तिका",
+  "view.trade": "पिका व्यापार",
+  "view.service": "देखभाल सेवाएं",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "फ़ाइट क्लब",
@@ -137,6 +141,7 @@ export const messages = {
   "chrome.world": "दुनिया",
   "chrome.quickLaunch": "त्वरित लॉन्च",
   "chrome.backToAddons": "एक्सटेंशन पर वापस",
+  "chrome.back": "वापस",
   "chrome.minimize": "छोटा करो",
   "chrome.expand": "बड़ा करो",
 
@@ -373,6 +378,8 @@ export const messages = {
   "settings.allDesktops": "सभी डेस्कटॉप पर दिखाओ",
   "settings.autostart": "कंप्यूटर चालू होते ही दिखो",
   "settings.hidePet": "मेरा पालतू छिपाओ",
+  "settings.pauseOnSleep": "कंप्यूटर सोते समय स्थिति में गिरावट रोकें",
+  "settings.pauseOnSleepHint": "चेक करने पर, कंप्यूटर सोते समय आपके पालतू की ज़रूरतें और गतिविधियां रुक जाती हैं। अनचेक करने पर समय सामान्य रूप से बीतता रहेगा।",
   "settings.language": "🌐 भाषा",
   "settings.langAuto": "सिस्टम की भाषा",
   "settings.quit": "ऐप बंद करो",

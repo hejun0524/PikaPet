@@ -86,9 +86,19 @@ body:active {
 }
 
 /*
- * Sprite rendering: #pet is a one-cell (192x208) viewport with overflow
- * hidden; #sheet is the whole spritesheet slid behind it by TRANSFORM
- * animations. Transforms run on the compositor against one persistent
+ * Sprite rendering: #pet is a one-cell viewport (overflow hidden), sized in
+ * px by main/applySettings.js to CELL * the user's scale — never CSS zoom,
+ * which some older WebKit builds size/report inconsistently at small values
+ * (reportedly breaking initHitbox.js's getBoundingClientRect-based click-
+ * through math on at least one older Intel Mac, disabling drag + right-click
+ * at small pet sizes). #scaler applies that same scale as a standard
+ * transform: scale() (also set by applySettings.js), and #sheet — the whole
+ * spritesheet, in NATIVE 192x208-per-cell pixels — is slid behind it by
+ * per-animation TRANSFORM animations. Nested transforms compose, so
+ * #sheet's native-pixel translate keyframes come out correctly scaled
+ * without knowing the scale themselves.
+ *
+ * The translate animations run on the compositor against one persistent
  * layer (will-change), so switching data-anim can never produce an empty
  * paint — animating background-position instead repaints on the main
  * thread, and the teardown/restart on every animation switch blinked the
@@ -101,9 +111,17 @@ body:active {
  */
 
 #pet {
+  /* Fallback pre-JS size (scale 1); applySettings.js overrides at boot. */
   width: 192px;
   height: 208px;
   overflow: hidden;
+}
+
+#scaler {
+  width: 192px;
+  height: 208px;
+  transform-origin: 0 0;
+  /* transform: scale(...) is set inline by main/applySettings.js. */
 }
 
 #sheet {

@@ -4,6 +4,7 @@
 import { convertFileSrc } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
+import { BASKET_VIEWS } from "./constants.js";
 import {
   ITEM_CATALOG,
   HOMEWORK_DAILY_LIMIT,
@@ -11,6 +12,10 @@ import {
   extensionList,
   findSellable,
 } from "../items.js";
+import { cartPageHTML } from "./cartPageHTML.js";
+import { planPageHTML } from "./planPageHTML.js";
+import { tradePageHTML } from "./tradePageHTML.js";
+import { servicePageHTML } from "./servicePageHTML.js";
 import { escText as esc } from "../panel.js";
 import { extensionFrame } from "./extensionFrame.js";
 import { homeCardHTML } from "./homeCardHTML.js";
@@ -69,6 +74,26 @@ export function renderGrid() {
   const host = document.getElementById("extension-host");
   host.hidden = !ui.view.startsWith("extension:");
   grid.hidden = ui.view.startsWith("extension:");
+  // Basket pages (cart/plan/trade/service): #grid becomes a flex column so
+  // .basket-list's flex:1 can bound the scrollable item list — see hub.css.
+  grid.classList.toggle("basket-mode", !!BASKET_VIEWS[ui.view]);
+
+  if (ui.view === "cart") {
+    grid.innerHTML = cartPageHTML();
+    return;
+  }
+  if (ui.view === "plan") {
+    grid.innerHTML = planPageHTML();
+    return;
+  }
+  if (ui.view === "trade") {
+    grid.innerHTML = tradePageHTML();
+    return;
+  }
+  if (ui.view === "service") {
+    grid.innerHTML = servicePageHTML();
+    return;
+  }
 
   if (ui.view === "home") {
     if (ui.homeTab === "souvenirs") {

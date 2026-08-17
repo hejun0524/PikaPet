@@ -45,6 +45,11 @@ export function settingsHTML() {
         <label for="hide-pet">${t("settings.hidePet")}</label>
         <input type="checkbox" id="hide-pet" />
       </div>
+      <div class="settings-row">
+        <label for="pause-on-sleep">${t("settings.pauseOnSleep")}</label>
+        <input type="checkbox" id="pause-on-sleep" ${appSettings.pauseOnSleep ? "checked" : ""} />
+      </div>
+      <div class="gov-note">${t("settings.pauseOnSleepHint")}</div>
       <div class="settings-links">
         <a id="quit" class="danger-link">${t("settings.quit")}</a>
         <a id="reset-btn" class="danger-link">${t("settings.reset")}</a>
