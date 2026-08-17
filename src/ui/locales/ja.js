@@ -15,6 +15,10 @@ export const messages = {
   "view.kitchen": "ヌーニーのキッチン",
   "view.addons": "拡張機能",
   "view.settings": "設定",
+  "view.cart": "カート",
+  "view.plan": "予定表",
+  "view.trade": "ピカとの取引",
+  "view.service": "お世話サービス",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "格闘クラブ",
@@ -216,6 +220,7 @@ export const messages = {
   "chrome.world": "ワールド",
   "chrome.quickLaunch": "クイック起動",
   "chrome.backToAddons": "拡張機能一覧へ戻る",
+  "chrome.back": "戻る",
   "chrome.minimize": "たたむ",
   "chrome.expand": "ひろげる",
 
@@ -452,6 +457,8 @@ export const messages = {
   "settings.allDesktops": "すべてのデスクトップに表示",
   "settings.autostart": "パソコン起動時に現れる",
   "settings.hidePet": "ペットを隠す",
+  "settings.pauseOnSleep": "スリープ中はステータス低下を一時停止",
+  "settings.pauseOnSleepHint": "チェックすると、パソコンがスリープ中はペットの状態や活動が止まります。外すと時間がそのまま進みます。",
   "settings.language": "🌐 言語",
   "settings.langAuto": "システムの言語",
   "settings.quit": "アプリを終了",

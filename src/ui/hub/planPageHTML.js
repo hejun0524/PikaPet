@@ -1,5 +1,5 @@
-// hub/renderPlanDrawer.js — The plan book drawer mirrors the cart's flow:
-// stage entries, then Start.
+// hub/planPageHTML.js — The career plan-book basket page: reached from the
+// topbar 📔 button (see BASKET_VIEWS in hub/constants.js).
 
 import { t } from "../shared/i18n.js";
 import { activityName } from "../shared/names.js";
@@ -8,20 +8,14 @@ import { planEntryDef } from "./planEntryDef.js";
 import { caretakingBusy } from "./caretakingBusy.js";
 
 /**
- * Render the career plan-book drawer: one row per staged class/job with a
- * remove button, the up-front cost, and Clear / Start actions. No-op while
- * hidden.
+ * Render the plan-book page: one row per staged class/job with a remove
+ * button, then the up-front cost and Clear / Start actions.
  *
- * Side effects: rewrites #plan-drawer.
- *
- * @returns {void}
+ * @returns {string} Page HTML for the grid.
  */
-export function renderPlanDrawer() {
-  const drawer = document.getElementById("plan-drawer");
-  if (drawer.hidden) return;
+export function planPageHTML() {
   if (baskets.planBook.length === 0) {
-    drawer.innerHTML = `<div class="cart-empty">${t("plan.empty")}</div>`;
-    return;
+    return `<div class="basket-page"><div class="basket-list"><div class="cart-empty">${t("plan.empty")}</div></div></div>`;
   }
   const rows = baskets.planBook
     .map((entry, i) => {
@@ -43,13 +37,15 @@ export function renderPlanDrawer() {
   }, 0);
   const affordable = state.coins >= upfront;
   const busy = caretakingBusy();
-  drawer.innerHTML = `
-    ${rows}
-    <div class="cart-row cart-total"><span>${t("plan.upfront")}</span><span>💰${upfront}</span><span></span></div>
-    <div class="cart-actions">
-      <button id="plan-clear">${t("cart.clear")}</button>
-      <button id="plan-start" ${affordable && !busy ? "" : "disabled"}>
-        ${busy ? t("plan.caretakerBusy") : affordable ? t("plan.start") : t("cart.noCoins")}
-      </button>
+  return `
+    <div class="basket-page">
+      <div class="basket-list">${rows}</div>
+      <div class="cart-row cart-total"><span>${t("plan.upfront")}</span><span>💰${upfront}</span><span></span></div>
+      <div class="cart-actions">
+        <button id="plan-clear">${t("cart.clear")}</button>
+        <button id="plan-start" ${affordable && !busy ? "" : "disabled"}>
+          ${busy ? t("plan.caretakerBusy") : affordable ? t("plan.start") : t("cart.noCoins")}
+        </button>
+      </div>
     </div>`;
 }

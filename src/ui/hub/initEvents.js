@@ -24,13 +24,9 @@ import { flyEmoji } from "./flyEmoji.js";
 import { renderTabs } from "./renderTabs.js";
 import { renderGrid } from "./renderGrid.js";
 import { renderCartBadge } from "./renderCartBadge.js";
-import { renderCartDrawer } from "./renderCartDrawer.js";
 import { renderPlanBadge } from "./renderPlanBadge.js";
-import { renderPlanDrawer } from "./renderPlanDrawer.js";
 import { renderTradeBadge } from "./renderTradeBadge.js";
-import { renderTradeDrawer } from "./renderTradeDrawer.js";
 import { renderServiceBadge } from "./renderServiceBadge.js";
-import { renderServiceDrawer } from "./renderServiceDrawer.js";
 import { installExtensionFlow } from "./installExtensionFlow.js";
 import { uninstallExtensionFlow } from "./uninstallExtensionFlow.js";
 import { marketInstallFlow } from "./marketInstallFlow.js";
@@ -95,172 +91,41 @@ export function initEvents() {
     if (btn) setView(`extension:${btn.dataset.extension}`);
   });
 
-  document.getElementById("cart-btn").addEventListener("click", () => {
-    const drawer = document.getElementById("cart-drawer");
-    drawer.hidden = !drawer.hidden;
-    renderCartDrawer();
-  });
+  // The basket buttons now navigate to a full checkout page (setView.js
+  // remembers ui.returnView) instead of toggling a dropdown drawer.
+  document.getElementById("cart-btn").addEventListener("click", () => setView("cart"));
+  document.getElementById("plan-btn").addEventListener("click", () => setView("plan"));
+  document.getElementById("trade-btn").addEventListener("click", () => setView("trade"));
+  document.getElementById("service-btn").addEventListener("click", () => setView("service"));
+  document.getElementById("back-btn").addEventListener("click", () => setView(ui.returnView ?? "home"));
 
   // Back to the Extensions homepage from an open extension page. The iframe
   // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.
   document.getElementById("extensions-home-btn").addEventListener("click", () => setView("addons"));
-
-  document.getElementById("plan-btn").addEventListener("click", () => {
-    const drawer = document.getElementById("plan-drawer");
-    drawer.hidden = !drawer.hidden;
-    renderPlanDrawer();
-  });
-
-  document.getElementById("trade-btn").addEventListener("click", () => {
-    const drawer = document.getElementById("trade-drawer");
-    drawer.hidden = !drawer.hidden;
-    renderTradeDrawer();
-  });
-
-  document.getElementById("service-btn").addEventListener("click", () => {
-    const drawer = document.getElementById("service-drawer");
-    drawer.hidden = !drawer.hidden;
-    renderServiceDrawer();
-  });
-
-  document.getElementById("service-drawer").addEventListener("click", (e) => {
-    const remove = e.target.closest("[data-service-remove]");
-    if (remove) {
-      baskets.serviceCart.splice(Number(remove.dataset.serviceRemove), 1);
-      renderServiceBadge();
-      renderServiceDrawer();
-      renderGrid();
-      return;
-    }
-    if (e.target.id === "service-clear") {
-      baskets.serviceCart = [];
-      renderServiceBadge();
-      renderServiceDrawer();
-      renderGrid();
-      return;
-    }
-    if (e.target.id === "service-hire") {
-      if (baskets.serviceCart.length) {
-        emit("hire-caretakers", { keys: [...baskets.serviceCart] });
-        baskets.serviceCart = [];
-        document.getElementById("service-drawer").hidden = true;
-        renderServiceBadge();
-        renderGrid();
-      }
-    }
-  });
-
-  document.getElementById("trade-drawer").addEventListener("click", (e) => {
-    const removeSell = e.target.closest("[data-trade-remove-sell]");
-    if (removeSell) {
-      tradeSell.delete(removeSell.dataset.tradeRemoveSell);
-      renderTradeBadge();
-      renderTradeDrawer();
-      renderGrid();
-      return;
-    }
-    const removeBuy = e.target.closest("[data-trade-remove-buy]");
-    if (removeBuy) {
-      tradeBuy.delete(removeBuy.dataset.tradeRemoveBuy);
-      renderTradeBadge();
-      renderTradeDrawer();
-      renderGrid();
-      return;
-    }
-    const removeIng = e.target.closest("[data-trade-remove-ing]");
-    if (removeIng) {
-      tradeIng.delete(removeIng.dataset.tradeRemoveIng);
-      renderTradeBadge();
-      renderTradeDrawer();
-      renderGrid();
-      return;
-    }
-    if (e.target.id === "trade-clear") {
-      tradeSell.clear();
-      tradeBuy.clear();
-      tradeIng.clear();
-      renderTradeBadge();
-      renderTradeDrawer();
-      renderGrid();
-      return;
-    }
-    if (e.target.id === "trade-checkout") {
-      emit("pika-checkout", {
-        sold: [...tradeSell],
-        bought: [...tradeBuy.keys()],
-        ingredients: [...tradeIng].map(([key, qty]) => ({ key, qty })),
-      });
-    }
-  });
 
   listen("pika-result", ({ payload }) => {
     if (payload.ok) {
       tradeSell.clear();
       tradeBuy.clear();
       tradeIng.clear();
-      document.getElementById("trade-drawer").hidden = true;
       renderTradeBadge();
-      renderGrid();
+      setView(ui.returnView ?? "pika");
     } else {
       // Stale offers (store refreshed) — drop anything no longer on sale.
       const liveIds = new Set((state.pika.sells ?? []).map((o) => o.id));
       for (const id of [...tradeBuy.keys()]) if (!liveIds.has(id)) tradeBuy.delete(id);
       renderTradeBadge();
-      renderTradeDrawer();
       renderGrid();
-    }
-  });
-
-  document.getElementById("cart-drawer").addEventListener("click", (e) => {
-    const remove = e.target.closest("[data-remove]");
-    if (remove) {
-      cart.delete(remove.dataset.remove);
-      renderCartBadge();
-      renderCartDrawer();
-      return;
-    }
-    if (e.target.id === "cart-clear") {
-      cart.clear();
-      renderCartBadge();
-      renderCartDrawer();
-      return;
-    }
-    if (e.target.id === "cart-checkout") {
-      emit("buy-cart", { items: [...cart].map(([key, qty]) => ({ key, qty })) });
-    }
-  });
-
-  document.getElementById("plan-drawer").addEventListener("click", (e) => {
-    const remove = e.target.closest("[data-plan-remove]");
-    if (remove) {
-      baskets.planBook.splice(Number(remove.dataset.planRemove), 1);
-      renderPlanBadge();
-      renderPlanDrawer();
-      return;
-    }
-    if (e.target.id === "plan-clear") {
-      baskets.planBook = [];
-      renderPlanBadge();
-      renderPlanDrawer();
-      return;
-    }
-    if (e.target.id === "plan-start") {
-      if (baskets.planBook.length) {
-        emit("start-plan", { entries: [...baskets.planBook] });
-        baskets.planBook = [];
-        document.getElementById("plan-drawer").hidden = true;
-        renderPlanBadge();
-      }
     }
   });
 
   listen("cart-result", ({ payload }) => {
     if (payload.ok) {
       cart.clear();
-      document.getElementById("cart-drawer").hidden = true;
       renderCartBadge();
+      setView(ui.returnView ?? "shopping");
     } else {
-      renderCartDrawer();
+      renderGrid();
     }
   });
 
@@ -343,7 +208,6 @@ export function initEvents() {
       flyEmoji(findSellable(key).emoji, addCard, document.getElementById("cart-btn"));
       cart.set(key, (cart.get(key) ?? 0) + 1);
       renderCartBadge();
-      renderCartDrawer();
       return;
     }
 
@@ -353,7 +217,6 @@ export function initEvents() {
       flyEmoji(cls.emoji, classCard, document.getElementById("plan-btn"));
       baskets.planBook.push({ type: "class", key: cls.key });
       renderPlanBadge();
-      renderPlanDrawer();
       return;
     }
 
@@ -363,7 +226,6 @@ export function initEvents() {
       flyEmoji(job.emoji, jobCard, document.getElementById("plan-btn"));
       baskets.planBook.push({ type: "job", key: job.key });
       renderPlanBadge();
-      renderPlanDrawer();
       return;
     }
 
@@ -411,7 +273,6 @@ export function initEvents() {
         tradeSell.add(city);
       }
       renderTradeBadge();
-      renderTradeDrawer();
       renderGrid();
       return;
     }
@@ -427,7 +288,6 @@ export function initEvents() {
         tradeBuy.set(id, offer);
       }
       renderTradeBadge();
-      renderTradeDrawer();
       renderGrid();
       return;
     }
@@ -439,7 +299,6 @@ export function initEvents() {
       flyEmoji(findIngredient(key).emoji, ingCard, document.getElementById("trade-btn"));
       tradeIng.set(key, (tradeIng.get(key) ?? 0) + 1);
       renderTradeBadge();
-      renderTradeDrawer();
       renderGrid();
       return;
     }
@@ -520,7 +379,6 @@ export function initEvents() {
       flyEmoji(findCaretaker(key).emoji, caretakerCard, document.getElementById("service-btn"));
       baskets.serviceCart.push(key);
       renderServiceBadge();
-      renderServiceDrawer();
       renderGrid();
       return;
     }
@@ -607,6 +465,109 @@ export function initEvents() {
       return;
     }
 
+    // ── Basket pages: cart / plan / trade / service ─────────────────────
+    const cartRemove = e.target.closest("[data-remove]");
+    if (cartRemove) {
+      cart.delete(cartRemove.dataset.remove);
+      renderCartBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "cart-clear") {
+      cart.clear();
+      renderCartBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "cart-checkout") {
+      emit("buy-cart", { items: [...cart].map(([key, qty]) => ({ key, qty })) });
+      return;
+    }
+
+    const planRemove = e.target.closest("[data-plan-remove]");
+    if (planRemove) {
+      baskets.planBook.splice(Number(planRemove.dataset.planRemove), 1);
+      renderPlanBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "plan-clear") {
+      baskets.planBook = [];
+      renderPlanBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "plan-start") {
+      if (baskets.planBook.length) {
+        emit("start-plan", { entries: [...baskets.planBook] });
+        baskets.planBook = [];
+        renderPlanBadge();
+        setView(ui.returnView ?? "career");
+      }
+      return;
+    }
+
+    const tradeRemoveSell = e.target.closest("[data-trade-remove-sell]");
+    if (tradeRemoveSell) {
+      tradeSell.delete(tradeRemoveSell.dataset.tradeRemoveSell);
+      renderTradeBadge();
+      renderGrid();
+      return;
+    }
+    const tradeRemoveBuy = e.target.closest("[data-trade-remove-buy]");
+    if (tradeRemoveBuy) {
+      tradeBuy.delete(tradeRemoveBuy.dataset.tradeRemoveBuy);
+      renderTradeBadge();
+      renderGrid();
+      return;
+    }
+    const tradeRemoveIng = e.target.closest("[data-trade-remove-ing]");
+    if (tradeRemoveIng) {
+      tradeIng.delete(tradeRemoveIng.dataset.tradeRemoveIng);
+      renderTradeBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "trade-clear") {
+      tradeSell.clear();
+      tradeBuy.clear();
+      tradeIng.clear();
+      renderTradeBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "trade-checkout") {
+      emit("pika-checkout", {
+        sold: [...tradeSell],
+        bought: [...tradeBuy.keys()],
+        ingredients: [...tradeIng].map(([key, qty]) => ({ key, qty })),
+      });
+      return;
+    }
+
+    const serviceRemove = e.target.closest("[data-service-remove]");
+    if (serviceRemove) {
+      baskets.serviceCart.splice(Number(serviceRemove.dataset.serviceRemove), 1);
+      renderServiceBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "service-clear") {
+      baskets.serviceCart = [];
+      renderServiceBadge();
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "service-hire") {
+      if (baskets.serviceCart.length) {
+        emit("hire-caretakers", { keys: [...baskets.serviceCart] });
+        baskets.serviceCart = [];
+        renderServiceBadge();
+        setView(ui.returnView ?? "government");
+      }
+      return;
+    }
+
     switch (e.target.id) {
       case "gov-apply": {
         const name = document.getElementById("gov-name").value.trim();
@@ -668,6 +629,9 @@ export function initEvents() {
       emit("settings-changed", { ...appSettings });
     } else if (e.target.id === "dev-coins") {
       appSettings.devCoins = e.target.checked;
+      emit("settings-changed", { ...appSettings });
+    } else if (e.target.id === "pause-on-sleep") {
+      appSettings.pauseOnSleep = e.target.checked;
       emit("settings-changed", { ...appSettings });
     } else if (e.target.id === "language") {
       appSettings.language = e.target.value;

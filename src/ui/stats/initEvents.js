@@ -44,6 +44,7 @@ import { applyDevCoins } from "./applyDevCoins.js";
 import { applyTrayCompact } from "./applyTrayCompact.js";
 import { openHub } from "./openHub.js";
 import { initFightclub } from "./initFightclub.js";
+import { applySleepPause } from "./applySleepPause.js";
 
 /**
  * Subscribe every Tauri event handler and DOM listener of the stats window
@@ -478,6 +479,11 @@ export function initEvents() {
     if (coinsChanged) broadcastState();
     save();
   });
+
+  // Rust's wall-clock watcher (main.rs spawn_sleep_watcher) reports how long
+  // the computer was asleep; compensate every timer so nothing advances
+  // while the lid was closed (Settings → General → pauseOnSleep, default on).
+  listen("system-slept", ({ payload }) => applySleepPause(payload));
 
   // ── Compact (minimized) popover toggle ───────────────────────────────────
   document.getElementById("tray-collapse").addEventListener("click", () => {

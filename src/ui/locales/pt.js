@@ -14,6 +14,10 @@ export const messages = {
   "view.kitchen": "A Cozinha da Noonie",
   "view.addons": "Extensões",
   "view.settings": "Configurações",
+  "view.cart": "Carrinho",
+  "view.plan": "Livro de planos",
+  "view.trade": "Troca com a Pika",
+  "view.service": "Serviços de cuidado",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "Clube de Luta",
@@ -137,6 +141,7 @@ export const messages = {
   "chrome.world": "Mundo",
   "chrome.quickLaunch": "Acesso rápido",
   "chrome.backToAddons": "Voltar às Extensões",
+  "chrome.back": "Voltar",
   "chrome.minimize": "Minimizar",
   "chrome.expand": "Expandir",
 
@@ -373,6 +378,8 @@ export const messages = {
   "settings.allDesktops": "Mostrar em todas as áreas de trabalho",
   "settings.autostart": "Aparecer quando o computador ligar",
   "settings.hidePet": "Esconder meu bichinho",
+  "settings.pauseOnSleep": "Pausar a queda de status durante o sono do computador",
+  "settings.pauseOnSleepHint": "Se marcada, as necessidades e atividades do bichinho ficam congeladas enquanto o computador dorme. Desmarque para deixar o tempo passar normalmente.",
   "settings.language": "🌐 Idioma",
   "settings.langAuto": "Idioma do sistema",
   "settings.quit": "Sair do aplicativo",

@@ -15,6 +15,10 @@ export const messages = {
   "view.kitchen": "La cuisine de Noonie",
   "view.addons": "Extensions",
   "view.settings": "Réglages",
+  "view.cart": "Panier",
+  "view.plan": "Carnet de plan",
+  "view.trade": "Échange avec Pika",
+  "view.service": "Services de garde",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "Club de combat",
@@ -216,6 +220,7 @@ export const messages = {
   "chrome.world": "Monde",
   "chrome.quickLaunch": "Lancement rapide",
   "chrome.backToAddons": "Retour aux extensions",
+  "chrome.back": "Retour",
   "chrome.minimize": "Réduire",
   "chrome.expand": "Agrandir",
 
@@ -452,6 +457,8 @@ export const messages = {
   "settings.allDesktops": "Afficher sur tous les bureaux",
   "settings.autostart": "Lancer au démarrage de l'ordinateur",
   "settings.hidePet": "Masquer mon animal",
+  "settings.pauseOnSleep": "Suspendre la baisse des besoins pendant le sommeil",
+  "settings.pauseOnSleepHint": "Cochée, les besoins et activités de l'animal se figent pendant que l'ordinateur est en veille. Décochez pour laisser le temps s'écouler normalement.",
   "settings.language": "🌐 Langue",
   "settings.langAuto": "Langue du système",
   "settings.quit": "Quitter l'application",

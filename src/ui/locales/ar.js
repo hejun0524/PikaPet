@@ -15,6 +15,10 @@ export const messages = {
   "view.kitchen": "مطبخ نوني",
   "view.addons": "الإضافات",
   "view.settings": "الإعدادات",
+  "view.cart": "عربة التسوق",
+  "view.plan": "دفتر الخطط",
+  "view.trade": "تجارة بيكا",
+  "view.service": "خدمات الرعاية",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "نادي القتال",
@@ -138,6 +142,7 @@ export const messages = {
   "chrome.world": "العالم",
   "chrome.quickLaunch": "تشغيل سريع",
   "chrome.backToAddons": "عودة إلى الإضافات",
+  "chrome.back": "رجوع",
   "chrome.minimize": "تصغير",
   "chrome.expand": "توسيع",
 
@@ -374,6 +379,8 @@ export const messages = {
   "settings.allDesktops": "أظهره على كل أسطح المكتب",
   "settings.autostart": "الظهور عند تشغيل الحاسوب",
   "settings.hidePet": "أخفِ صغيري",
+  "settings.pauseOnSleep": "إيقاف تراجع الحالة مؤقتًا أثناء سكون الحاسوب",
+  "settings.pauseOnSleepHint": "عند التحديد، تتوقف حاجات حيوانك الأليف وأنشطته أثناء سكون الحاسوب. أزل التحديد لترك الوقت يمضي كالمعتاد.",
   "settings.language": "🌐 اللغة",
   "settings.langAuto": "لغة النظام",
   "settings.quit": "أغلق التطبيق",

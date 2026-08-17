@@ -15,6 +15,10 @@ export const messages = {
   "view.kitchen": "Noonies Küche",
   "view.addons": "Erweiterungen",
   "view.settings": "Einstellungen",
+  "view.cart": "Warenkorb",
+  "view.plan": "Planbuch",
+  "view.trade": "Pika-Handel",
+  "view.service": "Betreuungsdienste",
 
   // ── Darcy's Fight Club ───────────────────────────────────────────────────
   "fightclubtab.club": "Kampfklub",
@@ -216,6 +220,7 @@ export const messages = {
   "chrome.world": "Welt",
   "chrome.quickLaunch": "Schnellstart",
   "chrome.backToAddons": "Zurück zu den Erweiterungen",
+  "chrome.back": "Zurück",
   "chrome.minimize": "Einklappen",
   "chrome.expand": "Ausklappen",
 
@@ -452,6 +457,8 @@ export const messages = {
   "settings.allDesktops": "Auf allen Schreibtischen anzeigen",
   "settings.autostart": "Beim Hochfahren des Computers starten",
   "settings.hidePet": "Mein Tier verstecken",
+  "settings.pauseOnSleep": "Verfall während des Schlafmodus pausieren",
+  "settings.pauseOnSleepHint": "Aktiviert: Die Bedürfnisse und Aktivitäten deines Tieres pausieren, während der Computer schläft. Deaktivieren lässt die Zeit weiterlaufen.",
   "settings.language": "🌐 Sprache",
   "settings.langAuto": "Systemsprache",
   "settings.quit": "App beenden",

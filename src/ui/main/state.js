@@ -5,10 +5,15 @@
 import { getCurrentWindow } from "../shared/tauri.js";
 
 /** The pet sprite viewport (`#pet`); its data-anim attribute picks the
- * animation. */
+ * animation. Sized in px to CELL * scale by applySettings.js. */
 export const petEl = document.getElementById("pet");
 
-/** The full-spritesheet element (`#sheet`) inside the viewport; animations
+/** The pet-size scaling wrapper (`#scaler`) inside the viewport; its
+ * transform: scale(...) (set by applySettings.js) composes with #sheet's
+ * native-pixel animation transforms — see style.css. */
+export const scalerEl = document.getElementById("scaler");
+
+/** The full-spritesheet element (`#sheet`) inside the scaler; animations
  * slide it via transform, species swaps change its background image. */
 export const sheetEl = document.getElementById("sheet");
 
@@ -77,7 +82,9 @@ export const DOUBLE_CLICK_MS = 400;
 
 /**
  * Right-click menu views, in menu order, with their emoji. Labels come from
- * the locale files (t("view.<key>")) when the menu is built.
+ * the locale files (t("view.<key>")) when the menu is built. Pika, Darcy's
+ * Fight Club, Noonie's Kitchen, and Achievements are reachable from the hub
+ * nav but deliberately left off this menu (kept short, per user request).
  */
 export const VIEW_EMOJI = {
   home: "🏠",
@@ -85,10 +92,6 @@ export const VIEW_EMOJI = {
   career: "💼",
   touring: "🗺️",
   government: "💖",
-  pika: "🐱",
-  kitchen: "🍳",
-  fightclub: "🥊",
-  achievements: "🏆",
   addons: "🧩",
 };
 

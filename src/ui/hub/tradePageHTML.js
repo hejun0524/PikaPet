@@ -1,4 +1,5 @@
-// hub/renderTradeDrawer.js
+// hub/tradePageHTML.js — The Pika trade basket page: reached from the
+// topbar 🤝 button (see BASKET_VIEWS in hub/constants.js).
 
 import { t } from "../shared/i18n.js";
 import { state, tradeSell, tradeBuy, tradeIng } from "./state.js";
@@ -8,20 +9,15 @@ import { CITY_DISHES, findIngredient, ingredientName } from "../kitchen.js";
 import { findBook, findPotion, bookName, potionName } from "../fightclub.js";
 
 /**
- * Render the Pika trade drawer: staged souvenir sales and ticket buys with
- * remove buttons, the net coin change, and Clear / Trade actions. No-op while
- * hidden.
+ * Render the Pika trade page: staged souvenir sales, ticket buys, and
+ * grocery buys with remove buttons, then the net coin change and Clear /
+ * Trade actions.
  *
- * Side effects: rewrites #trade-drawer.
- *
- * @returns {void}
+ * @returns {string} Page HTML for the grid.
  */
-export function renderTradeDrawer() {
-  const drawer = document.getElementById("trade-drawer");
-  if (drawer.hidden) return;
+export function tradePageHTML() {
   if (tradeSell.size === 0 && tradeBuy.size === 0 && tradeIng.size === 0) {
-    drawer.innerHTML = `<div class="cart-empty">${t("trade.empty")}</div>`;
-    return;
+    return `<div class="basket-page"><div class="basket-list"><div class="cart-empty">${t("trade.empty")}</div></div></div>`;
   }
   const sellRows = [...tradeSell]
     .map(
@@ -74,17 +70,19 @@ export function renderTradeDrawer() {
     [...tradeIng].reduce((sum, [key, qty]) => sum + findIngredient(key).price * qty, 0);
   const net = gain - cost;
   const payable = state.coins + net >= 0;
-  drawer.innerHTML = `
-    ${sellRows}${buyRows}${ingRows}
-    <div class="cart-row cart-total">
-      <span>${t("trade.net")}</span>
-      <span class="${net >= 0 ? "trade-gain" : ""}">${net >= 0 ? "+" : "−"}💰${Math.abs(net)}</span>
-      <span></span>
-    </div>
-    <div class="cart-actions">
-      <button id="trade-clear">${t("cart.clear")}</button>
-      <button id="trade-checkout" ${payable ? "" : "disabled"}>
-        ${payable ? t("trade.checkout") : t("cart.noCoins")}
-      </button>
+  return `
+    <div class="basket-page">
+      <div class="basket-list">${sellRows}${buyRows}${ingRows}</div>
+      <div class="cart-row cart-total">
+        <span>${t("trade.net")}</span>
+        <span class="${net >= 0 ? "trade-gain" : ""}">${net >= 0 ? "+" : "−"}💰${Math.abs(net)}</span>
+        <span></span>
+      </div>
+      <div class="cart-actions">
+        <button id="trade-clear">${t("cart.clear")}</button>
+        <button id="trade-checkout" ${payable ? "" : "disabled"}>
+          ${payable ? t("trade.checkout") : t("cart.noCoins")}
+        </button>
+      </div>
     </div>`;
 }

@@ -153,15 +153,6 @@ footer button.active,
   border-radius: 8px;
 }
 
-#plan-drawer {
-  margin: 8px 14px 0;
-  padding: 8px 10px;
-  font-size: 13px;
-  background: var(--chip);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
 #topbar h3 {
   margin: 0;
   font-size: 15px;
@@ -188,15 +179,6 @@ footer button.active,
   color: #fff;
   background: var(--fill-critical);
   border-radius: 8px;
-}
-
-#cart-drawer {
-  margin: 8px 14px 0;
-  padding: 8px 10px;
-  font-size: 13px;
-  background: var(--chip);
-  border: 1px solid var(--border);
-  border-radius: 10px;
 }
 
 /* Extensions homepage: iPhone-style springboard of app tiles. */
@@ -302,6 +284,30 @@ footer button.active,
 
 #cart-checkout {
   font-weight: 600;
+}
+
+/* ── Basket pages (cart / plan / trade / service): a full #grid page whose
+   item list scrolls independently while the total + Clear/Checkout stay put,
+   however many items are staged. #grid itself switches to a flex column
+   (see #grid.basket-mode) so .basket-list's flex:1 can bound its height. */
+#grid.basket-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.basket-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.basket-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 /* ── School page ── */
@@ -569,7 +575,8 @@ footer button.active,
 #trade-btn,
 #service-btn,
 #manager-btn,
-#extensions-home-btn {
+#extensions-home-btn,
+#back-btn {
   position: relative;
   padding: 6px 10px;
   font-size: 17px;
@@ -577,15 +584,6 @@ footer button.active,
   border: 1px solid var(--border);
   border-radius: 9px;
   cursor: pointer;
-}
-
-#service-drawer {
-  margin: 8px 14px 0;
-  padding: 8px 10px;
-  font-size: 13px;
-  background: var(--chip);
-  border: 1px solid var(--border);
-  border-radius: 10px;
 }
 
 #service-btn .badge,
@@ -600,15 +598,6 @@ footer button.active,
   color: #fff;
   background: var(--fill-critical);
   border-radius: 8px;
-}
-
-#trade-drawer {
-  margin: 8px 14px 0;
-  padding: 8px 10px;
-  font-size: 13px;
-  background: var(--chip);
-  border: 1px solid var(--border);
-  border-radius: 10px;
 }
 
 .trade-gain {
