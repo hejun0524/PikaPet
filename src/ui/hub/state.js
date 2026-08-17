@@ -99,6 +99,7 @@ export const ui = {
   dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
   storageMsg: "", // last change-folder error shown on the Settings page
   magicMsg: "", // last custom-form import error shown at the Magic Station
+  deleteFormPending: null, // custom-form key awaiting delete confirmation
   returnView: null, // view to restore when leaving a basket page (see BASKET_VIEWS)
 };
 

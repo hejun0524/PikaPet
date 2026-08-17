@@ -1,17 +1,18 @@
 The next fix is as follows:
 
-1. Issue: Shopping cart list display issue when many items are added
-When many items are added to Pika’s Trading Post, the list does not become scrollable.
-Instead, the items continue expanding the page/container and push the buttons further down, making the UI difficult to use.
-Expected behavior: The item list should have a maximum height and become scrollable when there are too many items to fit on screen.
-Current behavior: Adding several items makes the container expand vertically and pushes the buttons down instead of enabling scrolling.
-Suggested improvement: Set a maximum height for the item list. Enable vertical scrolling when the list exceeds that height. Keep the action buttons visible/fixed in their intended position.
-This is mainly a display/layout issue, but it becomes noticeable when there are many items.
+1. Auto-update for the main app
 
-Final decision: for shopping cart, pika trading, and so on, clicking on the button should redirect us to a different page, where users can see a full list of items then have the choice of clear & checkout.
-In the meantime, add a go back button on top left so users can go back to the previous page to continue shopping.
+Goal: implement update-and-restart the way VSCode/Discord/GitHub Desktop do it — background check, silent download+install, then a "Restart to Update" UI element the user clicks on their own schedule (not a forced immediate relaunch).
 
-2. When the pet's size is 50, users may not be able to drag the pet, nor right click. This happens on my Macbook Pro 15-inch 2017 (which is an old Intel model).
-Right now, if I tune the size to 60 on my old model (not this computer), I can drag it around and right click works.
+1. Add `@tauri-apps/plugin-updater` and `@tauri-apps/plugin-process` (and the Rust `tauri-plugin-updater` crate), wire up the Rust plugin registration in `lib.rs`, and add the required permissions in the capabilities config.
+2. Implement a background check (on app startup, and on an interval — suggest something reasonable like every few hours, make it configurable) using `check()`.
+3. If an update is found, download it in the background with `update.download()`, then call `update.install()` once downloaded — do NOT call `relaunch()` automatically.
+4. Expose app state / an event so the frontend can show a persistent "Restart to Update" button once install() has completed. Clicking it calls `relaunch()`.
+5. Handle the Windows caveat explicitly: Windows exits the app automatically when `install()` runs, so on Windows, defer calling `install()` until the user clicks the restart button (download in the background as normal, but combine download+install+implicit relaunch behind the click). Document this platform difference clearly in code comments.
+6. tauri.conf.json: set `createUpdaterArtifacts: true`, and set `endpoints` to the standard GitHub Releases `latest.json` pattern (e.g. `https://github.com/<owner>/<repo>/releases/latest/download/latest.json`), with `<owner>/<repo>` left as a placeholder for me to fill in. Stub the `pubkey` field too — don't invent a value, leave a clear placeholder and tell me exactly what I need to generate to fill it in.
 
-3. Remove Pika, Darcy, Noonie and Achievements from Right Click menu.
+General instructions:
+- Use Tauri v2 APIs throughout (not v1).
+- Show me the resulting file/directory structure changes for the add-ons rework before making sweeping changes.
+- Flag any place where you're making an assumption about my existing codebase structure — ask instead of guessing if you can't find the current add-on loading code.
+- Add basic tests where reasonable (manifest validation, permission parsing).

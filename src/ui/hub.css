@@ -567,6 +567,27 @@ footer button.active,
   background: var(--accent);
 }
 
+/* Custom-form delete icon (Magic Station → My Own Creations): top-left, so
+   it never collides with the top-right price/owned/current .qty badge.
+   pointer-events: auto overrides .item.disabled's pointer-events: none —
+   the current custom form must stay deletable. */
+.form-delete {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  padding: 1px 4px;
+  font-size: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.55;
+  pointer-events: auto;
+}
+
+.form-delete:hover {
+  opacity: 1;
+}
+
 .item.in-cart {
   border-color: var(--accent);
   border-width: 2px;

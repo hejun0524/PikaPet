@@ -3,7 +3,7 @@
 // tickets, item use, cart checkout, activity plans, caretaking, government
 // registry, setup, settings) and the popover's own DOM listeners.
 
-import { emit, listen } from "../shared/tauri.js";
+import { emit, invoke, listen } from "../shared/tauri.js";
 import { setLanguage } from "../shared/i18n.js";
 import {
   ALL_ITEMS,
@@ -465,6 +465,24 @@ export function initEvents() {
       file,
       breed: (typeof name === "string" && name.trim() ? name.trim() : "Custom Pet").slice(0, 40),
     });
+    render();
+    save();
+    broadcastState();
+  });
+
+  // Magic Station "My Own Creations": delete a custom form (confirmed in the
+  // hub) — drop it from customForms/forms (no refund if it was unlocked),
+  // fall back to the default species if it was active, and remove its file.
+  listen("delete-custom-form", ({ payload }) => {
+    const key = payload?.key;
+    const form = pet.customForms.find((c) => c.key === key);
+    if (!form) return;
+    pet.customForms = pet.customForms.filter((c) => c.key !== key);
+    pet.forms = pet.forms.filter((k) => k !== key);
+    if (pet.species === key) pet.species = "toy_poodle";
+    invoke("delete_custom_pet", { file: form.file }).catch((e) =>
+      console.error("delete_custom_pet failed:", e)
+    );
     render();
     save();
     broadcastState();

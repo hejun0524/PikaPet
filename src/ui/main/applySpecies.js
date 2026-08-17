@@ -1,7 +1,6 @@
 // main/applySpecies.js — The Magic Station can swap the sprite sheet; all
 // species share the grid. Classic and Legendary forms use their catalog
-// sheet (the Legendary Cats currently borrow the white cat's file); custom
-// uploads load from <data>/pets/ via the asset protocol.
+// sheet; custom uploads load from <data>/pets/ via the asset protocol.
 
 import { convertFileSrc } from "../shared/tauri.js";
 import { findForm, findSpecies } from "../items.js";

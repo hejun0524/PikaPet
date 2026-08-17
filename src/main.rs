@@ -103,7 +103,7 @@ fn log(msg: String) {
 }
 
 // ── Data directory ──────────────────────────────────────────────────────────
-// All user data (save.json, addons/, pets/) lives under one root. By default
+// All user data (save.json, extensions/, pets/) lives under one root. By default
 // that's the platform app-data dir; the user can relocate it from Settings →
 // Storage, in which case a small pointer file (data-dir.txt) in the DEFAULT
 // location records the custom root so it's found again at boot.
@@ -163,13 +163,33 @@ fn get_data_paths(app: tauri::AppHandle) -> serde_json::Value {
     let root = data_root(&app);
     serde_json::json!({
         "root": root.to_string_lossy(),
-        "addons": root.join("addons").to_string_lossy(),
+        "extensions": root.join("extensions").to_string_lossy(),
         "pets": root.join("pets").to_string_lossy(),
         "isDefault": root == default_data_root(&app),
     })
 }
 
-// Relocate the data root: validate the target, copy save.json + addons/ +
+// Reveal the data root in the OS file browser (Settings → Storage → Open
+// Folder).
+#[tauri::command]
+fn open_data_folder(app: tauri::AppHandle) -> Result<(), String> {
+    let path = data_root(&app);
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = path;
+        Err("opening the data folder is not supported on this platform yet".into())
+    }
+}
+
+// Relocate the data root: validate the target, copy save.json + extensions/ +
 // pets/ over, delete the old copy (a true move), record the pointer, and
 // restart the app so every window reopens against the new location.
 #[tauri::command]
@@ -210,14 +230,14 @@ fn change_data_dir(app: tauri::AppHandle, path: String) -> Result<(), String> {
     if save.is_file() {
         std::fs::copy(&save, new_root.join("save.json")).map_err(|e| e.to_string())?;
     }
-    for sub in ["addons", "pets"] {
+    for sub in ["extensions", "pets"] {
         let from = current.join(sub);
         if from.is_dir() {
             copy_dir_all(&from, &new_root.join(sub)).map_err(|e| e.to_string())?;
         }
     }
     let _ = std::fs::remove_file(&save);
-    for sub in ["addons", "pets"] {
+    for sub in ["extensions", "pets"] {
         let _ = std::fs::remove_dir_all(current.join(sub));
     }
     if current != default {
@@ -264,12 +284,27 @@ fn import_custom_pet(app: tauri::AppHandle, path: String) -> Result<serde_json::
     Ok(serde_json::json!({ "key": key, "file": file, "name": stem }))
 }
 
+// Magic Station "My Own Creations": delete a custom form's spritesheet file
+// (the stats window drops it from pet.customForms/pet.forms and falls back
+// to the default species first). `file` must be a bare filename — reject
+// anything that could escape pets_dir().
+#[tauri::command]
+fn delete_custom_pet(app: tauri::AppHandle, file: String) -> Result<(), String> {
+    if file.is_empty() || file.contains('/') || file.contains('\\') || file.contains("..") {
+        return Err("invalid file name".into());
+    }
+    let path = pets_dir(&app).join(&file);
+    if path.is_file() {
+        std::fs::remove_file(&path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 // ── Extension management ───────────────────────────────────────────────────────
-// Extensions live as folders under <data-root>/addons/<id>/ with a manifest.json.
-// (The on-disk folder keeps its historical "addons" name so existing installs
-// keep working.) Install = extract a zip there; uninstall = delete the folder.
+// Extensions live as folders under <data-root>/extensions/<id>/ with a
+// manifest.json. Install = extract a zip there; uninstall = delete the folder.
 fn extensions_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
-    let dir = data_root(app).join("addons");
+    let dir = data_root(app).join("extensions");
     let _ = std::fs::create_dir_all(&dir);
     dir
 }
@@ -750,8 +785,10 @@ fn main() {
             load_state,
             save_state,
             get_data_paths,
+            open_data_folder,
             change_data_dir,
             import_custom_pet,
+            delete_custom_pet,
             list_music,
             install_extension,
             install_extension_from_url,

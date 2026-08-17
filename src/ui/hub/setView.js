@@ -30,6 +30,7 @@ export function setView(v) {
   ui.view = v;
   ui.pendingMagic = null;
   ui.createPending = false;
+  ui.deleteFormPending = null;
   ui.resetPending = false;
   renderAll();
 }

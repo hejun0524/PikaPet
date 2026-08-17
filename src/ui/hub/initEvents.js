@@ -383,6 +383,28 @@ export function initEvents() {
       return;
     }
 
+    // Magic Station: delete a custom creation (confirmed — see magic-cancel/
+    // delete-form-confirm below). Checked before data-magic so the delete
+    // icon never also triggers the card's own click.
+    const deleteFormBtn = e.target.closest("[data-delete-form]");
+    if (deleteFormBtn) {
+      ui.deleteFormPending = deleteFormBtn.dataset.deleteForm;
+      ui.magicMsg = "";
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "delete-form-cancel") {
+      ui.deleteFormPending = null;
+      renderGrid();
+      return;
+    }
+    if (e.target.id === "delete-form-confirm") {
+      emit("delete-custom-form", { key: ui.deleteFormPending });
+      ui.deleteFormPending = null;
+      renderGrid();
+      return;
+    }
+
     const magicCard = e.target.closest("[data-magic]");
     if (magicCard) {
       const key = magicCard.dataset.magic;
@@ -444,6 +466,15 @@ export function initEvents() {
     if (e.target.id === "magic-cancel") {
       ui.pendingMagic = null;
       renderGrid();
+      return;
+    }
+
+    // Settings → Storage: reveal the data folder in Finder.
+    if (e.target.id === "storage-open") {
+      invoke("open_data_folder").catch((err) => {
+        ui.storageMsg = t("settings.storageFailed", { err });
+        renderGrid();
+      });
       return;
     }
 

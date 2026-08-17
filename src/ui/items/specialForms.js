@@ -1,7 +1,6 @@
 // items/specialForms.js — the Legendary Cats: Pika, Darcy, and Noonie as
 // pet forms. They can NEVER be purchased — each is earned by finishing one
-// of the three cats' own worlds. Sprites temporarily borrow the white cat's
-// sheet until their own sheets land (swap the `sheet` field then).
+// of the three cats' own worlds.
 //
 // Adding a special form (developer guide in doc/hub.md): add an entry here
 // with a fresh `special` id, teach specialFormProgress() how to measure it,
@@ -18,9 +17,9 @@ import { MAX_SKILL_LEVEL, SKILLS } from "../fightclub.js";
  * No `price` — these forms are claimed, never bought.
  */
 export const SPECIAL_SPECIES = [
-  { key: "pika", label: "Pika", breed: "Garden Cat", sheet: "pets/white_cat.webp", special: "cities", defaultName: "Pika" },
-  { key: "darcy", label: "Darcy", breed: "Tuxedo Cat", sheet: "pets/white_cat.webp", special: "skills", defaultName: "Darcy" },
-  { key: "noonie", label: "Noonie", breed: "Calico Cat", sheet: "pets/white_cat.webp", special: "recipes", defaultName: "Noonie" },
+  { key: "pika", label: "Pika", breed: "Garden Cat", sheet: "pets/garden_cat.webp", special: "cities", defaultName: "Pika" },
+  { key: "darcy", label: "Darcy", breed: "Tuxedo Cat", sheet: "pets/tuxedo_cat.webp", special: "skills", defaultName: "Darcy" },
+  { key: "noonie", label: "Noonie", breed: "Calico Cat", sheet: "pets/calico_cat.webp", special: "recipes", defaultName: "Noonie" },
 ];
 
 /**

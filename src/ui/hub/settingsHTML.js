@@ -59,6 +59,7 @@ export function settingsHTML() {
       <div class="gov-note">${t("settings.storageNote")}</div>
       <div class="settings-row"><code class="storage-path">${esc(ui.dataPaths?.root ?? "…")}</code></div>
       <div class="settings-row">
+        <button id="storage-open">${t("settings.storageOpen")}</button>
         <button id="storage-change">${t("settings.storageChange")}</button>
       </div>
       <div class="gov-note">${t("settings.storageHint")}${

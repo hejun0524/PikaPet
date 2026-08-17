@@ -1,11 +1,12 @@
 # 🧩 Extensions (add-ons)
 
-> Naming: UI and code identifiers now say **extension**; only the
-> persisted/external contracts keep the historical "addon" name — the save key
-> `pinnedAddons`, the `addons/` data dir, the manifest format, the
-> `addon-pause` message, the `addon-*` window label, locale key prefixes
-> (`addons.*`, `addonmgr.*`, `addonstab.*`, `view.addons`), and
-> `addon-window.html`.
+> Naming: UI and code identifiers now say **extension**; a few
+> persisted/external contracts still keep the historical "addon" name — the
+> save key `pinnedAddons`, the manifest format, the `addon-pause` message,
+> the `addon-*` window label, locale key prefixes (`addons.*`, `addonmgr.*`,
+> `addonstab.*`, `view.addons`), and `addon-window.html`. The on-disk install
+> directory itself was renamed from `addons/` to `extensions/` (2026-08-16,
+> no migration needed — pre-rename installs weren't preserved).
 
 ## The in-app experience
 
@@ -15,7 +16,7 @@ The 🧩 Extensions view has three tabs:
 - **🛍️ Marketplace**: official extension zips published as assets on a GitHub Release. The list comes straight from the GitHub API (latest release of `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`); ⬇️ Install downloads the zip over https (Rust `install_addon_from_url`) and installs it like a local zip. **Publishing**: create a release on that repo and attach the zips from `addons/` — the asset filename must be `<id>.zip` matching the manifest `id` (that's how installed state is detected). Until the repo exists the tab shows a friendly "unreachable" note.
 - **🧰 Manager**: install ("📦 Install extension from zip…", native file picker), uninstall (🗑️), and 📌 **pin** — only pinned extensions appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open extension's Quick Launch button highlights like the World buttons.
 
-Zips extract to `<data-root>/addons/<id>/` (default `~/Library/Application Support/com.junhe.mypet/addons/`; relocatable from Settings → Storage); the app rescans at startup and after every change.
+Zips extract to `<data-root>/extensions/<id>/` (default `~/Library/Application Support/com.junhe.mypet/extensions/`; relocatable from Settings → Storage, which also has an **Open Folder** button to reveal the data root in Finder); the app rescans at startup and after every change.
 - Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
 - **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
 - **☕ Caffeine** (`addons/caffeine.zip`): keeps the Mac from auto-sleeping (and the screen from dimming) while its switch is on — a `caffeinate` process held by the app and released when the app quits. Once installed, its toggle box hangs below the tray popover permanently (`widgetAuto`); the same switch lives on its hub page. The reference for `widgetAuto` + the widget bridge subset.
@@ -254,7 +255,7 @@ app languages via `get-locale` + `app-locale`). Start by copying it.
 ## Install / uninstall mechanics (what the app does)
 
 - **Install**: your zip is validated (manifest present, sane `id`) and
-  extracted to `~/Library/Application Support/com.junhe.mypet/addons/<id>/`,
+  extracted to `~/Library/Application Support/com.junhe.mypet/extensions/<id>/`,
   replacing any previous version — so an upgrade is just installing the new
   zip. Paths containing `..` are skipped.
 - **Scan**: the app lists that directory at startup and after every

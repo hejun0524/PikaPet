@@ -25,6 +25,11 @@ import { formInfo } from "./formInfo.js";
  * @returns {string} Page HTML for the grid.
  */
 export function magicStationHTML() {
+  // Stale guard: the form may have been deleted from another window/tab.
+  if (ui.deleteFormPending && !(state.customForms ?? []).some((c) => c.key === ui.deleteFormPending)) {
+    ui.deleteFormPending = null;
+  }
+  if (ui.deleteFormPending) return deleteConfirmHTML();
   if (ui.pendingMagic) return confirmHTML();
   if (ui.createPending) return createFormHTML();
 
@@ -42,7 +47,7 @@ export function magicStationHTML() {
   }).join("");
 
   const customs = (state.customForms ?? [])
-    .map((c) => formCardHTML(c.key, `💰${CUSTOM_FORM_PRICE}`, t("magic.purchase")))
+    .map((c) => formCardHTML(c.key, `💰${CUSTOM_FORM_PRICE}`, t("magic.purchase"), false, true))
     .join("");
   const createCard = `
       <div class="item" id="create-form">
@@ -68,9 +73,11 @@ export function magicStationHTML() {
 
 /**
  * One form card. Current/owned states win over the passed badge/line;
- * `locked` renders the card disabled (unmet legendary condition).
+ * `locked` renders the card disabled (unmet legendary condition); `deletable`
+ * (custom forms only) adds a 🗑️ button independent of the disabled state —
+ * a custom creation can be deleted even while it's the active species.
  */
-function formCardHTML(key, badge, line, locked = false) {
+function formCardHTML(key, badge, line, locked = false, deletable = false) {
   const info = formInfo(key);
   const current = key === state.species;
   const owned = state.forms.includes(key);
@@ -83,10 +90,34 @@ function formCardHTML(key, badge, line, locked = false) {
   const clickable = !current && !locked;
   return `
       <div class="item ${current || locked ? "disabled" : ""}" ${clickable ? `data-magic="${esc(key)}"` : ""}>
+        ${
+          deletable
+            ? `<button class="form-delete" data-delete-form="${esc(key)}" title="${t("magic.delete")}">🗑️</button>`
+            : ""
+        }
         ${shownBadge}
         <span class="species-thumb" style="background-image:url('${info.sheet}')"></span>
         <span class="name">${esc(info.breed)}</span>
         <span class="effects">${shownLine}</span>
+      </div>`;
+}
+
+/** The delete-confirmation card for `ui.deleteFormPending` (a custom form). */
+function deleteConfirmHTML() {
+  const key = ui.deleteFormPending;
+  const info = formInfo(key);
+  const owned = state.forms.includes(key);
+  return `
+      <div class="settings-card">
+        <div class="gov-note">${t("magic.deleteConfirmQ", { breed: esc(info.breed) })}</div>
+        ${owned ? `<div class="gov-note"><b>${t("magic.deleteWarn", { fee: CUSTOM_FORM_PRICE })}</b></div>` : ""}
+        <div class="magic-confirm-row">
+          <span class="species-thumb" style="background-image:url('${info.sheet}')"></span>
+        </div>
+        <div class="settings-actions">
+          <button id="delete-form-cancel">${t("magic.cancel")}</button>
+          <button id="delete-form-confirm">${t("magic.delete")}</button>
+        </div>
       </div>`;
 }
 

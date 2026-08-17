@@ -1,0 +1,28 @@
+Currently, extensions are just zip files sitting directly in an `addons/` folder. I want to replace this with a curated marketplace model.
+
+the extension zips will be hosted on GitHub Releases (I'm handling the hosting/publishing side myself — you don't need to build anything server-side, just build the client fetch/download logic against that hosting model, described below).
+
+My project is built and run entirely with cargo (`cargo build`, `cargo run`) — there's no npm/Node in the toolchain. Use the cargo-installed Tauri CLI (`cargo install tauri-cli`, invoked as `cargo tauri <command>`) anywhere you'd normally reach for an `npm run tauri ...` command, and don't introduce a package.json or Node-based build step.
+
+for extension system rework
+
+Goal: move from "raw zips in a folder" to a manifest-driven, permission-scoped extension system with a marketplace UI for installing/updating/uninstalling.
+
+1. Define an extension manifest schema (`extension.json`) that ships inside each extension zip:
+   - id, name, version, minAppVersion, entry (path to the extension's HTML/JS entry point), permissions (array of capability strings I define, e.g. "fs:read:workspace", "network:fetch", "notifications:show"), author, description, icon.
+2. On install: verify the zip's signature/hash against a public key embedded in the app, unzip into `<app-data-dir>/extensions/<id>/`, parse and validate the manifest, reject if minAppVersion isn't satisfied or if it requests a permission I haven't defined.
+3. At runtime, load each installed extension into its own labeled Tauri webview/window, and generate a Tauri capability configuration for that window derived from the manifest's declared (and pre-approved) permissions — so an extension can only call the Tauri commands its permissions allow.
+4. Build a marketplace UI panel (similar layout/UX to VS Code's Extensions view) that:
+   - Fetches a registry JSON from a fixed GitHub Releases asset URL I'll give you (format: `https://github.com/<owner>/<repo>/releases/download/<tag>/registry.json`, a plain static asset download — NOT the `api.github.com` REST API and NOT `raw.githubusercontent.com`). This matters: GitHub rate-limits unauthenticated calls to the API and to raw file content, but release *asset* downloads are served through GitHub's release CDN and are the same mechanism the Tauri updater itself uses for update artifacts, so it's the safe path for something every user's app will poll repeatedly.
+   - The registry JSON is a simple list: `{ "extensions": [ { id, version, url, sha256, signature, name, description, icon } ] }`, where each extension's `url` is likewise a `releases/download/...` asset URL, not an API URL.
+   - Renders installed vs. available extensions, search/filter, install/uninstall/update buttons, and shows a permission list before install (like a mobile app permission prompt).
+   - Compares installed manifest version against registry version to show "Update available."
+5. Make the marketplace listing live, like VS Code's Extensions view:
+   - Fetch the registry every time the marketplace panel/tab is opened, not just once at app startup — so whatever I've published is what the user sees, without needing an app update.
+   - Add a manual refresh action, and also refetch automatically on window focus or reconnect (listen for the app coming back online).
+   - Cache the last successfully fetched registry response to disk, and show that cached list (clearly marked, e.g. "showing cached results") if a fetch fails or the user is offline — never show a blank marketplace just because the network call failed. Installed extensions and their uninstall/enable/disable controls must keep working fully offline since that's local state.
+   - Disable "Install"/"Update" actions (but not browsing) when there's no network, and show a clear offline indicator.
+   - Add `github.com` (and, if any redirect lands elsewhere, GitHub's release asset CDN domain — check the actual redirect target once you test it) to the app's network capability allowlist — Tauri restricts outgoing HTTP calls by capability scope, so the fetch will silently fail without this.
+6. Uninstall = delete the extension's directory and revoke/destroy its webview + capability grant. No system-level uninstall step needed.
+7. Keep a hidden/dev-mode toggle that still allows loading a raw local zip without the registry, for my own testing — but it should go through the same manifest validation and capability-scoping code path, just skip signature verification in dev mode.
+8. Migrate whatever currently reads/loads extensions from the flat `extensions/` folder to this new structure. Tell me what breaks and needs a migration step for existing users who already have zips installed the old way.
