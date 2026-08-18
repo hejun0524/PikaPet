@@ -9,7 +9,7 @@ import { jlog } from "./jlog.js";
 /**
  * Refresh `runtime.installedExtensions` from the Rust `list_installed_extensions`
  * scan and drop pinned extensions that are no longer installed.
- * Side effects: mutates runtime.installedExtensions and pet.pinnedAddons; logs
+ * Side effects: mutates runtime.installedExtensions and pet.pinnedExtensions; logs
  * via jlog. Does not save or broadcast — callers do.
  *
  * @returns {Promise<void>}
@@ -23,7 +23,7 @@ export async function rescanExtensions() {
     runtime.installedExtensions = [];
   }
   // Unpin extensions that are no longer installed.
-  pet.pinnedAddons = pet.pinnedAddons.filter((id) =>
+  pet.pinnedExtensions = pet.pinnedExtensions.filter((id) =>
     runtime.installedExtensions.some((a) => a.id === id)
   );
 }

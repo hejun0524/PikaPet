@@ -52,7 +52,7 @@ export function render() {
   document.getElementById("coins").textContent = `💰 ${pet.coins.toLocaleString()}`;
   document.getElementById("traits").innerHTML = traitCardsHTML(pet.traits);
   const pinned = extensionList(runtime.installedExtensions).filter((a) =>
-    pet.pinnedAddons.includes(a.id)
+    pet.pinnedExtensions.includes(a.id)
   );
   document.getElementById("extensions-section").hidden = pinned.length === 0;
   document.getElementById("extension-row").innerHTML = extensionButtonsHTML(pinned);

@@ -33,7 +33,7 @@ export function broadcastState() {
     caretaking: caretakingView(),
     bank: { ...pet.bank },
     extensionsInstalled: runtime.installedExtensions,
-    pinnedAddons: [...pet.pinnedAddons],
+    pinnedExtensions: [...pet.pinnedExtensions],
     homework: { ...pet.homework },
     settings: { ...pet.settings },
     kitchen: {

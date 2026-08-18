@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-hide-extension-webview"
+description = "Enables the hide_extension_webview command without any pre-configured scope."
+commands.allow = ["hide_extension_webview"]
+
+[[permission]]
+identifier = "deny-hide-extension-webview"
+description = "Denies the hide_extension_webview command without any pre-configured scope."
+commands.deny = ["hide_extension_webview"]

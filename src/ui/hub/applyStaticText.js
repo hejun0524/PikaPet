@@ -24,7 +24,7 @@ export function applyStaticText() {
   for (const btn of side.querySelectorAll("footer [data-view]")) {
     btn.title = t(`view.${btn.dataset.view}`);
   }
-  document.getElementById("extensions-home-btn").title = t("chrome.backToAddons");
+  document.getElementById("extensions-home-btn").title = t("chrome.backToExtensions");
   document.getElementById("back-btn").title = t("chrome.back");
   applySideCollapsed(); // restores the icon-rail state + localizes its tooltip
 }

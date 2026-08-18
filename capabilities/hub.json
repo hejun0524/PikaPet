@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "hub-extension-hosting",
+  "description": "Commands only the hub needs, for hosting/pushing to extension child webviews and popup windows.",
+  "webviews": ["hub"],
+  "permissions": [
+    "allow-set-current-locale",
+    "allow-ext-push",
+    "allow-open-extension-webview",
+    "allow-hide-extension-webview",
+    "allow-close-extension-webview",
+    "allow-fetch-registry"
+  ]
+}

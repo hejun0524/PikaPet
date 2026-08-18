@@ -3,7 +3,6 @@
 import { invoke, emit } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
-import { extensionFrame } from "./extensionFrame.js";
 import { renderGrid } from "./renderGrid.js";
 import { renderSidePanel } from "./renderSidePanel.js";
 
@@ -20,7 +19,7 @@ export async function installExtensionFlow() {
   try {
     const path = await invoke("plugin:dialog|open", {
       options: {
-        title: t("addonmgr.zipTitle"),
+        title: t("extensionmgr.zipTitle"),
         filters: [{ name: "Extension zip", extensions: ["zip"] }],
         multiple: false,
         directory: false,
@@ -28,16 +27,18 @@ export async function installExtensionFlow() {
     });
     if (!path) return;
     const manifest = await invoke("install_extension", { path });
-    ui.extensionMsg = t("addonmgr.installed", { name: manifest.name ?? manifest.id });
-    // On reinstall, kill the old build's running page and tray widget so the
-    // next open loads the freshly extracted files instead of the stale iframe.
-    extensionFrame(manifest.id)?.remove();
+    ui.extensionMsg = t("extensionmgr.installed", { name: manifest.name ?? manifest.id });
+    // On reinstall, kill the old build's running child webview and tray
+    // widget so the next open loads the freshly extracted files instead
+    // of the stale one (install_extension only overwrites files on disk —
+    // an already-running webview keeps whatever it already loaded).
+    await invoke("close_extension_webview", { id: manifest.id });
     emit("extension-widget-set", { id: manifest.id, on: false });
     emit("extensions-changed");
     state.extensionsInstalled = await invoke("list_installed_extensions");
   } catch (e) {
-    ui.extensionMsg = t("addonmgr.installFailed", { err: e });
+    ui.extensionMsg = t("extensionmgr.installFailed", { err: e });
   }
-  if (ui.view === "addons") renderGrid();
+  if (ui.view === "extensions") renderGrid();
   renderSidePanel();
 }

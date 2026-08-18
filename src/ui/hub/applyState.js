@@ -79,8 +79,8 @@ export function applyState(saved) {
   if (Array.isArray(saved.extensionsInstalled)) {
     state.extensionsInstalled = saved.extensionsInstalled;
   }
-  if (Array.isArray(saved.pinnedAddons)) {
-    state.pinnedAddons = saved.pinnedAddons;
+  if (Array.isArray(saved.pinnedExtensions)) {
+    state.pinnedExtensions = saved.pinnedExtensions;
   }
   if (saved.settings && typeof saved.settings === "object") {
     if (typeof saved.settings.scale === "number") appSettings.scale = saved.settings.scale;
@@ -92,6 +92,9 @@ export function applyState(saved) {
     }
     if (typeof saved.settings.devCoins === "boolean") {
       appSettings.devCoins = saved.settings.devCoins;
+    }
+    if (typeof saved.settings.allowSideload === "boolean") {
+      appSettings.allowSideload = saved.settings.allowSideload;
     }
     if (typeof saved.settings.pauseOnSleep === "boolean") {
       appSettings.pauseOnSleep = saved.settings.pauseOnSleep;

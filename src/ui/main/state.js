@@ -92,7 +92,7 @@ export const VIEW_EMOJI = {
   career: "💼",
   touring: "🗺️",
   government: "💖",
-  addons: "🧩",
+  extensions: "🧩",
 };
 
 /**

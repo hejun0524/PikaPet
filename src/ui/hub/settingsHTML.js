@@ -75,5 +75,9 @@ export function settingsHTML() {
         <label for="dev-coins">${t("settings.devCoins")}</label>
         <input type="checkbox" id="dev-coins" ${appSettings.devCoins ? "checked" : ""} />
       </div>
+      <div class="settings-row">
+        <label for="allow-sideload">${t("settings.allowSideload")}</label>
+        <input type="checkbox" id="allow-sideload" ${appSettings.allowSideload ? "checked" : ""} />
+      </div>
     </div>`;
 }

@@ -54,7 +54,7 @@ export function renderSidePanel() {
     btn.classList.toggle("active", btn.dataset.view === ui.view);
   });
   const pinned = extensionList(state.extensionsInstalled).filter((a) =>
-    state.pinnedAddons.includes(a.id)
+    state.pinnedExtensions.includes(a.id)
   );
   document.getElementById("side-extensions-section").hidden = pinned.length === 0;
   document.getElementById("side-extensions").innerHTML = extensionButtonsHTML(

@@ -24,7 +24,7 @@ export function applyStaticText() {
     btn.title = t(`view.${btn.id}`);
   }
   document.getElementById("mini-home").title = t("view.home");
-  document.getElementById("mini-extensions").title = t("view.addons");
+  document.getElementById("mini-extensions").title = t("view.extensions");
   document.getElementById("mini-settings").title = t("view.settings");
   document.getElementById("tray-collapse").title = runtime.trayCompact
     ? t("chrome.expand")

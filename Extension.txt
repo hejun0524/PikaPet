@@ -1,4 +1,4 @@
-Currently, extensions are just zip files sitting directly in an `addons/` folder. I want to replace this with a curated marketplace model.
+Currently, extensions are just zip files sitting directly in an `extensions/` folder. I want to replace this with a curated marketplace model.
 
 the extension zips will be hosted on GitHub Releases (I'm handling the hosting/publishing side myself — you don't need to build anything server-side, just build the client fetch/download logic against that hosting model, described below).
 

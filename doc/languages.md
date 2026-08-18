@@ -9,14 +9,14 @@ The whole UI is localized into **twelve languages: English, Chinese (中文), Fr
 - The **data catalogs stay English-only** (`items.js`, `school.js`, `career.js`, `touring.js` are untouched — English keys are also what `save.json` stores); other locales translate their names under stable keys (`item.carrot`, `class.math-grade`, `job.chef-3`, `dest.japan`, …) and `src/ui/shared/names.js` resolves them at render time. A missing entry silently falls back to the catalog's English name, so partial translations are safe.
 - **Cities and team names are translated too**, keyed by their exact English catalog string (`city.New York`, `city.Boston Celtics`). Chinese and Japanese translate all ~315 of them; French/Spanish/German list only real exonyms (Londres, Nueva York, Peking, …) and keep sports team names in their original English form, which is how sports media in those languages write them. Everything not listed falls back to the English name.
 - Deliberately **not** translated: league names (NBA, MLB, …) and the pet-name defaults. Achievements stored in `save.json` keep English labels (they're data); the Achievements wall renders localized labels from keys.
-- Add-ons localize themselves via the bridge (`get-locale` + the `app-locale` push) — see [addons.md](addons.md); the Music Player is the reference implementation.
+- Extensions localize themselves via the bridge (`get-locale` + the `app-locale` push) — see [extensions.md](extensions.md); the Music Player is the reference implementation.
 
 ## For developers: adding a language
 
 1. **Copy the dictionary**: `cp src/ui/locales/en.js src/ui/locales/<code>.js` (two-letter code, e.g. `ko.js`) and translate every value. `en.js` holds only the UI keys; for the data-name sections (`item.*`, `class.*`, `job.*`, `dest.*`, `city.*`, …) copy them from `zh.js` — it is the most complete example — and translate those too. Anything you skip falls back to English, so you can land a partial translation safely.
 2. **Register it** in `src/ui/shared/i18n.js`: add the import + entry to `LOCALES`, and an entry to `LANGUAGE_OPTIONS` with the label written in its own language (`{ key: "ko", label: "한국어" }`). `detectLocale()` then also matches it as a system language automatically.
 3. **Rebuild** (`cargo build` from the repo root — the UI is embedded). The Settings dropdown picks the new language up; nothing else to wire.
-4. Optionally teach the **Music Player** (and other add-ons) the new code: add an `STR` section in the zips' pages — add-ons receive the locale code via `get-locale`/`app-locale` and fall back to English for codes they don't know (see [addons.md](addons.md)).
+4. Optionally teach the **Music Player** (and other extensions) the new code: add an `STR` section in the zips' pages — extensions receive the locale code via `get-locale`/`app-locale` and fall back to English for codes they don't know (see [extensions.md](extensions.md)).
 
 ## For developers: adding or changing strings
 

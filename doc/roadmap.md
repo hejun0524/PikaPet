@@ -18,11 +18,11 @@ Goal: the app silently notices a new release, downloads it in the background, sh
 | **🍳 Noonie's Kitchen** | LIVE: 3h order board, pantry + Organic Market, 190 city recipe scrolls (20% tour drop, Pika sells 2/refresh), 10 paw-bots (2 free, rising unlock prices), tiered Skill Book drops (~16%/delivery) | Balance pass (order rewards vs. job pay); hand-tune generated city-recipe ingredient lists (they're procedurally drawn from per-country pools, so a dessert can currently ask for squid); translate the 190 dish names |
 | Localization: misc | 12 UI languages; ALL bundled extension zips carry 12-language STR tables; it/pt/ar/hi/el/ko translate UI strings only (data names fall back to English); Arabic renders LTR | Translate the data catalogs for the six newest languages; RTL layout for Arabic; read the saved language in `main.rs` for the tray "Quit" item |
 | Game speed | Settings → Developer mode toggles fast/normal at runtime | — |
-| 🛍️ Extension Marketplace | Marketplace tab fetches the latest GitHub Release of `MARKETPLACE_REPO` (`src/ui/hub/marketplace.js`) and installs asset zips over https | Create the public releases repo, upload the ten zips from `addons/`, and point `MARKETPLACE_REPO` at it |
+| 🛍️ Extension Marketplace | Marketplace tab fetches the latest GitHub Release of `MARKETPLACE_REPO` (`src/ui/hub/marketplace.js`) and installs asset zips over https | Create the public releases repo, upload the ten zips from `extensions/`, and point `MARKETPLACE_REPO` at it |
 | Save file | Debug-boosted coins from development | Fresh games start at 1000 |
 | Economy balance | Prices/pay/XP hand-tuned | Balance pass with real playtime data |
 | Health at 0 | Nothing special happens | Death/urgent-care state |
 | Sprite sheets | Only 4 of 11 rows used (idle/run×2/sad) | Wave, pounce, sleepy, curled… for idle variety and interactions |
-| Add-on bridge | Fixed allowlist (`get-locale`, `pick-folder`, `list-music`, `file-url`, `say`, `notify`, `open-window`, `widget-set`, `widget-push`), no permission prompts | Permissioned API for third-party add-ons |
+| Extension bridge | Fixed allowlist (`get-locale`, `pick-folder`, `list-music`, `file-url`, `say`, `notify`, `open-window`, `widget-set`, `widget-push`), no permission prompts | Permissioned API for third-party extensions |
 | Souvenirs | One 🎁 emoji for all | Per-city souvenir art |
 | Platform | Developed/tested on macOS only | Windows/Linux need testing (tray, transparency, Spaces, Launch Agent equivalents) |

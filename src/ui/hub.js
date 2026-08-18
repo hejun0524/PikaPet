@@ -7,7 +7,9 @@ import { jlog } from "./hub/jlog.js";
 import { installErrorLogging } from "./shared/jlog.js";
 import { initSplitter } from "./hub/initSplitter.js";
 import { initEvents } from "./hub/initEvents.js";
-import { initBridge } from "./hub/initBridge.js";
+import { initExtensionHostResize } from "./hub/initExtensionHostResize.js";
+import { initWidgetActionRelay } from "./hub/initWidgetActionRelay.js";
+import { initMarketRefresh } from "./hub/marketRefresh.js";
 import { initSync } from "./hub/initSync.js";
 import { boot } from "./hub/boot.js";
 
@@ -15,7 +17,9 @@ installErrorLogging(jlog);
 
 initSplitter();
 initEvents();
-initBridge();
+initExtensionHostResize();
+initWidgetActionRelay();
+initMarketRefresh();
 initSync();
 boot();
 

@@ -63,7 +63,7 @@ export const state = {
     record: { wins: 0, losses: 0 },
   },
   extensionsInstalled: [],
-  pinnedAddons: [], // pinned extension ids; name mirrors the historical save.json key
+  pinnedExtensions: [], // pinned extension ids; name mirrors the historical save.json key
 };
 
 /**
@@ -87,7 +87,12 @@ export const ui = {
   kitchenTab: "orders",
   fightclubTab: "club",
   extensionsTab: "mine",
-  market: null, // marketplace fetch state: {status: "loading"|"ready"|"error", assets: []}
+  // Ids of extensions with an open (possibly hidden/backgrounded) child
+  // webview this session — lets renderGrid() know which *other* ones to
+  // tell Rust to hide when switching to a newly-active one.
+  openExtensionIds: new Set(),
+  market: null, // marketplace fetch state: {status: "loading"|"ready"|"error", entries: [], stale}
+  marketPermissionPrompt: null, // registry entry pending permission confirmation before install
   fightBet: 0, // side-bet stake selected on the Fight Club page
   battle: null, // live fight replay: the "fight-result" payload + {idx, done}
   trainMsg: null, // last "fightclub-result" payload shown in the Training Room
@@ -96,7 +101,7 @@ export const ui = {
   createPending: false, // Magic Station showing the name-your-creation card
   resetPending: false, // Settings page showing the reset confirmation
   extensionMsg: "", // last install/uninstall result shown on the Manager tab
-  dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
+  dataPaths: null, // {root, extensions, pets, isDefault} from get_data_paths
   storageMsg: "", // last change-folder error shown on the Settings page
   magicMsg: "", // last custom-form import error shown at the Magic Station
   deleteFormPending: null, // custom-form key awaiting delete confirmation
@@ -133,6 +138,12 @@ export const appSettings = {
   allDesktops: true,
   devMode: false,
   devCoins: false,
+  // Maintainer-only escape hatch: shows the "Install extension from zip…"
+  // button in the Manager tab, which skips marketplace signature
+  // verification (there's nothing to verify a local file against) but
+  // still goes through full manifest/permission validation. Kept separate
+  // from devMode, which controls an unrelated fast-game-clock setting.
+  allowSideload: false,
   language: "auto",
   pauseOnSleep: true,
 };

@@ -2,7 +2,7 @@
 // their manifest can hang a mini rounded box below this popover (a mini
 // music player, a status readout…). Boxes stack in the order their
 // extensions turned them on; the window grows to fit.
-// Protocol (see doc/addons.md): the extension's main page sends widget-set / a
+// Protocol (see doc/extensions.md): the extension's main page sends widget-set / a
 // widget-push state; the widget page answers with widget-ready and sends
 // widget-action, which we relay back to the main page via a Tauri event.
 

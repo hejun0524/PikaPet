@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-close-extension-webview"
+description = "Enables the close_extension_webview command without any pre-configured scope."
+commands.allow = ["close_extension_webview"]
+
+[[permission]]
+identifier = "deny-close-extension-webview"
+description = "Denies the close_extension_webview command without any pre-configured scope."
+commands.deny = ["close_extension_webview"]

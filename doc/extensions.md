@@ -1,11 +1,11 @@
-# 🧩 Extensions (add-ons)
+# 🧩 Extensions (extensions)
 
 > Naming: UI and code identifiers now say **extension**; a few
-> persisted/external contracts still keep the historical "addon" name — the
-> save key `pinnedAddons`, the manifest format, the `addon-pause` message,
-> the `addon-*` window label, locale key prefixes (`addons.*`, `addonmgr.*`,
-> `addonstab.*`, `view.addons`), and `addon-window.html`. The on-disk install
-> directory itself was renamed from `addons/` to `extensions/` (2026-08-16,
+> persisted/external contracts still keep the historical "extension" name — the
+> save key `pinnedExtensions`, the manifest format, the `extension-pause` message,
+> the `extension-*` window label, locale key prefixes (`extensions.*`, `extensionmgr.*`,
+> `extensionstab.*`, `view.extensions`), and `extension-window.html`. The on-disk install
+> directory itself was renamed from `extensions/` to `extensions/` (2026-08-16,
 > no migration needed — pre-rename installs weren't preserved).
 
 ## The in-app experience
@@ -13,22 +13,22 @@
 The 🧩 Extensions view has three tabs:
 
 - **🧩 My Extensions**: an iPhone-style springboard of installed extension tiles.
-- **🛍️ Marketplace**: official extension zips published as assets on a GitHub Release. The list comes straight from the GitHub API (latest release of `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`); ⬇️ Install downloads the zip over https (Rust `install_addon_from_url`) and installs it like a local zip. **Publishing**: create a release on that repo and attach the zips from `addons/` — the asset filename must be `<id>.zip` matching the manifest `id` (that's how installed state is detected). Until the repo exists the tab shows a friendly "unreachable" note.
+- **🛍️ Marketplace**: official extension zips published as assets on a GitHub Release. The list comes straight from the GitHub API (latest release of `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`); ⬇️ Install downloads the zip over https (Rust `install_extension_from_url`) and installs it like a local zip. **Publishing**: create a release on that repo and attach the zips from `extensions/` — the asset filename must be `<id>.zip` matching the manifest `id` (that's how installed state is detected). Until the repo exists the tab shows a friendly "unreachable" note.
 - **🧰 Manager**: install ("📦 Install extension from zip…", native file picker), uninstall (🗑️), and 📌 **pin** — only pinned extensions appear in the Quick Launch rows of the tray popover and hub side panel (rows hide entirely when nothing is pinned). The open extension's Quick Launch button highlights like the World buttons.
 
 Zips extract to `<data-root>/extensions/<id>/` (default `~/Library/Application Support/com.junhe.mypet/extensions/`; relocatable from Settings → Storage, which also has an **Open Folder** button to reveal the data root in Finder); the app rescans at startup and after every change.
-- Add-on pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened add-on, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
-- **Tray widgets**: an add-on with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Add-ons can also open their own popup windows (`addon-window.html` shell) and send macOS push notifications (osascript).
-- **☕ Caffeine** (`addons/caffeine.zip`): keeps the Mac from auto-sleeping (and the screen from dimming) while its switch is on — a `caffeinate` process held by the app and released when the app quits. Once installed, its toggle box hangs below the tray popover permanently (`widgetAuto`); the same switch lives on its hub page. The reference for `widgetAuto` + the widget bridge subset.
-- **🎹 Music Player** (`addons/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized (the reference for the `get-locale` / `app-locale` bridge contract). Updating an extension = reinstalling the zip — no app rebuild or restart.
+- Extension pages render in sandboxed iframes hosted *outside* the view grid — one live iframe per opened extension, so several can run at once and keep running (e.g. music keeps playing) while you browse other pages or close the hub. They talk to the app through a **postMessage bridge** (see "The bridge API" below).
+- **Tray widgets**: an extension with a `widget` page in its manifest can hang a mini rounded box below the menu-bar popover (multiple widgets stack in activation order; the popover window grows to fit). Extensions can also open their own popup windows (`extension-window.html` shell) and send macOS push notifications (osascript).
+- **☕ Caffeine** (`extensions/caffeine.zip`): keeps the Mac from auto-sleeping (and the screen from dimming) while its switch is on — a `caffeinate` process held by the app and released when the app quits. Once installed, its toggle box hangs below the tray popover permanently (`widgetAuto`); the same switch lives on its hub page. The reference for `widgetAuto` + the widget bridge subset.
+- **🎹 Music Player** (`extensions/music.zip`): choose a folder with a native picker, recursive scan (mp3/m4a/aac/wav/flac/ogg), a uniform monochrome-icon transport bar — prev / play-pause / next / shuffle / loop-playlist / repeat-one — draggable seek bar, Play All, and a mini-player tray widget (title + prev/play/next) that appears once playback starts. Fully localized (the reference for the `get-locale` / `app-locale` bridge contract). Updating an extension = reinstalling the zip — no app rebuild or restart.
 - **Localization**: every bundled extension (all ten zips) carries an `STR` table covering the app's twelve languages (en, zh, fr, es, de, ja, it, pt, ar, hi, el, ko) and follows the locale contract below.
 
-# Preparing an add-on zip
+# Preparing an extension zip
 
-Add-ons are distributed as **zip files** and managed entirely from inside the
-app — no manual folder digging required. Installed add-ons appear as tiles on
-the Add-ons homepage and (when pinned) as icon buttons in the **Quick Launch**
-row; clicking either opens the add-on's page. Beyond that page, an add-on can
+Extensions are distributed as **zip files** and managed entirely from inside the
+app — no manual folder digging required. Installed extensions appear as tiles on
+the Extensions homepage and (when pinned) as icon buttons in the **Quick Launch**
+row; clicking either opens the extension's page. Beyond that page, an extension can
 also hang a **mini-widget under the tray popover**, open its own **popup
 windows**, and send **system notifications** — see "Beyond the hub page"
 below.
@@ -70,10 +70,10 @@ folder and extracts everything beside it.
 | `names` | optional | `{<locale>: "name"}` map for localized display names — the app language's entry wins, then `names.en`, then `name`. All ten bundled extensions ship all twelve app locales. |
 | `emoji` | ✅ | Button/tile emoji — pick a bright one; it sits on dark and light panels. |
 | `version` | ✅ | Semver string; used for upgrade hints. |
-| `entry` | ✅ (in practice) | HTML page rendered when the add-on opens; an add-on without one shows "has no page". |
+| `entry` | ✅ (in practice) | HTML page rendered when the extension opens; an extension without one shows "has no page". |
 | `widget` | optional | HTML page for the tray mini-widget (see "Tray widgets"). |
 | `widgetHeight` | optional | Widget content height in px (default 64, clamped 32–220). Keep it minimal. |
-| `widgetAuto` | optional | `true` = the widget mounts as soon as the add-on is installed (every app start), no `widget-set` call needed. For always-there utility widgets like Caffeine's toggle; leave it off for on-demand widgets like the mini music player. |
+| `widgetAuto` | optional | `true` = the widget mounts as soon as the extension is installed (every app start), no `widget-set` call needed. For always-there utility widgets like Caffeine's toggle; leave it off for on-demand widgets like the mini music player. |
 
 ## How your page runs
 
@@ -88,15 +88,15 @@ window.
 > subresources do not resolve* — `<script src="game.js">` or
 > `<link href="style.css">` silently 404 and your page loads with no JS.
 > Inline all scripts and styles into the HTML (see the Music Player).
-> `localStorage` may also throw here — wrap every access in `try/catch`. Each opened add-on keeps its own live iframe, so **several add-ons
-can run at once** (music playing while another add-on does its thing).
+> `localStorage` may also throw here — wrap every access in `try/catch`. Each opened extension keeps its own live iframe, so **several extensions
+can run at once** (music playing while another extension does its thing).
 Everything must be local files inside your folder: no network access.
-Updating your add-on = the user reinstalls the new zip — **no app rebuild or
+Updating your extension = the user reinstalls the new zip — **no app rebuild or
 restart**.
 
 ## The bridge API
 
-Add-on pages talk to the app via `postMessage` RPC. Send
+Extension pages talk to the app via `postMessage` RPC. Send
 `{reqId, type, payload}` to `parent`; the app answers with
 `{reqId, result, error}`. Copy this helper into your page:
 
@@ -119,7 +119,7 @@ window.addEventListener("message", (e) => {
 });
 ```
 
-Available requests (the allowlist lives in `src/ui/hub/handleAddonRequest.js`;
+Available requests (the allowlist lives in `src/ui/hub/handleExtensionRequest.js`;
 PRs welcome):
 
 | `type` | `payload` | `result` |
@@ -128,9 +128,9 @@ PRs welcome):
 | `pick-folder` | — | Absolute folder path chosen in a native picker, or `null` if cancelled |
 | `list-music` | `{dir}` | Array of absolute audio-file paths (recursive, 2 levels, mp3/m4a/aac/wav/flac/ogg) |
 | `file-url` | `{path}` | An asset-protocol URL usable as `src` for `<audio>`/`<img>` etc. |
-| `say` | `{text, ms?}` | The desktop pet says `text` in its speech bubble (≤200 chars; `ms` display time, clamped 1–30 s, default 5 s). The app substitutes `{callMe}` → what the pet calls its owner (registry page setting, e.g. "Papa") and `{petName}` → the pet's name, so add-ons never see that data. Great for game results — friendlier than a notification. Skipped while the pet is away on a tour. |
+| `say` | `{text, ms?}` | The desktop pet says `text` in its speech bubble (≤200 chars; `ms` display time, clamped 1–30 s, default 5 s). The app substitutes `{callMe}` → what the pet calls its owner (registry page setting, e.g. "Papa") and `{petName}` → the pet's name, so extensions never see that data. Great for game results — friendlier than a notification. Skipped while the pet is away on a tour. |
 | `notify` | `{title, body}` | Sends a system push notification (macOS notification center) |
-| `open-window` | `{page, width, height, title}` | Opens `page` (a file in your folder) in its own native window; one per add-on — calling again focuses it |
+| `open-window` | `{page, width, height, title}` | Opens `page` (a file in your folder) in its own native window; one per extension — calling again focuses it |
 | `widget-set` | `{on}` | Shows/hides your tray mini-widget (needs `widget` in the manifest) |
 | `widget-push` | `{state}` | Sends any JSON state to your live widget page |
 | `keep-awake` | `{on}` | Prevents the Mac from auto-sleeping (and the display from dimming) while on — a `caffeinate` process held by the app, released on quit. Returns the resulting state (`true`/`false`) |
@@ -139,13 +139,13 @@ PRs welcome):
 ## Following the app's language
 
 The app is multilingual (English, 中文, Français, Español, Deutsch, 日本語 —
-Settings → 🌐 Language), and add-ons are expected to localize **themselves**:
+Settings → 🌐 Language), and extensions are expected to localize **themselves**:
 the app only tells you which language is active. The contract has two parts:
 
 1. **At boot**, ask once: `bridge("get-locale")` resolves to a two-letter
    code (`"en"`, `"zh"`, `"fr"`, `"es"`, `"de"`, `"ja"` today; more may come).
 2. **On change**, the app posts a plain message into your iframe (same
-   channel as `addon-pause`): `{type: "app-locale", locale}` — re-render your
+   channel as `extension-pause`): `{type: "app-locale", locale}` — re-render your
    text when it arrives.
 
 The recommended pattern (this is exactly what the Music Player does — copy
@@ -189,15 +189,15 @@ Rules of thumb:
 ## Pausing when the user walks away
 
 When the user leaves your page (the ← back button, a nav button, another
-add-on), the app posts a plain message into your iframe:
+extension), the app posts a plain message into your iframe:
 
 ```js
 window.addEventListener("message", (e) => {
-  if (e.data?.type === "addon-pause") pauseMyGame();
+  if (e.data?.type === "extension-pause") pauseMyGame();
 });
 ```
 
-Games should listen and pause. Add-ons that are meant to keep running in the
+Games should listen and pause. Extensions that are meant to keep running in the
 background (music players) simply ignore it. Note that a hidden iframe also
 stops receiving `requestAnimationFrame` callbacks, so rAF-driven loops freeze
 either way — the message is what lets you show your pause overlay instead of
@@ -210,7 +210,7 @@ resuming mid-action.
 Declare `"widget": "widget.html"` in your manifest. When your main page calls
 `bridge("widget-set", {on: true})`, that page appears as a **small rounded box
 hanging below the menu-bar popover** — a mini music player, a status readout.
-If several add-ons show widgets, they stack in the order they were turned on.
+If several extensions show widgets, they stack in the order they were turned on.
 Keep the design *minimal*: one row of content is ideal (`widgetHeight` ≈ 40).
 
 Add `"widgetAuto": true` and the widget instead mounts **on its own at every
@@ -238,7 +238,7 @@ page through three tiny messages:
 
 `bridge("open-window", {page: "popup.html", width: 480, height: 360, title:
 "My Thing"})` opens a real native window rendering that file from your folder,
-with the same bridge available inside it. One popup per add-on; closing it
+with the same bridge available inside it. One popup per extension; closing it
 destroys it. (Widget-action messages are only delivered to your hub page.)
 
 ### Push notifications
@@ -247,7 +247,7 @@ destroys it. (Widget-action messages are only delivered to your hub page.)
 the system notification center. Use sparingly — it's the user's screen.
 
 The reference implementation is the **🎹 Music Player** — this repo's
-`addons/music.zip` is a complete, self-contained example (folder picker,
+`extensions/music.zip` is a complete, self-contained example (folder picker,
 scan, play/pause, draggable seek bar, shuffle / loop / repeat-one, a
 mini-player tray widget in `widget.html`, and full localization in all six
 app languages via `get-locale` + `app-locale`). Start by copying it.
@@ -260,9 +260,9 @@ app languages via `get-locale` + `app-locale`). Start by copying it.
   zip. Paths containing `..` are skipped.
 - **Scan**: the app lists that directory at startup and after every
   install/uninstall; your manifest is the single source of truth for the
-  add-on's emoji, name, and pages.
+  extension's emoji, name, and pages.
 - **Uninstall**: deletes the folder. Nothing else to clean.
-- The repo's `addons/` folder is *not* bundled into the shipped app — it's
+- The repo's `extensions/` folder is *not* bundled into the shipped app — it's
   a convenient place to keep zips during development.
 
 ## Checklist before zipping
@@ -273,5 +273,5 @@ app languages via `get-locale` + `app-locale`). Start by copying it.
 - [ ] Strings live in an `STR` table; `get-locale` fetched at boot and
       `app-locale` handled (English fallback for locales you don't ship)
 - [ ] `zip -r yourthing.zip yourthing` from the parent directory
-- [ ] Test: Add-ons homepage → 🧰 manager → Install from zip → tile appears → page opens
+- [ ] Test: Extensions homepage → 🧰 manager → Install from zip → tile appears → page opens
       → Uninstall removes it cleanly

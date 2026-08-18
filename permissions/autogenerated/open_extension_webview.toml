@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-extension-webview"
+description = "Enables the open_extension_webview command without any pre-configured scope."
+commands.allow = ["open_extension_webview"]
+
+[[permission]]
+identifier = "deny-open-extension-webview"
+description = "Denies the open_extension_webview command without any pre-configured scope."
+commands.deny = ["open_extension_webview"]

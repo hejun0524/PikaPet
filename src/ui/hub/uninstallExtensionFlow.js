@@ -3,16 +3,16 @@
 import { invoke, emit } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
-import { extensionFrame } from "./extensionFrame.js";
 import { renderGrid } from "./renderGrid.js";
 import { renderSidePanel } from "./renderSidePanel.js";
 
 /**
  * Uninstall an extension and refresh the UI.
  *
- * Side effects: invokes uninstall_extension, emits extensions-changed, updates
- * `state.extensionsInstalled` and `ui.extensionMsg`, removes the extension's running
- * iframe and tray widget, and re-renders grid/drawer/side panel.
+ * Side effects: invokes uninstall_extension (which also closes its running
+ * child webview/popup window Rust-side), emits extensions-changed, updates
+ * `state.extensionsInstalled` and `ui.extensionMsg`, turns off its tray
+ * widget, and re-renders grid/drawer/side panel.
  *
  * @param {string} id - Extension id to uninstall.
  * @returns {Promise<void>}
@@ -20,15 +20,13 @@ import { renderSidePanel } from "./renderSidePanel.js";
 export async function uninstallExtensionFlow(id) {
   try {
     await invoke("uninstall_extension", { id });
-    ui.extensionMsg = t("addonmgr.uninstalled", { name: id });
+    ui.extensionMsg = t("extensionmgr.uninstalled", { name: id });
     emit("extensions-changed");
     state.extensionsInstalled = await invoke("list_installed_extensions");
-    // Kill its running page (stops any playback) and its tray widget.
-    extensionFrame(id)?.remove();
     emit("extension-widget-set", { id, on: false });
   } catch (e) {
-    ui.extensionMsg = t("addonmgr.uninstallFailed", { err: e });
+    ui.extensionMsg = t("extensionmgr.uninstallFailed", { err: e });
   }
-  if (ui.view === "addons") renderGrid();
+  if (ui.view === "extensions") renderGrid();
   renderSidePanel();
 }

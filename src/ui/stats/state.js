@@ -53,7 +53,7 @@ export const pet = {
   pika: { date: "", wants: [], sells: [] },
   bank: { savings: 0, loan: 0, date: "" },
   homework: { date: "", count: 0 }, // daily homework limit tracking
-  pinnedAddons: [], // pinned extension ids (name mirrors the historical save.json key)
+  pinnedExtensions: [], // pinned extension ids (name mirrors the historical save.json key)
   // Noonie's Kitchen: paw-bots, the 3h order board, the pantry (ingredient
   // key -> count), learned city-recipe keys, and the delivery log.
   kitchen: { bots: 2, slot: "", orders: [], pantry: {}, recipes: [], log: [] },
@@ -101,7 +101,7 @@ export const runtime = {
   scheduleStep: 0,
   lastDecayAt: Date.now(),
   lastFcRegenAt: Date.now(),
-  dataPaths: null, // {root, addons, pets, isDefault} from get_data_paths
+  dataPaths: null, // {root, extensions, pets, isDefault} from get_data_paths
 };
 
 /** Extension tray widgets: extension id -> last pushed widget state. */

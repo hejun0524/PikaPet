@@ -1,5 +1,5 @@
 // stats/handleWidgetRequest.js — Widget bridge: tray mini-widget pages get a
-// small subset of the extension bridge (see doc/addons.md), served right here in
+// small subset of the extension bridge (see doc/extensions.md), served right here in
 // the stats window — so a widget works even when its extension's hub page has
 // never been opened this run (e.g. Caffeine's tray toggle).
 

@@ -1,7 +1,7 @@
 // hub/renderGrid.js — Grid: renders the main content area for the current
 // view and active tab.
 
-import { convertFileSrc } from "../shared/tauri.js";
+import { invoke } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { BASKET_VIEWS } from "./constants.js";
@@ -17,7 +17,7 @@ import { planPageHTML } from "./planPageHTML.js";
 import { tradePageHTML } from "./tradePageHTML.js";
 import { servicePageHTML } from "./servicePageHTML.js";
 import { escText as esc } from "../panel.js";
-import { extensionFrame } from "./extensionFrame.js";
+import { openActiveExtensionWebview } from "./openActiveExtensionWebview.js";
 import { homeCardHTML } from "./homeCardHTML.js";
 import { shopCardHTML } from "./shopCardHTML.js";
 import { souvenirsPageHTML } from "./souvenirsPageHTML.js";
@@ -185,7 +185,7 @@ export function renderGrid() {
 
   // Extensions: springboard of installed extensions (My Extensions), the
   // GitHub-release Marketplace, and the Manager tab (pin/uninstall/zip).
-  if (ui.view === "addons") {
+  if (ui.view === "extensions") {
     if (ui.extensionsTab === "manager") {
       grid.innerHTML = extensionManagerHTML();
       return;
@@ -206,7 +206,7 @@ export function renderGrid() {
         </button>`
           )
           .join("")}</div>`
-      : `<div class="empty-note">${t("addons.empty")}</div>`;
+      : `<div class="empty-note">${t("extensions.empty")}</div>`;
     return;
   }
 
@@ -221,9 +221,11 @@ export function renderGrid() {
     return;
   }
 
-  // One live iframe per opened extension: switching between extensions hides the
-  // others instead of destroying them, so several can keep running at once
-  // (music playing while another extension's page stays active).
+  // One live child webview per opened extension: switching between
+  // extensions hides the others instead of destroying them, so several
+  // can keep running at once (music playing while another extension's
+  // page stays active) — a real Tauri webview, not a DOM node, so Rust
+  // does the actual create/reposition/show/hide (see hosting.rs).
   if (ui.view.startsWith("extension:")) {
     const id = ui.view.slice("extension:".length);
     const extension = state.extensionsInstalled.find((a) => a.id === id);
@@ -231,27 +233,13 @@ export function renderGrid() {
     if (!extension) {
       host.hidden = true;
       grid.hidden = false;
-      grid.innerHTML = `<div class="empty-note">${t("addons.notInstalled")}</div>`;
+      grid.innerHTML = `<div class="empty-note">${t("extensions.notInstalled")}</div>`;
     } else if (extension.entry && extension.dir) {
-      let frame = extensionFrame(id);
-      if (!frame) {
-        frame = document.createElement("iframe");
-        frame.className = "extension-frame";
-        frame.dataset.extension = id;
-        frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
-        frame.src = convertFileSrc(`${extension.dir}/${extension.entry}`);
-        host.appendChild(frame);
-      }
-      for (const f of host.querySelectorAll("iframe")) {
-        f.classList.toggle("bg", f !== frame);
-      }
-      // Keyboard-driven extensions (piano, games) need key events to land inside
-      // their iframe document, which only happens once the frame has focus.
-      frame.focus();
+      openActiveExtensionWebview(id, extension.entry);
     } else {
       host.hidden = true;
       grid.hidden = false;
-      grid.innerHTML = `<div class="empty-note">${t("addons.noPage", { name: esc(extension.name ?? id) })}</div>`;
+      grid.innerHTML = `<div class="empty-note">${t("extensions.noPage", { name: esc(extension.name ?? id) })}</div>`;
     }
     return;
   }

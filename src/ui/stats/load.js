@@ -179,8 +179,8 @@ export async function load() {
         date: typeof saved.bank.date === "string" ? saved.bank.date : "",
       };
     }
-    if (Array.isArray(saved.pinnedAddons)) {
-      pet.pinnedAddons = saved.pinnedAddons.filter((id) => typeof id === "string");
+    if (Array.isArray(saved.pinnedExtensions)) {
+      pet.pinnedExtensions = saved.pinnedExtensions.filter((id) => typeof id === "string");
     }
     if (saved.kitchen && typeof saved.kitchen === "object") {
       const k = saved.kitchen;

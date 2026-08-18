@@ -13,6 +13,6 @@ Goal: implement update-and-restart the way VSCode/Discord/GitHub Desktop do it �
 
 General instructions:
 - Use Tauri v2 APIs throughout (not v1).
-- Show me the resulting file/directory structure changes for the add-ons rework before making sweeping changes.
-- Flag any place where you're making an assumption about my existing codebase structure — ask instead of guessing if you can't find the current add-on loading code.
+- Show me the resulting file/directory structure changes for the extensions rework before making sweeping changes.
+- Flag any place where you're making an assumption about my existing codebase structure — ask instead of guessing if you can't find the current extension loading code.
 - Add basic tests where reasonable (manifest validation, permission parsing).

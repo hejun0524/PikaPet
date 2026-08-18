@@ -1,5 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod extensions;
+
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -116,7 +118,7 @@ fn default_data_root(app: &tauri::AppHandle) -> std::path::PathBuf {
     dir
 }
 
-fn data_root(app: &tauri::AppHandle) -> std::path::PathBuf {
+pub(crate) fn data_root(app: &tauri::AppHandle) -> std::path::PathBuf {
     let default = default_data_root(app);
     if let Ok(custom) = std::fs::read_to_string(default.join("data-dir.txt")) {
         let path = std::path::PathBuf::from(custom.trim());
@@ -301,148 +303,17 @@ fn delete_custom_pet(app: tauri::AppHandle, file: String) -> Result<(), String> 
 }
 
 // ── Extension management ───────────────────────────────────────────────────────
-// Extensions live as folders under <data-root>/extensions/<id>/ with a
-// manifest.json. Install = extract a zip there; uninstall = delete the folder.
-fn extensions_dir(app: &tauri::AppHandle) -> std::path::PathBuf {
-    let dir = data_root(app).join("extensions");
-    let _ = std::fs::create_dir_all(&dir);
-    dir
-}
-
-fn valid_extension_id(id: &str) -> bool {
-    !id.is_empty()
-        && id.len() <= 40
-        && id
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-}
-
-#[tauri::command]
-fn install_extension(app: tauri::AppHandle, path: String) -> Result<serde_json::Value, String> {
-    let file = std::fs::File::open(&path).map_err(|e| e.to_string())?;
-    install_archive(&app, file)
-}
-
-// Marketplace installs: download the release-asset zip, then extract it
-// exactly like a local zip install.
-#[tauri::command]
-fn install_extension_from_url(app: tauri::AppHandle, url: String) -> Result<serde_json::Value, String> {
-    use std::io::Read;
-    if !url.starts_with("https://") {
-        return Err("only https downloads are allowed".into());
-    }
-    let mut bytes = Vec::new();
-    ureq::get(&url)
-        .call()
-        .map_err(|e| e.to_string())?
-        .into_reader()
-        .take(20 * 1024 * 1024) // sanity cap: no extension is anywhere near 20 MB
-        .read_to_end(&mut bytes)
-        .map_err(|e| e.to_string())?;
-    install_archive(&app, std::io::Cursor::new(bytes))
-}
-
-fn install_archive<R: std::io::Read + std::io::Seek>(
-    app: &tauri::AppHandle,
-    reader: R,
-) -> Result<serde_json::Value, String> {
-    use std::io::Read;
-    let mut archive = zip::ZipArchive::new(reader).map_err(|e| e.to_string())?;
-
-    // Find manifest.json at the zip root or inside a single top-level folder.
-    let mut manifest_entry: Option<(usize, String)> = None;
-    for i in 0..archive.len() {
-        let name = archive
-            .by_index(i)
-            .map_err(|e| e.to_string())?
-            .name()
-            .trim_start_matches("./")
-            .to_string();
-        if name.ends_with("manifest.json") && name.matches('/').count() <= 1 {
-            manifest_entry = Some((i, name));
-            break;
-        }
-    }
-    let (idx, manifest_path) = manifest_entry.ok_or("no manifest.json found in the zip")?;
-    let mut manifest_str = String::new();
-    archive
-        .by_index(idx)
-        .map_err(|e| e.to_string())?
-        .read_to_string(&mut manifest_str)
-        .map_err(|e| e.to_string())?;
-    let manifest: serde_json::Value =
-        serde_json::from_str(&manifest_str).map_err(|e| format!("bad manifest: {e}"))?;
-    let id = manifest
-        .get("id")
-        .and_then(|v| v.as_str())
-        .ok_or("manifest is missing \"id\"")?
-        .to_string();
-    if !valid_extension_id(&id) {
-        return Err("invalid extension id (use letters, digits, - or _)".into());
-    }
-
-    // Extract everything that shares the manifest's folder prefix.
-    let prefix = manifest_path.trim_end_matches("manifest.json").to_string();
-    let dest = extensions_dir(app).join(&id);
-    let _ = std::fs::remove_dir_all(&dest);
-    std::fs::create_dir_all(&dest).map_err(|e| e.to_string())?;
-    for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        if entry.is_dir() {
-            continue;
-        }
-        let name = entry.name().trim_start_matches("./").to_string();
-        if !name.starts_with(&prefix) {
-            continue;
-        }
-        let rel = &name[prefix.len()..];
-        if rel.is_empty() || rel.split('/').any(|part| part == "..") {
-            continue;
-        }
-        let out = dest.join(rel);
-        if let Some(parent) = out.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        let mut buf = Vec::new();
-        entry.read_to_end(&mut buf).map_err(|e| e.to_string())?;
-        std::fs::write(&out, buf).map_err(|e| e.to_string())?;
-    }
-    Ok(manifest)
-}
-
-#[tauri::command]
-fn uninstall_extension(app: tauri::AppHandle, id: String) -> Result<(), String> {
-    if !valid_extension_id(&id) {
-        return Err("invalid extension id".into());
-    }
-    std::fs::remove_dir_all(extensions_dir(&app).join(&id)).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn list_installed_extensions(app: tauri::AppHandle) -> Vec<serde_json::Value> {
-    let mut out = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(extensions_dir(&app)) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if !path.is_dir() {
-                continue;
-            }
-            if let Ok(s) = std::fs::read_to_string(path.join("manifest.json")) {
-                if let Ok(mut manifest) = serde_json::from_str::<serde_json::Value>(&s) {
-                    if let Some(obj) = manifest.as_object_mut() {
-                        obj.insert(
-                            "dir".into(),
-                            serde_json::Value::String(path.to_string_lossy().into_owned()),
-                        );
-                    }
-                    out.push(manifest);
-                }
-            }
-        }
-    }
-    out.sort_by_key(|m| m.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string());
-    out
-}
+// Extensions live as folders under <data-root>/extensions/<id>/ with an
+// extension.json. Install = verify (if applicable) + extract a zip there;
+// uninstall = delete the folder. The full pipeline lives in the
+// `extensions` module (extensions::install, extensions::manifest).
+use extensions::{
+    bridge::{ext_get_locale, ext_push, ext_say, ext_widget_push, ext_widget_set, set_current_locale, AppLocale},
+    extensions_dir,
+    hosting::{close_extension_webview, hide_extension_webview, open_extension_webview},
+    install::{install_extension, install_extension_from_registry, list_installed_extensions, uninstall_extension},
+    registry::{fetch_registry, RegistryState},
+};
 
 // Keep-awake (Caffeine extension): while enabled, a `caffeinate -di` child
 // process holds display + idle sleep assertions. `-w <our pid>` ties the
@@ -518,29 +389,33 @@ fn notify(title: String, body: String) -> Result<(), String> {
 }
 
 // Extension popup windows: a native window per extension, loading the
-// addon-window.html shell which iframes the requested page from the extension's
+// extension-window.html shell which iframes the requested page from the extension's
 // folder and provides the same postMessage bridge as the hub.
 #[tauri::command]
 fn open_extension_window(
+    webview: tauri::Webview,
     app: tauri::AppHandle,
-    id: String,
     page: String,
     width: f64,
     height: f64,
     title: String,
 ) -> Result<(), String> {
-    if !valid_extension_id(&id) {
-        return Err("invalid extension id".into());
-    }
+    // The id comes from the *caller's own* webview/window label, never a
+    // client-supplied parameter — otherwise any extension could pass any
+    // other extension's id and open a popup impersonating it. Safe now
+    // that extensions invoke this directly (see `extensions::bridge`);
+    // the old design never had this gap because the hub, not the
+    // extension, always made this call on the extension's behalf.
+    let id = extensions::bridge::calling_extension_id(&webview)?;
     if page.is_empty() || page.contains("..") || page.starts_with('/') {
         return Err("invalid page path".into());
     }
     if !extensions_dir(&app).join(&id).join(&page).is_file() {
         return Err(format!("no such page in extension \"{id}\": {page}"));
     }
-    // Historical label prefix; must match the "addon-*" windows entry in
-    // capabilities/default.json.
-    let label = format!("addon-{id}");
+    // Historical label prefix; `calling_extension_id` and this extension's
+    // own dynamically-registered window capability both depend on it.
+    let label = format!("extension-{id}");
     if let Some(win) = app.get_webview_window(&label) {
         let _ = win.show();
         let _ = win.set_focus();
@@ -556,7 +431,7 @@ fn open_extension_window(
             })
             .collect()
     };
-    let url = format!("addon-window.html?id={}&page={}", encode(&id), encode(&page));
+    let url = format!("extension-window.html?id={}&page={}", encode(&id), encode(&page));
     tauri::WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::App(url.into()))
         .title(if title.is_empty() { &id } else { &title })
         .inner_size(width.clamp(240.0, 1400.0), height.clamp(160.0, 1000.0))
@@ -664,6 +539,8 @@ fn main() {
     tauri::Builder::default()
         .manage(KeepAwake(std::sync::Mutex::new(None)))
         .manage(PetHitbox(std::sync::Mutex::new(None)))
+        .manage(AppLocale::default())
+        .manage(RegistryState::default())
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -720,6 +597,11 @@ fn main() {
             // Desktop clicks pass through the pet window's transparent margins.
             spawn_click_through_watcher(app.handle().clone());
             spawn_sleep_watcher(app.handle().clone());
+
+            // Capabilities are process-lifetime state, not persisted — every
+            // installed extension's grant must be re-registered on every
+            // launch, or a fresh process would have none at all.
+            extensions::capability::register_all_at_boot(app.handle());
 
             let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let tray_menu = MenuBuilder::new(app).item(&quit_item).build()?;
@@ -791,14 +673,24 @@ fn main() {
             delete_custom_pet,
             list_music,
             install_extension,
-            install_extension_from_url,
+            install_extension_from_registry,
             uninstall_extension,
             list_installed_extensions,
             notify,
             open_extension_window,
             set_keep_awake,
             keep_awake_status,
-            log
+            log,
+            set_current_locale,
+            ext_get_locale,
+            ext_say,
+            ext_widget_set,
+            ext_widget_push,
+            ext_push,
+            open_extension_webview,
+            hide_extension_webview,
+            close_extension_webview,
+            fetch_registry
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-fetch-registry"
+description = "Enables the fetch_registry command without any pre-configured scope."
+commands.allow = ["fetch_registry"]
+
+[[permission]]
+identifier = "deny-fetch-registry"
+description = "Denies the fetch_registry command without any pre-configured scope."
+commands.deny = ["fetch_registry"]

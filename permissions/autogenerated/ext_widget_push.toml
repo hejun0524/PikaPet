@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-widget-push"
+description = "Enables the ext_widget_push command without any pre-configured scope."
+commands.allow = ["ext_widget_push"]
+
+[[permission]]
+identifier = "deny-ext-widget-push"
+description = "Denies the ext_widget_push command without any pre-configured scope."
+commands.deny = ["ext_widget_push"]

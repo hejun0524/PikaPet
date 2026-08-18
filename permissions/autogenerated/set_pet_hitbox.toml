@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-pet-hitbox"
+description = "Enables the set_pet_hitbox command without any pre-configured scope."
+commands.allow = ["set_pet_hitbox"]
+
+[[permission]]
+identifier = "deny-set-pet-hitbox"
+description = "Denies the set_pet_hitbox command without any pre-configured scope."
+commands.deny = ["set_pet_hitbox"]

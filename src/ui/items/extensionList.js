@@ -8,16 +8,16 @@ import { getLocale } from "../shared/i18n.js";
  * filling in fallbacks for missing emoji/name.
  *
  * Names follow the app language: a manifest may carry an optional
- * `names: {<locale>: "…"}` map (see doc/addons.md) — the active locale's
+ * `names: {<locale>: "…"}` map (see doc/extensions.md) — the active locale's
  * entry wins, then the map's "en", then the plain `name` field, then the id.
  *
  * Extensions are installed from zip files (Extensions manager → Install
- * extension) into the app-data addons directory.
+ * extension) into the app-data extensions directory.
  *
  * @param {Array<object>|null|undefined} installed - Raw manifest entries
- *   (`{ id, emoji?, name?, names?, entry?, dir? }`); `null`/`undefined` is
- *   treated as an empty list.
- * @returns {Array<{id: string, emoji: string, name: string, entry: string|undefined, dir: string|undefined}>}
+ *   (`{ id, emoji?, name?, names?, entry?, dir?, legacy?, author?,
+ *   description? }`); `null`/`undefined` is treated as an empty list.
+ * @returns {Array<{id: string, emoji: string, name: string, entry: string|undefined, dir: string|undefined, legacy: boolean, author: string|undefined, description: string|undefined}>}
  *   Display-ready extension entries (name already localized).
  */
 export function extensionList(installed) {
@@ -27,5 +27,11 @@ export function extensionList(installed) {
     name: (a.names && (a.names[getLocale()] ?? a.names.en)) || a.name || a.id,
     entry: a.entry,
     dir: a.dir,
+    // "legacy" = installed before extension.json existed (only the old
+    // manifest.json) — see extensions::migration in Rust. Surfaced as an
+    // "unverified" badge in the Manager tab.
+    legacy: !!a.legacy,
+    author: a.author,
+    description: a.description,
   }));
 }

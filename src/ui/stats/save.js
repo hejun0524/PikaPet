@@ -36,7 +36,7 @@ export function save() {
     pika: pet.pika,
     bank: pet.bank,
     homework: pet.homework,
-    pinnedAddons: pet.pinnedAddons, // historical save key (predates the add-on -> extension rename)
+    pinnedExtensions: pet.pinnedExtensions, // historical save key (predates the extension -> extension rename)
     // Kitchen stage timers persist as remaining time so they pause while the
     // app is closed (same philosophy as activities).
     kitchen: {

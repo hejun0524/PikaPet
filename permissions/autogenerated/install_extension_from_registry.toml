@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-install-extension-from-registry"
+description = "Enables the install_extension_from_registry command without any pre-configured scope."
+commands.allow = ["install_extension_from_registry"]
+
+[[permission]]
+identifier = "deny-install-extension-from-registry"
+description = "Denies the install_extension_from_registry command without any pre-configured scope."
+commands.deny = ["install_extension_from_registry"]

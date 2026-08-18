@@ -95,8 +95,8 @@ export function initEvents() {
   listen("extension-pin", ({ payload }) => {
     const id = payload.id;
     if (!runtime.installedExtensions.some((a) => a.id === id)) return;
-    pet.pinnedAddons = pet.pinnedAddons.filter((p) => p !== id);
-    if (payload.pinned) pet.pinnedAddons.push(id);
+    pet.pinnedExtensions = pet.pinnedExtensions.filter((p) => p !== id);
+    if (payload.pinned) pet.pinnedExtensions.push(id);
     render();
     save();
     broadcastState();
@@ -523,7 +523,7 @@ export function initEvents() {
     "pika",
     "fightclub",
     "kitchen",
-    "addons",
+    "extensions",
     "settings",
   ]) {
     document.getElementById(id).addEventListener("click", () => openHub(id));
@@ -531,7 +531,7 @@ export function initEvents() {
 
   // Compact-mode shortcut row.
   document.getElementById("mini-home").addEventListener("click", () => openHub("home"));
-  document.getElementById("mini-extensions").addEventListener("click", () => openHub("addons"));
+  document.getElementById("mini-extensions").addEventListener("click", () => openHub("extensions"));
   document.getElementById("mini-settings").addEventListener("click", () => openHub("settings"));
 
   // End/call-back the current activity or caretaker straight from the popover.

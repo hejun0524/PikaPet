@@ -29,7 +29,8 @@ import { renderTradeBadge } from "./renderTradeBadge.js";
 import { renderServiceBadge } from "./renderServiceBadge.js";
 import { installExtensionFlow } from "./installExtensionFlow.js";
 import { uninstallExtensionFlow } from "./uninstallExtensionFlow.js";
-import { marketInstallFlow } from "./marketInstallFlow.js";
+import { promptMarketInstall, confirmMarketInstall, cancelMarketInstall } from "./marketInstallFlow.js";
+import { loadMarketplace } from "./marketplace.js";
 import { applySideCollapsed } from "./applySideCollapsed.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { CHOICE_BOOKS } from "../fightclub.js";
@@ -101,7 +102,7 @@ export function initEvents() {
 
   // Back to the Extensions homepage from an open extension page. The iframe
   // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.
-  document.getElementById("extensions-home-btn").addEventListener("click", () => setView("addons"));
+  document.getElementById("extensions-home-btn").addEventListener("click", () => setView("extensions"));
 
   listen("pika-result", ({ payload }) => {
     if (payload.ok) {
@@ -158,7 +159,7 @@ export function initEvents() {
     else if (ui.view === "pika") ui.pikaTab = tab.dataset.tab;
     else if (ui.view === "kitchen") ui.kitchenTab = tab.dataset.tab;
     else if (ui.view === "fightclub") ui.fightclubTab = tab.dataset.tab;
-    else if (ui.view === "addons") ui.extensionsTab = tab.dataset.tab;
+    else if (ui.view === "extensions") ui.extensionsTab = tab.dataset.tab;
     else if (ui.view === "government") {
       ui.petcenterTab = tab.dataset.tab;
       ui.pendingMagic = null;
@@ -182,7 +183,7 @@ export function initEvents() {
     }
     const pinBtn = e.target.closest("[data-pin]");
     if (pinBtn) {
-      emit("extension-pin", { id: pinBtn.dataset.pin, pinned: !state.pinnedAddons.includes(pinBtn.dataset.pin) });
+      emit("extension-pin", { id: pinBtn.dataset.pin, pinned: !state.pinnedExtensions.includes(pinBtn.dataset.pin) });
       return;
     }
     const uninstallBtn = e.target.closest("[data-uninstall]");
@@ -192,7 +193,19 @@ export function initEvents() {
     }
     const marketBtn = e.target.closest("[data-market-install]");
     if (marketBtn) {
-      marketInstallFlow(marketBtn.dataset.marketInstall);
+      promptMarketInstall(marketBtn.dataset.marketInstall);
+      return;
+    }
+    if (e.target.id === "market-perm-confirm") {
+      confirmMarketInstall();
+      return;
+    }
+    if (e.target.id === "market-perm-cancel") {
+      cancelMarketInstall();
+      return;
+    }
+    if (e.target.id === "market-refresh") {
+      loadMarketplace(true);
       return;
     }
 
@@ -661,6 +674,9 @@ export function initEvents() {
     } else if (e.target.id === "dev-coins") {
       appSettings.devCoins = e.target.checked;
       emit("settings-changed", { ...appSettings });
+    } else if (e.target.id === "allow-sideload") {
+      appSettings.allowSideload = e.target.checked;
+      emit("settings-changed", { ...appSettings });
     } else if (e.target.id === "pause-on-sleep") {
       appSettings.pauseOnSleep = e.target.checked;
       emit("settings-changed", { ...appSettings });
@@ -668,9 +684,10 @@ export function initEvents() {
       appSettings.language = e.target.value;
       setLanguage(appSettings.language);
       emit("settings-changed", { ...appSettings });
+      invoke("set_current_locale", { locale: getLocale() }).catch(() => {});
       // Live extension pages get told too, so they can re-render themselves.
-      for (const frame of document.querySelectorAll("#extension-host iframe")) {
-        frame.contentWindow?.postMessage({ type: "app-locale", locale: getLocale() }, "*");
+      for (const id of ui.openExtensionIds) {
+        invoke("ext_push", { id, kind: "app-locale", data: { locale: getLocale() } }).catch(() => {});
       }
       renderAll();
     } else if (e.target.id === "autostart") {

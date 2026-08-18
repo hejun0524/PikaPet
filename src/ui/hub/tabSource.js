@@ -30,6 +30,6 @@ export function tabSource() {
   if (ui.view === "government") return { source: PETCENTER_TABS, active: ui.petcenterTab, prefix: "pctab." };
   if (ui.view === "kitchen") return { source: KITCHEN_TABS, active: ui.kitchenTab, prefix: "kitchentab." };
   if (ui.view === "fightclub") return { source: FIGHTCLUB_TABS, active: ui.fightclubTab, prefix: "fightclubtab." };
-  if (ui.view === "addons") return { source: EXTENSIONS_TABS, active: ui.extensionsTab, prefix: "addonstab." };
+  if (ui.view === "extensions") return { source: EXTENSIONS_TABS, active: ui.extensionsTab, prefix: "extensionstab." };
   return null;
 }

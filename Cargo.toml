@@ -2,15 +2,27 @@
 name = "mypetgame"
 version = "0.1.0"
 edition = "2021"
+# Keep plain `cargo run`/`cargo build` targeting the main app now that
+# `src/bin/sign-extension.rs` adds a second binary to the package.
+default-run = "mypetgame"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["macos-private-api", "tray-icon", "protocol-asset"] }
+tauri = { version = "2", features = ["macos-private-api", "tray-icon", "protocol-asset", "unstable"] }
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 tauri-plugin-autostart = "2"
 tauri-plugin-dialog = "2"
 zip = "2"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ureq = "2"
+sha2 = "0.10"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+rand = "0.8"
+base64 = "0.22"
+hex = "0.4"
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }

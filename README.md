@@ -39,7 +39,7 @@ On macOS this produces a `.app` for /Applications; Settings → "Show up when co
 |---|---|
 | [🏗️ Architecture](doc/architecture.md) | Repo layout, the four windows, state ownership & persistence, embedding/rebuild gotchas |
 | [🐩 Desktop pet, tray & care](doc/desktop-pet.md) | The sprite, speech bubbles, right-click menu, tray popover, care meters & traits, first run/reset |
-| [🏘️ The hub](doc/hub.md) | All eleven views: Home, Life, Career, Touring, Achievements, Pika's Trading Post, Darcy's Fight Club, Noonie's Delivery Service, Pet Center, Add-ons, Settings |
+| [🏘️ The hub](doc/hub.md) | All eleven views: Home, Life, Career, Touring, Achievements, Pika's Trading Post, Darcy's Fight Club, Noonie's Delivery Service, Pet Center, Extensions, Settings |
 | [🌐 Languages](doc/languages.md) | The i18n system (12 languages), how names are translated, adding a language or new strings |
-| [🧩 Add-ons](doc/addons.md) | Using add-ons + the full developer guide: zip format, manifest, bridge API, tray widgets, localization |
+| [🧩 Extensions](doc/extensions.md) | Using extensions + the full developer guide: zip format, manifest, bridge API, tray widgets, localization |
 | [🧭 Roadmap](doc/roadmap.md) | The auto-update plan, debug knobs, and the to-do table |

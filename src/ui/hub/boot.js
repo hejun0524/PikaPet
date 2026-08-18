@@ -1,6 +1,7 @@
 // hub/boot.js
 
 import { invoke, getCurrentWindow, LogicalSize } from "../shared/tauri.js";
+import { getLocale } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { applyState } from "./applyState.js";
 import { renderAll } from "./renderAll.js";
@@ -26,6 +27,10 @@ export async function boot() {
   } catch (e) {
     console.error("failed to load hub state:", e);
   }
+  // Rust has no locale concept of its own (it was purely JS state before
+  // extensions became real child webviews) — mirror it so `ext_get_locale`
+  // has something to answer.
+  invoke("set_current_locale", { locale: getLocale() }).catch(() => {});
   try {
     // Settings → Storage shows these; custom pet thumbs resolve against pets.
     ui.dataPaths = await invoke("get_data_paths");
