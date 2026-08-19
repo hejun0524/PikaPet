@@ -46,6 +46,7 @@ export function save() {
       ),
     },
     fightclub: pet.fightclub,
+    dune: pet.dune,
     activity: {
       plan: [...pet.activity.plan],
       // Persist elapsed time, not wall-clock, so a closed app pauses activities.

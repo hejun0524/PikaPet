@@ -47,6 +47,7 @@ import { fightclubClubHTML } from "./fightclubClubHTML.js";
 import { fightclubSkillsHTML } from "./fightclubSkillsHTML.js";
 import { fightclubTrainHTML } from "./fightclubTrainHTML.js";
 import { fightclubBattleHTML } from "./fightclubBattleHTML.js";
+import { tasksPageHTML } from "./tasksPageHTML.js";
 import { settingsHTML } from "./settingsHTML.js";
 import { refreshHidePet } from "./refreshHidePet.js";
 import { refreshAutostart } from "./refreshAutostart.js";
@@ -167,6 +168,12 @@ export function renderGrid() {
           : ui.battle
             ? fightclubBattleHTML()
             : fightclubClubHTML();
+    return;
+  }
+
+  // Dune's Daily Tasks: 5 daily challenges + streak toward the Desert Cat.
+  if (ui.view === "dune") {
+    grid.innerHTML = tasksPageHTML();
     return;
   }
 

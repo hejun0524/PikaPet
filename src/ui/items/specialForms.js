@@ -10,6 +10,7 @@
 import { ALL_PLACES } from "../touring.js";
 import { CITY_DISHES } from "../kitchen.js";
 import { MAX_SKILL_LEVEL, SKILLS } from "../fightclub.js";
+import { UNLOCK_STREAK } from "../tasks.js";
 
 /**
  * The special-form catalog. Same shape as SPECIES plus `special`, the
@@ -20,6 +21,10 @@ export const SPECIAL_SPECIES = [
   { key: "pika", label: "Pika", breed: "Garden Cat", sheet: "pets/garden_cat.webp", special: "cities", defaultName: "Pika" },
   { key: "darcy", label: "Darcy", breed: "Tuxedo Cat", sheet: "pets/tuxedo_cat.webp", special: "skills", defaultName: "Darcy" },
   { key: "noonie", label: "Noonie", breed: "Calico Cat", sheet: "pets/calico_cat.webp", special: "recipes", defaultName: "Noonie" },
+  // Placeholder sheet (no Desert Cat art yet) — same temporary borrow used
+  // historically for the other three before their real sheets existed;
+  // swap this `sheet` field for pets/desert_cat.webp once art exists.
+  { key: "dune", label: "Dune", breed: "Desert Cat", sheet: "pets/white_cat.webp", special: "duneStreak", defaultName: "Dune" },
 ];
 
 /**
@@ -53,6 +58,10 @@ export function specialFormProgress(special, snap) {
       have: Object.keys(CITY_DISHES).filter((c) => learned.includes(`dish:${c}`)).length,
       need: Object.keys(CITY_DISHES).length,
     };
+  }
+  if (special === "duneStreak") {
+    // Dune the drifter: a long daily-task streak.
+    return { have: snap.dune?.streak ?? 0, need: UNLOCK_STREAK };
   }
   return { have: 0, need: 1 };
 }

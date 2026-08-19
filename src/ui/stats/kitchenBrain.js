@@ -5,6 +5,7 @@
 
 import { rollBookDrop } from "../fightclub.js";
 import { pet } from "./state.js";
+import { bumpTaskProgress } from "./bumpTaskProgress.js";
 
 /** Kitchen log entries kept (newest first). */
 const LOG_MAX = 8;
@@ -29,6 +30,7 @@ export function kitchenBrain() {
       changed = true;
     } else if (order.status === "delivering") {
       pet.coins += order.reward;
+      bumpTaskProgress("kitchen.deliver");
       const log = [{ k: "delivered", c: order.customer.name, e: order.customer.emoji, r: order.recipe, w: order.reward }];
       const book = rollBookDrop();
       if (book) {

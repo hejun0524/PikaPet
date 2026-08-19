@@ -597,7 +597,9 @@ footer button.active,
 #service-btn,
 #manager-btn,
 #extensions-home-btn,
-#back-btn {
+#back-btn,
+#extension-install-btn,
+#market-refresh-btn {
   position: relative;
   padding: 6px 10px;
   font-size: 17px;
@@ -699,6 +701,16 @@ footer button.active,
 
 .ach.earned {
   opacity: 1;
+}
+
+/* Dune's Daily Tasks: a claimed row (whether or not it's also .earned)
+   greys out and strikes through, per the reward already having been paid. */
+.ach.claimed {
+  opacity: 0.5;
+}
+
+.ach.claimed .ach-label {
+  text-decoration: line-through;
 }
 
 .ach-emoji {
@@ -988,10 +1000,12 @@ footer button.active,
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
+  color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 9px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .fc-fight-btn:disabled {

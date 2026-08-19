@@ -32,6 +32,8 @@ export function renderTopbar() {
   document.getElementById("plan-btn").hidden = ui.view !== "career";
   document.getElementById("trade-btn").hidden = ui.view !== "pika";
   document.getElementById("service-btn").hidden = ui.view !== "government";
+  document.getElementById("extension-install-btn").hidden = !(ui.view === "extensions" && ui.extensionsTab === "manager");
+  document.getElementById("market-refresh-btn").hidden = !(ui.view === "extensions" && ui.extensionsTab === "market");
   document.getElementById("extensions-home-btn").hidden = !ui.view.startsWith("extension:");
   document.getElementById("back-btn").hidden = !basketEmoji;
   renderCartBadge();

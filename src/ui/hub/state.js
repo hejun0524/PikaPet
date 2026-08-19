@@ -62,6 +62,16 @@ export const state = {
     hp: 100,
     record: { wins: 0, losses: 0 },
   },
+  dune: {
+    date: "",
+    tasks: [],
+    progress: {},
+    completed: [],
+    claimed: [],
+    streak: 0,
+    lastAllDoneDate: "",
+    totalCompleted: 0,
+  },
   extensionsInstalled: [],
   pinnedExtensions: [], // pinned extension ids; name mirrors the historical save.json key
 };
@@ -138,12 +148,6 @@ export const appSettings = {
   allDesktops: true,
   devMode: false,
   devCoins: false,
-  // Maintainer-only escape hatch: shows the "Install extension from zip…"
-  // button in the Manager tab, which skips marketplace signature
-  // verification (there's nothing to verify a local file against) but
-  // still goes through full manifest/permission validation. Kept separate
-  // from devMode, which controls an unrelated fast-game-clock setting.
-  allowSideload: false,
   language: "auto",
   pauseOnSleep: true,
 };

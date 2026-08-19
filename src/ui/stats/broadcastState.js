@@ -52,5 +52,15 @@ export function broadcastState() {
       hp: pet.fightclub.hp,
       record: { ...pet.fightclub.record },
     },
+    dune: {
+      date: pet.dune.date,
+      tasks: pet.dune.tasks.map((t) => ({ ...t })),
+      progress: { ...pet.dune.progress },
+      completed: [...pet.dune.completed],
+      claimed: [...pet.dune.claimed],
+      streak: pet.dune.streak,
+      lastAllDoneDate: pet.dune.lastAllDoneDate,
+      totalCompleted: pet.dune.totalCompleted,
+    },
   });
 }

@@ -8,12 +8,14 @@ import {
   ALL_TEAMS,
   cityDestination,
   findPlace,
+  isLeagueKey,
   pickRandomCities,
 } from "../touring.js";
 import { CITY_DISHES, RECIPE_DROP_CHANCE, findRecipe, recipeName } from "../kitchen.js";
 import { emit } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { pet } from "./state.js";
+import { bumpTaskProgress } from "./bumpTaskProgress.js";
 import { tourVisitCount } from "./tourVisitCount.js";
 import { awardTouringCerts } from "./awardTouringCerts.js";
 import { careerCert } from "./careerCert.js";
@@ -87,6 +89,13 @@ export function awardActivity(active, def, fraction) {
         destination: def.destKey ?? (def.kind === "sport" ? "sports" : "world"),
         cities,
       });
+      // Dune's Daily Tasks: only a fully-completed tour counts (not an
+      // early call-back), so this sits inside the count > 0 branch, gated
+      // below on fraction >= 1.
+      if (fraction >= 1) {
+        bumpTaskProgress("tour.any");
+        bumpTaskProgress(def.kind === "sport" || isLeagueKey(def.destKey) ? "tour.sport" : "tour.city");
+      }
     }
     return;
   }
@@ -100,6 +109,7 @@ export function awardActivity(active, def, fraction) {
     for (let tier = tiersCompleted(oldXp); tier < tiersCompleted(newXp); tier++) {
       pet.achievements.push(careerCert(def.career, tier));
     }
+    if (fraction >= 1) bumpTaskProgress("work.any"); // Dune's Daily Tasks
     return;
   }
   const subject = pet.school.subjects[def.subject];
@@ -112,4 +122,5 @@ export function awardActivity(active, def, fraction) {
   for (const stageKey of advanceSubject(subject)) {
     pet.achievements.push(degreeCert(def.subject, stageKey));
   }
+  if (fraction >= 1) bumpTaskProgress("study.any"); // Dune's Daily Tasks
 }

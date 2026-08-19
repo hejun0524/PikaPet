@@ -7,6 +7,7 @@ import { findCaretaker, findForm } from "../items.js";
 import { ALL_CITIES, ALL_PLACES, findTour, ticketOfferKey } from "../touring.js";
 import { CITY_DISHES, MAX_BOTS, START_BOTS, findIngredient, findRecipe } from "../kitchen.js";
 import { MAX_SKILL_LEVEL, findBook, findPotion, findSkill } from "../fightclub.js";
+import { findTask } from "../tasks.js";
 import { LEGACY_CARE_KEYS, pet, runtime } from "./state.js";
 import { activityDef } from "./activityDef.js";
 import { backfillAchievements } from "./backfillAchievements.js";
@@ -245,6 +246,30 @@ export async function load() {
       pet.homework = {
         date: typeof saved.homework.date === "string" ? saved.homework.date : "",
         count: Math.max(0, Math.floor(saved.homework.count ?? 0)),
+      };
+    }
+    if (saved.dune && typeof saved.dune === "object") {
+      const tasks = (Array.isArray(saved.dune.tasks) ? saved.dune.tasks : [])
+        .filter((tk) => tk && findTask(tk.tier, tk.id))
+        .slice(0, 5);
+      pet.dune = {
+        date: typeof saved.dune.date === "string" ? saved.dune.date : "",
+        tasks,
+        progress:
+          saved.dune.progress && typeof saved.dune.progress === "object"
+            ? Object.fromEntries(
+                Object.entries(saved.dune.progress).filter(([, v]) => typeof v === "number")
+              )
+            : {},
+        completed: (Array.isArray(saved.dune.completed) ? saved.dune.completed : [])
+          .map((v) => !!v)
+          .slice(0, 6),
+        claimed: (Array.isArray(saved.dune.claimed) ? saved.dune.claimed : [])
+          .map((v) => !!v)
+          .slice(0, 6),
+        streak: Math.max(0, Math.floor(saved.dune.streak ?? 0)),
+        lastAllDoneDate: typeof saved.dune.lastAllDoneDate === "string" ? saved.dune.lastAllDoneDate : "",
+        totalCompleted: Math.max(0, Math.floor(saved.dune.totalCompleted ?? 0)),
       };
     }
   } catch (e) {

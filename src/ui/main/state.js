@@ -83,8 +83,9 @@ export const DOUBLE_CLICK_MS = 400;
 /**
  * Right-click menu views, in menu order, with their emoji. Labels come from
  * the locale files (t("view.<key>")) when the menu is built. Pika, Darcy's
- * Fight Club, Noonie's Kitchen, and Achievements are reachable from the hub
- * nav but deliberately left off this menu (kept short, per user request).
+ * Fight Club, Noonie's Kitchen, Dune's Daily Tasks, and Achievements are
+ * reachable from the hub nav but deliberately left off this menu (kept
+ * short, per user request).
  */
 export const VIEW_EMOJI = {
   home: "🏠",

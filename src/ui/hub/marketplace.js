@@ -3,6 +3,14 @@
 // in Rust — never `api.github.com`, which unauthenticated calls rate-limit,
 // and never `raw.githubusercontent.com`), with a disk-cached fallback so
 // the tab is never blank just because the network call failed.
+//
+// Rows use the same `.ach.earned.extension-line` styling as the Manager
+// tab, and the action button is `.fc-fight-btn` (the same class Fight
+// Club's challenge cards use) — it was missing an explicit text `color`,
+// which read as invisible/illegible in some contexts; fixed at the class
+// itself in hub.css rather than a one-off override here. Refresh is a
+// topbar button now (see hub.html's #market-refresh-btn and
+// initEvents.js's direct listener for it), not rendered here.
 
 import { invoke } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
@@ -35,32 +43,38 @@ export async function loadMarketplace(force = false) {
 }
 
 /**
- * The Marketplace tab: one card per registry entry with an
- * install/update/installed state, the permission-confirmation card when
- * one's pending, and loading/error/empty/stale notes. Browsing always
- * works offline (it's whatever was last cached); only Install/Update
- * disable when the listing itself is stale.
+ * The Marketplace tab: one row per registry entry (same row style as the
+ * Manager tab) with an install/update/installed state, the
+ * permission-confirmation card when one's pending, and
+ * loading/error/empty/stale notes. Browsing always works offline (it's
+ * whatever was last cached); only Install/Update disable when the
+ * listing itself is stale.
  *
  * @returns {string} Page HTML for the grid.
  */
 export function marketplaceHTML() {
   if (ui.marketPermissionPrompt) return permissionPromptHTML();
 
+  // .ach-section spans the full #grid width on its own; everything below
+  // it must go inside .ach-list (which also spans full-width, then lays
+  // its own children out as one-per-row) — #grid itself is a multi-column
+  // tile grid by default, so rows/notes placed directly in it (without
+  // that wrapper) get treated as individual grid cells instead of
+  // full-width stacked rows. Mirrors extensionManagerHTML.js exactly.
   const note = `<div class="ach-section caretaker-title">${t("extmarket.note")}</div>`;
-  const refreshRow = `<div class="fc-actions"><button id="market-refresh">${t("extmarket.refresh")}</button></div>`;
   const m = ui.market;
   if (!m || m.status === "loading") {
-    return note + refreshRow + `<div class="empty-note">${t("extmarket.loading")}</div>`;
+    return note + `<div class="ach-list"><div class="empty-note">${t("extmarket.loading")}</div></div>`;
   }
   if (m.status === "error") {
-    return note + refreshRow + `<div class="empty-note">${t("extmarket.error")}</div>`;
+    return note + `<div class="ach-list"><div class="empty-note">${t("extmarket.error")}</div></div>`;
   }
   const staleNote = m.stale ? `<div class="gov-note">${t("extmarket.offline")}</div>` : "";
   if (!m.entries.length) {
-    return note + refreshRow + staleNote + `<div class="empty-note">${t("extmarket.empty")}</div>`;
+    return note + `<div class="ach-list">${staleNote}<div class="empty-note">${t("extmarket.empty")}</div></div>`;
   }
   const installedById = new Map(state.extensionsInstalled.map((a) => [a.id, a]));
-  const cards = m.entries
+  const rows = m.entries
     .map((entry) => {
       const installed = installedById.get(entry.id);
       const hasUpdate = !!(installed && installed.version && entry.version && installed.version !== entry.version);
@@ -76,15 +90,13 @@ export function marketplaceHTML() {
         ? `<img src="${esc(entry.icon)}" onerror="this.replaceWith('${fallbackEmoji}')" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;" />`
         : fallbackEmoji;
       return `
-      <div class="item">
-        <span class="icon">${icon}</span>
-        <span class="name">${esc(entry.name ?? entry.id)}</span>
+      <div class="ach earned extension-line">
+        <span class="ach-emoji">${icon}</span>
+        <span class="extension-line-label">${esc(entry.name ?? entry.id)}</span>
         ${entry.description ? `<div class="gov-note">${esc(entry.description)}</div>` : ""}
-        <span class="effects"><button class="fc-fight-btn" data-market-install="${esc(entry.id)}" ${disabled ? "disabled" : ""}>
-          ${label}
-        </button></span>
+        <button class="fc-fight-btn" data-market-install="${esc(entry.id)}" ${disabled ? "disabled" : ""}>${label}</button>
       </div>`;
     })
     .join("");
-  return note + refreshRow + staleNote + cards;
+  return note + `<div class="ach-list">${staleNote}${rows}</div>`;
 }

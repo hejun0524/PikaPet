@@ -26,5 +26,7 @@ export function applyStaticText() {
   }
   document.getElementById("extensions-home-btn").title = t("chrome.backToExtensions");
   document.getElementById("back-btn").title = t("chrome.back");
+  document.getElementById("extension-install-btn").title = t("extensionmgr.install");
+  document.getElementById("market-refresh-btn").title = t("extmarket.refresh");
   applySideCollapsed(); // restores the icon-rail state + localizes its tooltip
 }

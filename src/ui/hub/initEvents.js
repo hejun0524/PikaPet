@@ -21,6 +21,7 @@ import { findClass } from "../school.js";
 import { findJob } from "../career.js";
 import { setView } from "./setView.js";
 import { flyEmoji } from "./flyEmoji.js";
+import { renderTopbar } from "./renderTopbar.js";
 import { renderTabs } from "./renderTabs.js";
 import { renderGrid } from "./renderGrid.js";
 import { renderCartBadge } from "./renderCartBadge.js";
@@ -99,6 +100,8 @@ export function initEvents() {
   document.getElementById("trade-btn").addEventListener("click", () => setView("trade"));
   document.getElementById("service-btn").addEventListener("click", () => setView("service"));
   document.getElementById("back-btn").addEventListener("click", () => setView(ui.returnView ?? "home"));
+  document.getElementById("extension-install-btn").addEventListener("click", () => installExtensionFlow());
+  document.getElementById("market-refresh-btn").addEventListener("click", () => loadMarketplace(true));
 
   // Back to the Extensions homepage from an open extension page. The iframe
   // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.
@@ -165,6 +168,10 @@ export function initEvents() {
       ui.pendingMagic = null;
       ui.createPending = false;
     }
+    // The Extensions view's Manager/Marketplace tabs each show their own
+    // topbar button (install-from-zip, refresh) — switching tabs alone
+    // (not the whole view) needs to update that visibility too.
+    renderTopbar();
     renderTabs();
     renderGrid();
   });
@@ -177,10 +184,8 @@ export function initEvents() {
     }
 
     // ── Extensions: Manager tab + Marketplace tab ───────────────────────
-    if (e.target.id === "extension-install") {
-      installExtensionFlow();
-      return;
-    }
+    // (install-from-zip and marketplace-refresh are topbar buttons now —
+    // see the direct listeners above.)
     const pinBtn = e.target.closest("[data-pin]");
     if (pinBtn) {
       emit("extension-pin", { id: pinBtn.dataset.pin, pinned: !state.pinnedExtensions.includes(pinBtn.dataset.pin) });
@@ -202,10 +207,6 @@ export function initEvents() {
     }
     if (e.target.id === "market-perm-cancel") {
       cancelMarketInstall();
-      return;
-    }
-    if (e.target.id === "market-refresh") {
-      loadMarketplace(true);
       return;
     }
 
@@ -323,6 +324,13 @@ export function initEvents() {
     const deliverBtn = e.target.closest("[data-deliver]");
     if (deliverBtn) {
       emit("kitchen-deliver", { id: deliverBtn.dataset.deliver });
+      return;
+    }
+
+    // Dune's Daily Tasks: claim a completed task's reward.
+    const claimBtn = e.target.closest("[data-claim-task]");
+    if (claimBtn) {
+      emit("dune-claim", { index: Number(claimBtn.dataset.claimTask) });
       return;
     }
     if (e.target.id === "unlock-bot") {
@@ -673,9 +681,6 @@ export function initEvents() {
       emit("settings-changed", { ...appSettings });
     } else if (e.target.id === "dev-coins") {
       appSettings.devCoins = e.target.checked;
-      emit("settings-changed", { ...appSettings });
-    } else if (e.target.id === "allow-sideload") {
-      appSettings.allowSideload = e.target.checked;
       emit("settings-changed", { ...appSettings });
     } else if (e.target.id === "pause-on-sleep") {
       appSettings.pauseOnSleep = e.target.checked;

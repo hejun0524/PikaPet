@@ -35,6 +35,8 @@ import { handleWidgetRequest } from "./handleWidgetRequest.js";
 import { processPlan } from "./processPlan.js";
 import { canAfford } from "./canAfford.js";
 import { applyItemEffects } from "./applyItemEffects.js";
+import { bumpTaskProgress } from "./bumpTaskProgress.js";
+import { claimTask } from "./claimTask.js";
 import { activityDef } from "./activityDef.js";
 import { isEntryUnlocked } from "./isEntryUnlocked.js";
 import { endCurrentActivity } from "./endCurrentActivity.js";
@@ -215,6 +217,7 @@ export function initEvents() {
     }
     pet.pika.sells = pet.pika.sells.filter((o) => !boughtIds.includes(o.id));
     pet.coins += gain - cost;
+    bumpTaskProgress("pika.trade");
     render();
     save();
     broadcastState();
@@ -235,6 +238,14 @@ export function initEvents() {
 
   // ── Darcy's Fight Club (books, healing, fights — see initFightclub.js) ──
   initFightclub();
+
+  // ── Dune's Daily Tasks: claim a completed task's reward ──────────────────
+  listen("dune-claim", ({ payload }) => {
+    if (!claimTask(payload.index)) return;
+    render();
+    save();
+    broadcastState();
+  });
 
   // ── Noonie's Kitchen (see doc/hub.md) ────────────────────────────────────
   // Assign a free paw-bot to cook an open order (consumes the ingredients).
@@ -307,9 +318,18 @@ export function initEvents() {
 
     pet.bag[item.key] -= 1;
     applyItemEffects(item);
+    const category = ITEM_CATALOG.find((c) => c.items.includes(item))?.key;
     // Toys are playtime — the desktop sprite reacts with a pounce.
-    if (ITEM_CATALOG.find((c) => c.items.includes(item))?.key === "toys") {
-      emit("pet-react", { kind: "play" });
+    if (category === "toys") emit("pet-react", { kind: "play" });
+    // Dune's Daily Tasks: feeding/cleaning/homework counters.
+    if (category === "food") {
+      bumpTaskProgress("feed.any");
+      bumpTaskProgress(`feed.${item.key}`);
+    } else if (category === "bath") {
+      bumpTaskProgress("bath.any");
+      bumpTaskProgress(`bath.${item.key}`);
+    } else if (HOMEWORK_ITEM_KEYS.has(item.key)) {
+      bumpTaskProgress("homework.any");
     }
     render();
     save();
@@ -342,6 +362,7 @@ export function initEvents() {
         pet.bag[entry.key] = (pet.bag[entry.key] ?? 0) + qty;
       }
     }
+    bumpTaskProgress("shop.spend", total);
     render();
     save();
     broadcastState();
@@ -523,6 +544,7 @@ export function initEvents() {
     "pika",
     "fightclub",
     "kitchen",
+    "dune",
     "extensions",
     "settings",
   ]) {

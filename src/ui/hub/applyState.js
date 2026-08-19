@@ -76,6 +76,9 @@ export function applyState(saved) {
   if (saved.fightclub && typeof saved.fightclub === "object") {
     state.fightclub = { ...state.fightclub, ...saved.fightclub };
   }
+  if (saved.dune && typeof saved.dune === "object") {
+    state.dune = { ...state.dune, ...saved.dune };
+  }
   if (Array.isArray(saved.extensionsInstalled)) {
     state.extensionsInstalled = saved.extensionsInstalled;
   }
@@ -92,9 +95,6 @@ export function applyState(saved) {
     }
     if (typeof saved.settings.devCoins === "boolean") {
       appSettings.devCoins = saved.settings.devCoins;
-    }
-    if (typeof saved.settings.allowSideload === "boolean") {
-      appSettings.allowSideload = saved.settings.allowSideload;
     }
     if (typeof saved.settings.pauseOnSleep === "boolean") {
       appSettings.pauseOnSleep = saved.settings.pauseOnSleep;

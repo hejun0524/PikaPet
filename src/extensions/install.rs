@@ -5,11 +5,12 @@
 // until signature verification (if requested) and manifest validation both
 // succeed.
 //
-// Local zip installs (the "Install extension from zip…" button, gated
-// behind Settings → Developer mode → allowSideload) always skip signature
-// verification: there is no registry entry to check a local file against.
-// They still go through the exact same manifest/permission validation and
-// extraction code as a verified install.
+// Local zip installs (the "Install extension from zip…" button in the
+// Manager tab) always skip signature verification: there is no registry
+// entry to check a local file against. They still go through the exact
+// same manifest/permission validation and extraction code as a verified
+// install — they just never get the `.verified` marker written below, so
+// `migration::is_verified` correctly reports them as unverified.
 
 use super::{extensions_dir, manifest, valid_extension_id};
 use std::io::Read;
@@ -179,6 +180,17 @@ pub fn install_archive(
         std::fs::write(&out, buf).map_err(|e| e.to_string())?;
     }
 
+    // A sentinel marking that *this specific install* was signature-checked
+    // — the extension.json content itself carries no record of that, so
+    // there's no other way to tell later whether a given on-disk install
+    // went through verification or was sideloaded. `remove_dir_all` above
+    // already wipes any stale marker from a previous install of this id
+    // before extraction, so a sideload-over-a-verified-install correctly
+    // loses this marker rather than inheriting it.
+    if expected.is_some() {
+        let _ = std::fs::write(dest.join(".verified"), b"");
+    }
+
     serde_json::to_value(&parsed).map_err(|e| e.to_string())
 }
 
@@ -201,13 +213,15 @@ pub fn uninstall_extension(app: tauri::AppHandle, id: String) -> Result<(), Stri
 
 /// Lists installed extensions, reading the new `extension.json` first and
 /// falling back to the old `manifest.json` for extensions installed before
-/// this manifest existed. Legacy installs (no `extension.json`) are
-/// tagged `"legacy": true` and have their `permissions` field overwritten
-/// with the full catalog (see `migration.rs`) — the single source of
-/// truth both the Manager tab's "unverified" badge and
-/// `capability::register_all_at_boot`'s boot-time grant read from, so
-/// there's exactly one place that decides a legacy extension's trust
-/// level rather than two that could drift apart.
+/// this manifest existed. Tags each entry `"unverified": bool` — true for
+/// *either* a format-legacy install (no `extension.json`, so its
+/// `permissions` field is also overwritten with the full catalog — see
+/// `migration.rs`) *or* a new-format install that skipped signature
+/// verification (a local zip sideload — its own declared permissions are
+/// left untouched). This is the single source of truth both the Manager
+/// tab's "unverified" badge and `capability::register_all_at_boot`'s
+/// boot-time grant read from, so there's exactly one place that decides
+/// an extension's trust level rather than two that could drift apart.
 #[tauri::command]
 pub fn list_installed_extensions(app: tauri::AppHandle) -> Vec<serde_json::Value> {
     let mut out = Vec::new();
@@ -232,9 +246,10 @@ pub fn list_installed_extensions(app: tauri::AppHandle) -> Vec<serde_json::Value
                             "dir".into(),
                             serde_json::Value::String(path.to_string_lossy().into_owned()),
                         );
-                        let legacy = super::migration::is_legacy(&app, &dir_id);
-                        obj.insert("legacy".into(), serde_json::Value::Bool(legacy));
-                        if legacy {
+                        let format_legacy = super::migration::is_format_legacy(&app, &dir_id);
+                        let verified = super::migration::is_verified(&app, &dir_id);
+                        obj.insert("unverified".into(), serde_json::Value::Bool(format_legacy || !verified));
+                        if format_legacy {
                             obj.insert(
                                 "permissions".into(),
                                 serde_json::Value::Array(super::migration::legacy_permissions()),
@@ -320,6 +335,30 @@ mod tests {
             "not really a png"
         );
     }
+
+    // Locks in the "unverified" badge's whole reason for existing: a local
+    // sideload (expected=None) must never leave the .verified marker
+    // behind, even though it's a perfectly valid new-format install that
+    // passes every other check.
+    #[test]
+    fn sideload_install_does_not_leave_verified_marker() {
+        let root = temp_root("sideload-no-marker");
+        let zip_bytes = build_zip(Some(("extension.json", VALID_MANIFEST)), &[]);
+        install_archive(&root, zip_bytes, None).unwrap();
+        assert!(!root.join("thing/.verified").exists());
+    }
+
+    // There is deliberately no unit test for "a *successful* verified
+    // install writes the .verified marker": `install_archive`'s signature
+    // check always verifies against the real embedded `PUBLIC_KEY`, whose
+    // matching private key by design never lives in this repo (same
+    // constraint noted in `capability.rs`'s own tests) — so there's no way
+    // to construct a signature this code will actually accept from within
+    // a unit test. That specific branch was verified live instead, the
+    // same way the rest of the signing/capability system was: sign a real
+    // test zip with `sign-extension` against the real key, install it
+    // through the running app, and confirm `.verified` exists on disk
+    // afterward.
 
     #[test]
     fn reinstall_overwrites_previous_version() {

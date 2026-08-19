@@ -69,6 +69,7 @@ export const VIEWS = {
   pika: { emoji: "🐱" },
   fightclub: { emoji: "🥊" },
   kitchen: { emoji: "🍳" },
+  dune: { emoji: "🏜️" },
   extensions: { emoji: "🧩" },
   settings: { emoji: "⚙️" },
 };

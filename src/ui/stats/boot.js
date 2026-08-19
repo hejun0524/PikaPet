@@ -9,6 +9,7 @@ import { autoShowWidgets } from "./autoShowWidgets.js";
 import { refreshPika } from "./refreshPika.js";
 import { refreshKitchen } from "./refreshKitchen.js";
 import { applyBankInterest } from "./applyBankInterest.js";
+import { rolloverTasksIfNeeded } from "./rolloverTasksIfNeeded.js";
 import { processPlan } from "./processPlan.js";
 import { processCaretaking } from "./processCaretaking.js";
 import { render } from "./render.js";
@@ -36,6 +37,7 @@ export async function boot() {
   refreshPika();
   refreshKitchen();
   applyBankInterest();
+  rolloverTasksIfNeeded();
   processPlan(); // resume a queued plan if nothing was active
   processCaretaking();
   render();

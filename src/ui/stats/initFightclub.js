@@ -24,6 +24,7 @@ import {
 } from "../fightclub.js";
 import { pet } from "./state.js";
 import { petFighterNow } from "./petFighterNow.js";
+import { bumpTaskProgress } from "./bumpTaskProgress.js";
 import { render } from "./render.js";
 import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
@@ -112,6 +113,7 @@ export function initFightclub() {
     if (res.win) {
       pet.coins += purse.win + betProfit(bet, ml);
       fc.record.wins += 1;
+      bumpTaskProgress("fight.win");
     } else {
       pet.coins = Math.max(0, pet.coins - purse.loss - bet);
       fc.record.losses += 1;

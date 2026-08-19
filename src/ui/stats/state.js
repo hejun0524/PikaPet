@@ -69,6 +69,23 @@ export const pet = {
     hp: 100, // = maxHpFor(1, fitness 0); clamped against the live max on use
     record: { wins: 0, losses: 0 },
   },
+  // Dune's Daily Tasks: today's 5 picks (tier + pool id), the day's progress
+  // counters, and completed/claimed (length 6 — index 5 is the implicit
+  // "clear all 5" bonus slot, not drawn from a pool). Completion is
+  // automatic (see stats/evaluateTasks.js); claiming (stats/claimTask.js) is
+  // what actually pays out a task's reward. `streak` (consecutive all-6-done
+  // days) is Dune's legendary-form unlock condition — see
+  // items/specialForms.js. rolloverTasksIfNeeded() populates this on boot.
+  dune: {
+    date: "",
+    tasks: [],
+    progress: {},
+    completed: [],
+    claimed: [],
+    streak: 0,
+    lastAllDoneDate: "",
+    totalCompleted: 0, // lifetime count of tasks (incl. the bonus slot) done
+  },
 };
 
 /**

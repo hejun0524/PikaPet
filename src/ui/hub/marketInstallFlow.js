@@ -8,11 +8,16 @@ import { invoke, emit } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
 import { state, ui } from "./state.js";
 import { renderGrid } from "./renderGrid.js";
+import { renderTabs } from "./renderTabs.js";
 import { renderSidePanel } from "./renderSidePanel.js";
 
 /**
  * Show the permission-confirmation card for a registry entry, instead of
- * installing right away.
+ * installing right away. Also switches to the Marketplace sub-tab — the
+ * card only renders from `marketplaceHTML()`, so the Manager tab's
+ * "reinstall to verify" button (which calls this too) would otherwise set
+ * `ui.marketPermissionPrompt` and re-render the *Manager* tab unchanged,
+ * silently doing nothing visible.
  *
  * @param {string} entryId - Registry entry id (matches `ui.market.entries`).
  * @returns {void}
@@ -21,6 +26,8 @@ export function promptMarketInstall(entryId) {
   const entry = ui.market?.entries?.find((e) => e.id === entryId);
   if (!entry) return;
   ui.marketPermissionPrompt = entry;
+  ui.extensionsTab = "market";
+  renderTabs();
   renderGrid();
 }
 

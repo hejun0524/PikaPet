@@ -15,9 +15,9 @@ import { getLocale } from "../shared/i18n.js";
  * extension) into the app-data extensions directory.
  *
  * @param {Array<object>|null|undefined} installed - Raw manifest entries
- *   (`{ id, emoji?, name?, names?, entry?, dir?, legacy?, author?,
+ *   (`{ id, emoji?, name?, names?, entry?, dir?, unverified?, author?,
  *   description? }`); `null`/`undefined` is treated as an empty list.
- * @returns {Array<{id: string, emoji: string, name: string, entry: string|undefined, dir: string|undefined, legacy: boolean, author: string|undefined, description: string|undefined}>}
+ * @returns {Array<{id: string, emoji: string, name: string, entry: string|undefined, dir: string|undefined, unverified: boolean, author: string|undefined, description: string|undefined}>}
  *   Display-ready extension entries (name already localized).
  */
 export function extensionList(installed) {
@@ -27,10 +27,11 @@ export function extensionList(installed) {
     name: (a.names && (a.names[getLocale()] ?? a.names.en)) || a.name || a.id,
     entry: a.entry,
     dir: a.dir,
-    // "legacy" = installed before extension.json existed (only the old
-    // manifest.json) — see extensions::migration in Rust. Surfaced as an
-    // "unverified" badge in the Manager tab.
-    legacy: !!a.legacy,
+    // "unverified" = either installed before extension.json existed (old
+    // manifest.json, no declared permissions) or a local zip sideload that
+    // skipped signature verification — see extensions::migration in Rust.
+    // Surfaced as a badge in the Manager tab either way.
+    unverified: !!a.unverified,
     author: a.author,
     description: a.description,
   }));
