@@ -300,6 +300,8 @@ export const messages = {
   "extmarket.permWidgetsShow": "Show a tray widget",
   "extmarket.permSystemKeepAwake": "Prevent your Mac from sleeping",
   "extmarket.permNetworkFetch": "Connect to the internet",
+  "update.restartBtn": "🔄 Restart to Update",
+  "update.restartTitle": "An update has finished downloading — click to restart and finish installing it",
 
   // ── School page ──────────────────────────────────────────────────────────
   "school.credits": "{have}/{need} credits",

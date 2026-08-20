@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod extensions;
+mod updates;
 
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
@@ -541,12 +542,15 @@ fn main() {
         .manage(PetHitbox(std::sync::Mutex::new(None)))
         .manage(AppLocale::default())
         .manage(RegistryState::default())
+        .manage(updates::UpdateState::default())
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
         ))
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             // Keep the pet out of the macOS Dock; it lives on the desktop only.
             #[cfg(target_os = "macos")]
@@ -602,6 +606,10 @@ fn main() {
             // installed extension's grant must be re-registered on every
             // launch, or a fresh process would have none at all.
             extensions::capability::register_all_at_boot(app.handle());
+
+            // Background update check: once now, then every CHECK_INTERVAL
+            // for the rest of the app's life (see src/updates.rs).
+            updates::spawn_background_checks(app.handle().clone());
 
             let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let tray_menu = MenuBuilder::new(app).item(&quit_item).build()?;
@@ -690,7 +698,9 @@ fn main() {
             open_extension_webview,
             hide_extension_webview,
             close_extension_webview,
-            fetch_registry
+            fetch_registry,
+            updates::update_status,
+            updates::restart_to_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

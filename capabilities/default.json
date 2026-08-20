@@ -44,6 +44,8 @@
     "allow-open-extension-window",
     "allow-set-keep-awake",
     "allow-keep-awake-status",
-    "allow-log"
+    "allow-log",
+    "allow-update-status",
+    "allow-restart-to-update"
   ]
 }

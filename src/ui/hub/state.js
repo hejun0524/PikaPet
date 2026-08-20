@@ -116,6 +116,7 @@ export const ui = {
   magicMsg: "", // last custom-form import error shown at the Magic Station
   deleteFormPending: null, // custom-form key awaiting delete confirmation
   returnView: null, // view to restore when leaving a basket page (see BASKET_VIEWS)
+  update: { phase: "idle" }, // mirrors Rust's UpdatePhase (see hub/updateFlow.js)
 };
 
 /** Shopping cart: item key -> quantity. Local until "buy-cart" checkout. */

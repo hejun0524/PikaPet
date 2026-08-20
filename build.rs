@@ -37,6 +37,8 @@ fn main() {
         "hide_extension_webview",
         "close_extension_webview",
         "fetch_registry",
+        "update_status",
+        "restart_to_update",
     ]));
     tauri_build::try_build(attrs).expect("failed to run build script");
 }

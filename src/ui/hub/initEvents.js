@@ -32,6 +32,7 @@ import { installExtensionFlow } from "./installExtensionFlow.js";
 import { uninstallExtensionFlow } from "./uninstallExtensionFlow.js";
 import { promptMarketInstall, confirmMarketInstall, cancelMarketInstall } from "./marketInstallFlow.js";
 import { loadMarketplace } from "./marketplace.js";
+import { restartToUpdate } from "./updateFlow.js";
 import { applySideCollapsed } from "./applySideCollapsed.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { CHOICE_BOOKS } from "../fightclub.js";
@@ -102,6 +103,7 @@ export function initEvents() {
   document.getElementById("back-btn").addEventListener("click", () => setView(ui.returnView ?? "home"));
   document.getElementById("extension-install-btn").addEventListener("click", () => installExtensionFlow());
   document.getElementById("market-refresh-btn").addEventListener("click", () => loadMarketplace(true));
+  document.getElementById("update-restart-btn").addEventListener("click", () => restartToUpdate());
 
   // Back to the Extensions homepage from an open extension page. The iframe
   // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.

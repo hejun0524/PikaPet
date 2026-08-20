@@ -36,6 +36,9 @@ export function renderTopbar() {
   document.getElementById("market-refresh-btn").hidden = !(ui.view === "extensions" && ui.extensionsTab === "market");
   document.getElementById("extensions-home-btn").hidden = !ui.view.startsWith("extension:");
   document.getElementById("back-btn").hidden = !basketEmoji;
+  // Global, not view-scoped — an update sits ready to install regardless
+  // of which page the user happens to be on.
+  document.getElementById("update-restart-btn").hidden = ui.update?.phase !== "readyToRestart";
   renderCartBadge();
   renderPlanBadge();
   renderTradeBadge();

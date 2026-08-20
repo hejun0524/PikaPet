@@ -28,5 +28,7 @@ export function applyStaticText() {
   document.getElementById("back-btn").title = t("chrome.back");
   document.getElementById("extension-install-btn").title = t("extensionmgr.install");
   document.getElementById("market-refresh-btn").title = t("extmarket.refresh");
+  document.getElementById("update-restart-btn").textContent = t("update.restartBtn");
+  document.getElementById("update-restart-btn").title = t("update.restartTitle");
   applySideCollapsed(); // restores the icon-rail state + localizes its tooltip
 }

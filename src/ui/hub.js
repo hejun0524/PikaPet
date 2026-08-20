@@ -11,6 +11,7 @@ import { initExtensionHostResize } from "./hub/initExtensionHostResize.js";
 import { initWidgetActionRelay } from "./hub/initWidgetActionRelay.js";
 import { initMarketRefresh } from "./hub/marketRefresh.js";
 import { initSync } from "./hub/initSync.js";
+import { initUpdateFlow } from "./hub/updateFlow.js";
 import { boot } from "./hub/boot.js";
 
 installErrorLogging(jlog);
@@ -21,6 +22,7 @@ initExtensionHostResize();
 initWidgetActionRelay();
 initMarketRefresh();
 initSync();
+initUpdateFlow();
 boot();
 
 window.addEventListener("contextmenu", (e) => e.preventDefault());

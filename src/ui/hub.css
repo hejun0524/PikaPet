@@ -609,6 +609,21 @@ footer button.active,
   cursor: pointer;
 }
 
+/* Unlike the icon-only topbar chips above, this one is a rare, high-stakes
+   call to action (an update is staged and won't apply itself) — it gets a
+   visible label and the same accent treatment as other CTAs (e.g. the
+   Fight Club "pay" chip) so it stands out rather than blending in. */
+#update-restart-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
 #service-btn .badge,
 #trade-btn .badge {
   position: absolute;
