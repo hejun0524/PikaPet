@@ -69,7 +69,7 @@ Four tabs:
 
 ## 🧩 Extensions
 
-Three tabs: **🧩 My Extensions** (the iPhone-style springboard of installed extension tiles), **🛍️ Marketplace** (official extension zips published as assets on the project's GitHub Release — set `MARKETPLACE_REPO` in `src/ui/hub/marketplace.js`; Install downloads over https and installs in place), and **🧰 Manager** (📌 pin to the tray/side panel, 🗑️ uninstall, "📦 Install extension from zip…"). Full user and developer guide in [extensions.md](extensions.md).
+Three tabs: **🧩 My Extensions** (the iPhone-style springboard of installed extension tiles), **🛍️ Marketplace** (official, signed extensions listed from a `registry.json` published to the maintainer's GitHub Releases — `MARKETPLACE_REPO`/`MARKETPLACE_TAG` in `src/extensions/registry.rs`; Install shows a permission card, then downloads and verifies over https), and **🧰 Manager** (📌 pin to the tray/side panel, 🗑️ uninstall, 🔄 reinstall-to-verify when a newer/verified copy exists). The topbar's 📦/🔄 buttons install a local zip and refresh the Marketplace listing. Full user and developer guide, including how to publish, in [extensions.md](extensions.md).
 
 ## ⚙️ Settings
 

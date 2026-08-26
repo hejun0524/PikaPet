@@ -1,14 +1,38 @@
 # 🧭 Roadmap, Debug Knobs & To-Do
 
-## ⬆️ Important: auto-update (Chrome/VSCode-style) — not yet implemented
+## ⬆️ Auto-update (Chrome/VSCode/Discord-style) — implemented
 
-Goal: the app silently notices a new release, downloads it in the background, shows a subtle **update badge**, and applies it on "Restart & Update" — exactly like Chrome/VSCode/Discord. Implementation plan:
+`tauri-plugin-updater` + `tauri-plugin-process`, wired in `src/updates.rs`:
+checks on startup and every `updates::CHECK_INTERVAL` (4 hours — tune the
+const, there's no user-facing setting for it), downloads silently, and on
+macOS/Linux installs immediately in the background. **Never relaunches on
+its own** — a persistent "🔄 Restart to Update" topbar button (only visible
+once an update is actually ready) is what the user clicks, on their own
+schedule, to `AppHandle::request_restart()` into it.
 
-1. **Plumbing**: use the official `tauri-plugin-updater`. Generate a signing keypair with `tauri signer generate`; put the public key + update endpoint in `tauri.conf.json` (`plugins.updater`). CI builds the release, signs the artifacts, and publishes them plus a `latest.json` manifest (version, notes, per-platform URLs + signatures) — GitHub Releases works as the host, with `latest.json` at a stable URL.
-2. **Check & download**: at launch and every ~6 hours (the stats window's clock is the natural home), call the updater's `check()`; if an update exists, `download()` it in the background — never interrupt the user.
-3. **Badge placement (suggestion)**: once downloaded, show a small ⬆️ badge on the **popover header** (next to the pet's name — the one surface the user sees daily) and a highlighted row at the top of **Settings**: "🎁 Version X.Y is ready — Restart & Update". Optionally the pet says "I learned new tricks, ⟨callMe⟩!" once.
-4. **Apply**: the button calls the updater's `install()` (which swaps the app bundle) followed by relaunch — the plugin handles the swap-on-restart dance. Save-file compatibility is already covered by the tolerant loaders/migrations.
-5. **Platform notes**: macOS requires the app to be **signed (Developer ID) and notarized** for the updater to replace it; Windows uses the NSIS/MSI updater artifacts; Linux AppImage. Dev builds should skip checks (`cfg!(debug_assertions)`).
+**Windows caveat, handled**: `Update::install()` there terminates the
+process as part of installing (the default "passive" install mode also
+carries a restart flag, so the installer relaunches the app itself once
+done). Since that can't be deferred once triggered, install() only runs in
+the background on macOS/Linux — on Windows the downloaded update is held
+until the same "Restart to Update" click, which is what actually installs
+it there.
+
+**Two things still need filling in before this does anything real** (both
+are placeholders today, by design — see `doc/architecture.md`'s "still
+placeholder" note):
+
+1. `tauri.conf.json`'s `plugins.updater.pubkey` — generate with
+   `cargo tauri signer generate`, paste the printed public key in, keep the
+   private key + password somewhere safe (env vars at build time:
+   `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`).
+2. `tauri.conf.json`'s `plugins.updater.endpoints` — replace `<owner>/<repo>`
+   with the real release repo.
+
+Each release after that: bump the version in both `tauri.conf.json` and
+`Cargo.toml`, `cargo tauri build` (produces the signed updater artifacts +
+`latest.json` alongside the normal bundle), upload everything to a GitHub
+Release, and point the `latest` release/tag at it.
 
 ## Other knobs & to-dos
 
@@ -18,11 +42,11 @@ Goal: the app silently notices a new release, downloads it in the background, sh
 | **🍳 Noonie's Kitchen** | LIVE: 3h order board, pantry + Organic Market, 190 city recipe scrolls (20% tour drop, Pika sells 2/refresh), 10 paw-bots (2 free, rising unlock prices), tiered Skill Book drops (~16%/delivery) | Balance pass (order rewards vs. job pay); hand-tune generated city-recipe ingredient lists (they're procedurally drawn from per-country pools, so a dessert can currently ask for squid); translate the 190 dish names |
 | Localization: misc | 12 UI languages; ALL bundled extension zips carry 12-language STR tables; it/pt/ar/hi/el/ko translate UI strings only (data names fall back to English); Arabic renders LTR | Translate the data catalogs for the six newest languages; RTL layout for Arabic; read the saved language in `main.rs` for the tray "Quit" item |
 | Game speed | Settings → Developer mode toggles fast/normal at runtime | — |
-| 🛍️ Extension Marketplace | Marketplace tab fetches the latest GitHub Release of `MARKETPLACE_REPO` (`src/ui/hub/marketplace.js`) and installs asset zips over https | Create the public releases repo, upload the ten zips from `extensions/`, and point `MARKETPLACE_REPO` at it |
+| 🛍️ Extension Marketplace | LIVE: signed, permission-scoped installs from a `registry.json` published to `hejun0524/PikaPet-Extensions` (see `doc/extensions.md`'s "Publishing to the Marketplace") | Third-party submissions are still fully manual (send the maintainer a zip, they sign + register it by hand) — no in-repo submission/review workflow yet |
 | Save file | Debug-boosted coins from development | Fresh games start at 1000 |
 | Economy balance | Prices/pay/XP hand-tuned | Balance pass with real playtime data |
 | Health at 0 | Nothing special happens | Death/urgent-care state |
 | Sprite sheets | Only 4 of 11 rows used (idle/run×2/sad) | Wave, pounce, sleepy, curled… for idle variety and interactions |
-| Extension bridge | Fixed allowlist (`get-locale`, `pick-folder`, `list-music`, `file-url`, `say`, `notify`, `open-window`, `widget-set`, `widget-push`), no permission prompts | Permissioned API for third-party extensions |
+| Extension bridge | LIVE: enumerated permission catalog (`doc/extensions.md`), declared in `extension.json`, checked at install time and enforced per-extension by a real Tauri capability grant on the main hub-hosted page and popup windows | Tray widgets and the widget half of the bridge still get a small fixed always-on subset (`get-locale`, `keep-awake`, `keep-awake-status`, `notify`) regardless of declared permissions — never moved onto the capability model, since it's the same handful of calls every widget has always needed |
 | Souvenirs | One 🎁 emoji for all | Per-city souvenir art |
 | Platform | Developed/tested on macOS only | Windows/Linux need testing (tray, transparency, Spaces, Launch Agent equivalents) |
