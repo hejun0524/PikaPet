@@ -153,6 +153,9 @@ render).
 | `widgets:show` | `widget-set` and `widget-push` |
 | `system:keepAwake` | `keep-awake` and `keep-awake-status` |
 | `network:fetch` | Plain `fetch()`/`XMLHttpRequest` from your own page's JS — enforced by a per-webview Content-Security-Policy, not a bridge call. Without it, `connect-src` is locked to `'none'` and any network call your page makes itself will fail. |
+| `system:stats` | `sys-status-snapshot` (macOS only — see "System cleanup bridge" below) |
+| `fs:scan` | `sys-list-apps`, `sys-scan-leftovers`, `sys-scan-app-uninstall`, `sys-scan-purge-targets`, `sys-find-installers`, `sys-analyze-dir`, `sys-optimize-preview` (macOS only, read-only) |
+| `fs:cleanup` | `sys-delete-paths`, `sys-optimize-run` (macOS only — these two actually touch disk; review any extension asking for this permission with real scrutiny) |
 
 Calling a bridge request your manifest didn't declare the permission for
 fails with an error from the app (a rejected Rust command) — same as any
@@ -167,15 +170,30 @@ system existed (no `extension.json` on disk at all): those are granted the
 *entire* catalog, matching their actual historical access, and always show
 the ⚠️ unverified badge.
 
-**Burrow Cleaner** (id `pikapet-cleaner`, source at
-`extension-source/pikapet-cleaner/`, backend in `cleaner.rs`) is a normal
-signed Marketplace extension like any other — it just declares the three
-filesystem-adjacent permissions above (`system:stats`, `fs:scan`,
-`fs:cleanup`) to get real system stats, disk scanning, and (behind a
-preview-then-confirm flow in its own UI) the ability to move files to the
-Trash. Nothing about it is hardcoded to its id; any extension could declare
-the same permissions, and the Marketplace's signature check is what actually
-gates who gets to publish one that does.
+**Burrow Cleaner** (id `pikapet-cleaner`, backend in `src/extensions/cleaner.rs`)
+is the bundled extension that exercises these three permissions — a normal
+signed Marketplace extension like any other; nothing about the bridge is
+hardcoded to its id, and any extension could declare the same permissions.
+**Its own source isn't checked into this repo** (unlike the Music Player,
+which is the actual reference implementation for everything else in this
+doc) — treat `cleaner.rs`'s Rust side as the spec for what these permissions
+allow, not any particular frontend.
+
+⚠️ **`fs:cleanup` is not uniformly gentle — read this before granting or
+requesting it.** `sys-delete-paths` really is preview-then-confirm and
+non-destructive-until-confirmed: it only deletes paths the caller explicitly
+passes (re-validating each one server-side against a fixed set of "known
+safe to offer" shapes — an app bundle, a Library leftover, a `node_modules`/
+`target`-style purge target, a stray installer), and it sends them to the
+Trash, not `rm -rf`. **`sys-optimize-run` is different**: each of its four
+actions (`flush_dns`, `purge_font_cache`, `restart_finder`, `restart_dock`)
+runs immediately when requested, with no separate confirm step in the
+backend — and `purge_font_cache` (`atsutil databases -remove`) permanently
+deletes the system font-cache database, not a Trash-reversible move.
+`sys-optimize-preview` only *describes* the four actions; it doesn't gate
+them. If you're reviewing a Marketplace submission that asks for
+`fs:cleanup`, verify its own UI actually confirms with the user before
+calling `sys-optimize-run`, since the platform layer won't do that for you.
 
 ## How your page runs
 
@@ -243,6 +261,30 @@ Available requests:
 Plain `fetch()`/`XMLHttpRequest` calls from your own page's JS need
 `network:fetch` declared (see the permission catalog above) — there's no
 bridge `type` for it, it's a CSP gate on your page's own network access.
+
+### System cleanup bridge (`system:stats` / `fs:scan` / `fs:cleanup`)
+
+A separate, higher-privilege set of requests, **macOS only** (every one of
+these is a no-op error on other platforms) — most extensions never need
+these; they exist for something like a disk-cleanup or system-monitor
+utility (see the Burrow Cleaner caveats above before requesting `fs:cleanup`).
+
+| `type` | `payload` | `result` | Permission needed |
+|---|---|---|---|
+| `sys-status-snapshot` | — | CPU/memory/disk/network utilization numbers. No paths, no filenames — safe to also expose to tray widgets (see below) | `system:stats` |
+| `sys-list-apps` | — | Installed `.app` bundles under `/Applications` and `~/Applications`, with sizes | `fs:scan` |
+| `sys-scan-leftovers` | — | Library subfolders (Caches, Application Support, Logs, Saved App State, Preferences) not claimed by any currently-installed app's bundle id | `fs:scan` |
+| `sys-scan-app-uninstall` | `{appPath, bundleId}` | That one app plus its matching Library leftovers, as a preview list for `sys-delete-paths` | `fs:scan` |
+| `sys-scan-purge-targets` | `{root}` | Walks `root` (must resolve under the user's home directory) for reclaimable build junk (`node_modules`, `target`, `dist`, …) | `fs:scan` |
+| `sys-find-installers` | — | Stray `.dmg`/`.pkg` files sitting in Downloads/Desktop | `fs:scan` |
+| `sys-optimize-preview` | — | Describes the four fixed `sys-optimize-run` actions (id/label/description) — read-only, does not run anything | `fs:scan` |
+| `sys-analyze-dir` | `{path}` | One level of child-folder sizes under `path` | `fs:scan` |
+| `sys-optimize-run` | `{actions: [ids]}` | Runs the named actions **immediately, no confirm step** — `flush_dns`, `restart_finder`, `restart_dock` (all reversible/harmless), and `purge_font_cache` (`atsutil databases -remove` — **permanently deletes** the font-cache database, not Trash). Returns `{id, ok, error}` per action | `fs:cleanup` |
+| `sys-delete-paths` | `{paths: [...]}` | Re-validates each path server-side against the same shapes `sys-list-apps`/`sys-scan-leftovers`/`sys-scan-purge-targets`/`sys-find-installers` return, then moves it to the Trash (never a permanent delete). A path that's vanished since scanning is skipped, not treated as a failure | `fs:cleanup` |
+
+Tray widgets get `sys-status-snapshot` too, alongside their usual fixed
+subset (see "Tray widgets" below) — it's plain utilization numbers, no
+different in sensitivity than `keep-awake-status`.
 
 ## Following the app's language
 

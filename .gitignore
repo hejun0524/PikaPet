@@ -16,3 +16,5 @@ nohup.out
 # Signing key and extension dist
 extension-signing-key.b64
 dist/
+pikapet-updater.key
+pikapet-updater.key.pub

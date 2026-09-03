@@ -18,8 +18,10 @@ PikaPet/                      # The Tauri v2 Rust crate lives at the repo root: 
 │   ├── extensions/             # The extension system: manifest schema + permission catalog (manifest.rs),
 │   │   │                       #   install/uninstall/list (install.rs), per-extension Tauri capability
 │   │   │                       #   generation (capability.rs), the app↔extension bridge (bridge.rs), child-webview
-│   │   │                       #   hosting (hosting.rs), Marketplace registry fetch/cache (registry.rs), and
-│   │   │                       #   pre-permission-system install detection (migration.rs) — see doc/extensions.md
+│   │   │                       #   hosting (hosting.rs), Marketplace registry fetch/cache (registry.rs),
+│   │   │                       #   pre-permission-system install detection (migration.rs), and the bundled
+│   │   │                       #   Burrow Cleaner extension's disk-scan/cleanup backend (cleaner.rs, macOS
+│   │   │                       #   only, via the sysinfo/trash crates) — see doc/extensions.md
 │   │   └── …
 │   ├── bin/
 │   │   └── sign-extension.rs  # Maintainer-only CLI: keygen + sign, for publishing to the Marketplace (doc/extensions.md)
@@ -41,7 +43,8 @@ PikaPet/                      # The Tauri v2 Rust crate lives at the repo root: 
 │       ├── locales/              # One dictionary per language: en / zh / fr / es / de / ja / it / pt / ar / hi / el / ko
 │       └── pets/                 # The spritesheets (8×11 grids of 192×208 frames; single source of truth)
 ├── dist/                       # gitignored: staging area for signed extension zips + registry.json before
-│   │                            #   uploading to Releases, and (via `cargo tauri build`) app updater artifacts
+│   │                            #   uploading to Releases (see doc/extensions.md) — app build output goes to
+│   │                            #   target/release/bundle/ instead (see doc/releasing.md), never here
 ├── scripts/
 │   └── i18n-check.mjs        # Repo-level dev tooling (not app source): headless localization check
 └── doc/                      # This documentation (linked from the README's table)
@@ -58,7 +61,7 @@ gitignored, same as the signing private key.
 
 ## Architecture notes
 
-- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has eleven views — 🏠 Home / 🧺 Life / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika's Trading Post / 🥊 Darcy's Fight Club / 🚚 Noonie's Delivery Service / 🧩 Extensions / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu. Hidden windows hide (rather than close) when dismissed.
+- **Four windows**: `main` (transparent, always-on-top pet), `stats` (popover under the tray icon), `hub` (a normal resizable window, min 700×480, responsive card grid, VSCode-style draggable side-panel splitter), and `setup` (first run only). The hub has twelve views — 🏠 Home / 🧺 Life / 💼 Career / 🗺️ Touring / 🏆 Achievements / 💖 Pet Center / 🐱 Pika's Trading Post / 🥊 Darcy's Fight Club / 🍳 Noonie's Kitchen / 🏜️ Dune's Daily Tasks / 🧩 Extensions / ⚙️ Settings — opened to a specific view via a `hub-view` event from the popover's icon buttons or the pet's right-click menu (Focus Mode collapses the reachable set to just Extensions + Settings — see `doc/desktop-pet.md`). Hidden windows hide (rather than close) when dismissed.
 - **State ownership**: `src/ui/stats.js` is the single owner of persistent state. It runs the game clocks and writes `save.json` (via Rust `save_state`/`load_state`) to `~/Library/Application Support/com.junhe.mypet/`. Other windows never write state: they emit events (`use-item`, `buy-cart`, `start-plan`, `end-activity`, `hire-caretakers`, `end-caretaking`, `bank-op`, `pika-checkout`, `gov-update`, `gov-magic`, `settings-changed`, …); stats.js validates, applies, saves, and broadcasts `pet-state`, which every window consumes.
 - **Persistence model**: saved every tick, restored verbatim — intentionally **no offline decay**, and activity/shift timers store elapsed time so they pause while the app is closed. Bank interest is the one exception: it compounds per calendar day, including days offline.
 - **Background throttling caveat**: WebKit suspends JS (timers *and* event delivery) in hidden webviews, so the main/stats/hub windows all set `"backgroundThrottling": "disabled"` in `tauri.conf.json`. The hub additionally re-syncs from the save file on window focus. All windows report errors to stdout via the Rust `log` command.
@@ -66,4 +69,4 @@ gitignored, same as the signing private key.
 - **Duplicate top-level `const` across `<script>` files kills a page silently** (parse error before any error hook runs). Sanity check: `cat items.js panel.js school.js career.js touring.js hub.js | node --check /dev/stdin`.
 - **Sprite animation** is pure CSS `steps()` over `background-position`; JS switches the `data-anim` attribute (`idle`, `run-left`, `run-right`, `sad`) and swaps the sheet image per species.
 - **Extensions** each run in their own real Tauri child webview (hub-hosted page) or window (popups), gated by a per-extension Tauri capability generated from that extension's own declared permissions — not a shared, ungated dispatcher. See `doc/extensions.md` for the manifest schema, permission catalog, and how the Marketplace's signed installs work.
-- **App auto-update** (`src/updates.rs`) checks/downloads/installs in the background and exposes a "Restart to Update" state the hub's topbar reacts to — see `doc/roadmap.md`. **Still placeholder as of this writing**: `tauri.conf.json`'s `plugins.updater.pubkey` and the `<owner>/<repo>` in its `endpoints` URL need real values before this does anything but fail closed.
+- **App auto-update** (`src/updates.rs`) checks/downloads/installs in the background and exposes a "Restart to Update" state the hub's topbar reacts to — see `doc/roadmap.md`. `tauri.conf.json`'s `plugins.updater.pubkey`/`endpoints` are filled in with real values; see `doc/releasing.md` for the actual build-and-ship pipeline and where the matching private key lives.

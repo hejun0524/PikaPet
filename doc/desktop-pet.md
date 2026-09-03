@@ -48,6 +48,15 @@ Settings always stays reachable (the escape hatch back out of Focus Mode),
 and it rides the same `settings-changed`/`pet-state` broadcast every other
 setting uses — no new Tauri command needed.
 
+**Not the same thing as `devFreeze`**: Settings → Developer's `pika freeze
+on` toggle reuses the exact same decay/reaction freeze as Focus Mode
+(`stats/tick.js`, `main/updateResting.js`, `main/maybeComplain.js` check
+both flags the same way, and both persist in `save.json`'s settings), but
+`devFreeze` is a separate, testing-only flag — it doesn't collapse the
+menu, the nav, or the tray popover the way Focus Mode does. Don't confuse
+a frozen-but-still-full-UI pet (`devFreeze`) with an actual Focus Mode
+session.
+
 ## First run / reset
 
 A Welcome window replaces the pet — choose a species (free, with per-species default names), set name and call-me, "Let's go! 🎉". Nothing is written to disk until setup completes; quitting keeps the app in the first-run state. Settings → "Reset all data…" (type the pet's name to confirm) deletes the save and restarts into first-run.
