@@ -209,6 +209,36 @@ pub const SHIM_JS: &str = r#"
         return core.invoke("set_keep_awake", { on: !!(payload && payload.on) });
       case "keep-awake-status":
         return core.invoke("keep_awake_status");
+      // Burrow Cleaner's own requests (see extensions/cleaner.rs). Every
+      // extension's webview gets this same shim, but the underlying
+      // commands only work for a webview whose capability actually grants
+      // them (via the "system:stats"/"fs:scan"/"fs:cleanup" permissions —
+      // see manifest.rs/capability.rs) — any other extension calling these
+      // without declaring them gets a normal ACL-rejection error, same as
+      // any ungranted permission today.
+      case "sys-status-snapshot":
+        return core.invoke("sys_status_snapshot");
+      case "sys-list-apps":
+        return core.invoke("sys_list_apps");
+      case "sys-scan-leftovers":
+        return core.invoke("sys_scan_leftovers");
+      case "sys-scan-app-uninstall":
+        return core.invoke("sys_scan_app_uninstall", {
+          appPath: String((payload && payload.appPath) || ""),
+          bundleId: String((payload && payload.bundleId) || ""),
+        });
+      case "sys-scan-purge-targets":
+        return core.invoke("sys_scan_purge_targets", { root: String((payload && payload.root) || "") });
+      case "sys-find-installers":
+        return core.invoke("sys_find_installers");
+      case "sys-optimize-preview":
+        return core.invoke("sys_optimize_preview");
+      case "sys-optimize-run":
+        return core.invoke("sys_optimize_run", { actions: (payload && payload.actions) || [] });
+      case "sys-analyze-dir":
+        return core.invoke("sys_analyze_dir", { path: (payload && payload.path) ?? null });
+      case "sys-delete-paths":
+        return core.invoke("sys_delete_paths", { paths: (payload && payload.paths) || [] });
       default:
         throw new Error("unknown bridge request: " + type);
     }

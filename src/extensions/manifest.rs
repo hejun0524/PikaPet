@@ -53,6 +53,9 @@ pub const PERMISSIONS: &[&str] = &[
     "widgets:show",
     "system:keepAwake",
     "network:fetch",
+    "system:stats",
+    "fs:scan",
+    "fs:cleanup",
 ];
 
 /// Parses and validates `extension.json` bytes: schema, id shape,

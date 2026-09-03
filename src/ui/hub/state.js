@@ -16,7 +16,7 @@ import {
 import { SUBJECTS } from "../school.js";
 import { CAREERS } from "../career.js";
 import { ALL_PLACES, DESTINATIONS, SPORT_LEAGUES } from "../touring.js";
-import { ACH_TABS, PETCENTER_TABS, PIKA_TABS } from "./constants.js";
+import { ACH_TABS, PETCENTER_TABS, PIKA_TABS, SETTINGS_TABS } from "./constants.js";
 
 /**
  * Display-only mirror of the pet's state; the stats window owns the truth.
@@ -97,6 +97,7 @@ export const ui = {
   kitchenTab: "orders",
   fightclubTab: "club",
   extensionsTab: "mine",
+  settingsTab: SETTINGS_TABS[0].key,
   // Ids of extensions with an open (possibly hidden/backgrounded) child
   // webview this session — lets renderGrid() know which *other* ones to
   // tell Rust to hide when switching to a newly-active one.
@@ -117,6 +118,14 @@ export const ui = {
   deleteFormPending: null, // custom-form key awaiting delete confirmation
   returnView: null, // view to restore when leaving a basket page (see BASKET_VIEWS)
   update: { phase: "idle" }, // mirrors Rust's UpdatePhase (see hub/updateFlow.js)
+  // Settings → Developer console (see hub/pikaCommands.js): printed lines
+  // ({type: "input"|"success"|"error"|"info", text}) and raw command
+  // strings for Up/Down recall. Kept in `ui` (not local DOM state) so
+  // switching tabs and back, or a command that triggers its own renderAll()
+  // (e.g. a language change), doesn't wipe the console's history.
+  terminalLines: [],
+  terminalHistory: [],
+  terminalHistoryIndex: -1,
 };
 
 /** Shopping cart: item key -> quantity. Local until "buy-cart" checkout. */
@@ -148,7 +157,8 @@ export const appSettings = {
   scale: 0.6,
   allDesktops: true,
   devMode: false,
-  devCoins: false,
   language: "auto",
   pauseOnSleep: true,
+  focusMode: false,
+  devFreeze: false,
 };

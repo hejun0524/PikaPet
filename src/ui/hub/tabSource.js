@@ -9,6 +9,7 @@ import {
   PETCENTER_TABS,
   KITCHEN_TABS,
   FIGHTCLUB_TABS,
+  SETTINGS_TABS,
 } from "./constants.js";
 import { SHOP_CATALOG, CAREER_CATALOG, TOURING_TABS } from "../items.js";
 
@@ -31,5 +32,6 @@ export function tabSource() {
   if (ui.view === "kitchen") return { source: KITCHEN_TABS, active: ui.kitchenTab, prefix: "kitchentab." };
   if (ui.view === "fightclub") return { source: FIGHTCLUB_TABS, active: ui.fightclubTab, prefix: "fightclubtab." };
   if (ui.view === "extensions") return { source: EXTENSIONS_TABS, active: ui.extensionsTab, prefix: "extensionstab." };
+  if (ui.view === "settings") return { source: SETTINGS_TABS, active: ui.settingsTab, prefix: "settingstab." };
   return null;
 }

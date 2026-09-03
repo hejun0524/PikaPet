@@ -167,6 +167,16 @@ system existed (no `extension.json` on disk at all): those are granted the
 *entire* catalog, matching their actual historical access, and always show
 the ⚠️ unverified badge.
 
+**Burrow Cleaner** (id `pikapet-cleaner`, source at
+`extension-source/pikapet-cleaner/`, backend in `cleaner.rs`) is a normal
+signed Marketplace extension like any other — it just declares the three
+filesystem-adjacent permissions above (`system:stats`, `fs:scan`,
+`fs:cleanup`) to get real system stats, disk scanning, and (behind a
+preview-then-confirm flow in its own UI) the ability to move files to the
+Trash. Nothing about it is hardcoded to its id; any extension could declare
+the same permissions, and the Marketplace's signature check is what actually
+gates who gets to publish one that does.
+
 ## How your page runs
 
 Your `entry` page renders in its own Tauri **child webview**, hosted
@@ -320,11 +330,13 @@ appearing only when relevant.
 The widget page runs in a separate sandboxed frame, so it doesn't share JS
 state with your main page. Widgets get a **small, fixed, always-available
 subset of the bridge** regardless of what permissions you declared —
-`get-locale`, `keep-awake`, `keep-awake-status`, and `notify` — so a widget
-still works even while your main page isn't loaded (this subset predates the
-permission system and stayed unconditional on purpose: it's the same handful
-of calls every widget has always needed). For everything else it talks to
-your main page through three tiny messages:
+`get-locale`, `keep-awake`, `keep-awake-status`, `notify`, and
+`sys-status-snapshot` (plain CPU/memory/network numbers, no paths — see the
+Burrow Cleaner extension) — so a widget still works even while your
+main page isn't loaded (this subset predates the permission system and
+stayed unconditional on purpose: it's the same handful of calls every widget
+has always needed). For everything else it talks to your main page through
+three tiny messages:
 
 - Widget → app: `parent.postMessage({type: "widget-ready"}, "*")` once on
   load — the app replies with the latest state so you're never blank.

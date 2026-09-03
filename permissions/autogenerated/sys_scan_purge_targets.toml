@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-scan-purge-targets"
+description = "Enables the sys_scan_purge_targets command without any pre-configured scope."
+commands.allow = ["sys_scan_purge_targets"]
+
+[[permission]]
+identifier = "deny-sys-scan-purge-targets"
+description = "Denies the sys_scan_purge_targets command without any pre-configured scope."
+commands.deny = ["sys_scan_purge_targets"]

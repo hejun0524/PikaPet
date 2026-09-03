@@ -46,6 +46,7 @@
     "allow-keep-awake-status",
     "allow-log",
     "allow-update-status",
-    "allow-restart-to-update"
+    "allow-restart-to-update",
+    "allow-sys-status-snapshot"
   ]
 }

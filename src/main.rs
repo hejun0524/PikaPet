@@ -4,7 +4,6 @@ mod extensions;
 mod updates;
 
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager,
 };
@@ -310,6 +309,10 @@ fn delete_custom_pet(app: tauri::AppHandle, file: String) -> Result<(), String> 
 // `extensions` module (extensions::install, extensions::manifest).
 use extensions::{
     bridge::{ext_get_locale, ext_push, ext_say, ext_widget_push, ext_widget_set, set_current_locale, AppLocale},
+    cleaner::{
+        sys_analyze_dir, sys_delete_paths, sys_find_installers, sys_list_apps, sys_optimize_preview, sys_optimize_run,
+        sys_scan_app_uninstall, sys_scan_leftovers, sys_scan_purge_targets, sys_status_snapshot, SysMonitor,
+    },
     extensions_dir,
     hosting::{close_extension_webview, hide_extension_webview, open_extension_webview},
     install::{install_extension, install_extension_from_registry, list_installed_extensions, uninstall_extension},
@@ -543,6 +546,7 @@ fn main() {
         .manage(AppLocale::default())
         .manage(RegistryState::default())
         .manage(updates::UpdateState::default())
+        .manage(SysMonitor::default())
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -611,39 +615,44 @@ fn main() {
             // for the rest of the app's life (see src/updates.rs).
             updates::spawn_background_checks(app.handle().clone());
 
-            let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let tray_menu = MenuBuilder::new(app).item(&quit_item).build()?;
-
+            // No native `.menu()` is attached here on purpose: a right-click
+            // on the tray icon builds and pops up the *exact same* dynamic
+            // menu as right-clicking the pet (main/buildMenu.js) — see the
+            // MouseButton::Right branch below — rather than a second,
+            // separately-maintained Rust-built menu that would inevitably
+            // drift out of sync (view items, End Activity/Caretaking
+            // enabled state, Focus Mode label, …).
             TrayIconBuilder::with_id("main-tray")
                 .icon(tauri::include_image!("icons/tray.png"))
                 .icon_as_template(true)
-                .menu(&tray_menu)
                 .show_menu_on_left_click(false)
-                .on_menu_event(|app, event| {
-                    if event.id().as_ref() == "quit" {
-                        app.exit(0);
-                    }
-                })
                 .on_tray_icon_event(|tray, event| {
                     // Feeds tray geometry to the positioner so TrayBottomCenter works.
                     tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
 
-                    if let TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        button_state: MouseButtonState::Up,
-                        ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
-                        if let Some(stats) = app.get_webview_window("stats") {
-                            if stats.is_visible().unwrap_or(false) {
-                                let _ = stats.hide();
-                            } else {
-                                let _ = stats.move_window(Position::TrayBottomCenter);
-                                let _ = stats.show();
-                                let _ = stats.set_focus();
+                    let TrayIconEvent::Click { button, button_state: MouseButtonState::Up, .. } = event else {
+                        return;
+                    };
+                    let app = tray.app_handle();
+                    match button {
+                        MouseButton::Left => {
+                            if let Some(stats) = app.get_webview_window("stats") {
+                                if stats.is_visible().unwrap_or(false) {
+                                    let _ = stats.hide();
+                                } else {
+                                    let _ = stats.move_window(Position::TrayBottomCenter);
+                                    let _ = stats.show();
+                                    let _ = stats.set_focus();
+                                }
                             }
                         }
+                        // Emitter::emit() already broadcasts app-wide (same
+                        // as app.emit(...) would) — only the pet window
+                        // listens for this one.
+                        MouseButton::Right => {
+                            let _ = app.emit("tray-context-menu", ());
+                        }
+                        _ => {}
                     }
                 })
                 .build(app)?;
@@ -655,9 +664,23 @@ fn main() {
             ("stats", tauri::WindowEvent::Focused(false)) => {
                 let _ = window.hide();
             }
-            // Closing the hub only hides it, so it can reopen later.
+            // Closing the hub only hides it, so it can reopen later — but a
+            // child webview (an open extension's own page, see hosting.rs)
+            // left merely *hidden* on the window permanently breaks that
+            // window's own show()/hide() cycle afterward (confirmed live:
+            // hiding the child first doesn't help, only actually destroying
+            // it does). So every "ext-*" child gets closed outright here —
+            // any background behavior (e.g. music) stops when the whole
+            // World window closes, same as closing a browser tab; it's only
+            // *navigating* to another hub view that keeps a hidden
+            // extension's webview alive (see setView.js).
             ("hub", tauri::WindowEvent::CloseRequested { api, .. }) => {
                 api.prevent_close();
+                for webview in window.webviews() {
+                    if webview.label().starts_with("ext-") {
+                        let _ = webview.close();
+                    }
+                }
                 let _ = window.hide();
             }
             // Closing the first-run setup window quits (nothing else to do).
@@ -700,7 +723,17 @@ fn main() {
             close_extension_webview,
             fetch_registry,
             updates::update_status,
-            updates::restart_to_update
+            updates::restart_to_update,
+            sys_status_snapshot,
+            sys_list_apps,
+            sys_scan_leftovers,
+            sys_scan_app_uninstall,
+            sys_scan_purge_targets,
+            sys_find_installers,
+            sys_optimize_preview,
+            sys_optimize_run,
+            sys_analyze_dir,
+            sys_delete_paths
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

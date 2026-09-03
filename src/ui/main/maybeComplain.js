@@ -14,14 +14,15 @@ import { say } from "./say.js";
 /**
  * Voice a complaint line when a care meter is low (sick, hungry, dirty, or
  * bored — first match wins), rate-limited by COMPLAINT_COOLDOWN_MS. Does
- * nothing while the pet is away on a tour or a travel animation runs.
+ * nothing while the pet is away on a tour, a travel animation runs, Focus
+ * Mode is on, or the Developer console's "pika freeze" is on.
  *
  * Side effects: shows the speech bubble, updates `rt.lastComplaintAt`.
  *
  * @returns {void}
  */
 export function maybeComplain() {
-  if (trip.away || rt.animating) return;
+  if (trip.away || rt.animating || rt.focusMode || rt.devFreeze) return;
   const now = Date.now();
   if (now - rt.lastComplaintAt < COMPLAINT_COOLDOWN_MS) return;
   const care = latest.care;

@@ -13,15 +13,17 @@ import { escText as esc } from "../panel.js";
 export function resetConfirmHTML() {
   return `
     <div class="settings-plain">
-      <div class="ach-section">${t("reset.title")}</div>
-      <div class="gov-note">${t("reset.warning", { name: esc(state.name) })}</div>
-      <div class="settings-row">
-        <label for="reset-name">${t("reset.label")}</label>
-        <input type="text" id="reset-name" placeholder="${esc(state.name)}" />
-      </div>
-      <div class="settings-actions">
-        <button id="reset-cancel">${t("reset.cancel")}</button>
-        <button id="reset-confirm" class="danger" disabled>${t("reset.confirm")}</button>
+      <div class="settings-card settings-card-danger">
+        <div class="settings-card-title">${t("reset.title")}</div>
+        <div class="gov-note">${t("reset.warning", { name: esc(state.name) })}</div>
+        <div class="settings-row">
+          <label for="reset-name">${t("reset.label")}</label>
+          <input type="text" id="reset-name" placeholder="${esc(state.name)}" />
+        </div>
+        <div class="settings-actions">
+          <button id="reset-cancel">${t("reset.cancel")}</button>
+          <button id="reset-confirm" class="danger" disabled>${t("reset.confirm")}</button>
+        </div>
       </div>
     </div>`;
 }

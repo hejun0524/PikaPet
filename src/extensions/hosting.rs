@@ -66,8 +66,22 @@ pub fn open_extension_webview(
 
     let hub = app.get_window("hub").ok_or("hub window not found")?;
     let network_fetch_granted = super::declared_permissions(&app, &id).iter().any(|p| p == "network:fetch");
+    // `focused(false)`: a child webview defaults to stealing keyboard/input
+    // focus from the parent the moment it's created (wry's own default is
+    // `focused: true`, confirmed by reading wry-0.55.1's WebViewAttributes;
+    // Tauri's WebviewBuilder just forwards it) — the leading suspect for
+    // the hub's topbar buttons (← Back to Extensions, Settings, …) not
+    // responding to a click once an extension page is open: JS click
+    // handlers and the native frame geometry both check out correctly
+    // (verified live), so a stuck responder/focus handoff between the two
+    // webviews sharing this window is what's left. Tauri doesn't expose
+    // wry's lower-level `focus_parent()`, so not grabbing focus in the
+    // first place is the only lever available here — not yet confirmed
+    // live to fully fix the click issue (needs a real click to verify).
+
     let builder = tauri::webview::WebviewBuilder::new(&label, tauri::WebviewUrl::External(asset_url(&entry_path)?))
-        .initialization_script(init_script(network_fetch_granted));
+        .initialization_script(init_script(network_fetch_granted))
+        .focused(false);
     hub.add_child(builder, position, size).map_err(|e| e.to_string())?;
     Ok(())
 }

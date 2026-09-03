@@ -78,6 +78,9 @@ export function renderGrid() {
   // Basket pages (cart/plan/trade/service): #grid becomes a flex column so
   // .basket-list's flex:1 can bound the scrollable item list — see hub.css.
   grid.classList.toggle("basket-mode", !!BASKET_VIEWS[ui.view]);
+  // Settings → Developer: same flex-column trick, so the terminal can fill
+  // the window's height instead of a fixed pixel height — see hub.css.
+  grid.classList.toggle("developer-mode", ui.view === "settings" && ui.settingsTab === "developer");
 
   if (ui.view === "cart") {
     grid.innerHTML = cartPageHTML();
@@ -267,5 +270,8 @@ export function renderGrid() {
     grid.innerHTML = settingsHTML();
     refreshHidePet();
     refreshAutostart();
+    const out = document.getElementById("pika-output");
+    if (out) out.scrollTop = out.scrollHeight;
+    document.getElementById("pika-input")?.focus();
   }
 }

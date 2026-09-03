@@ -8,7 +8,6 @@ import { appWindow, latest, trip, rt } from "./state.js";
 import { say } from "./say.js";
 import { setAnim } from "./setAnim.js";
 import { idleAnim } from "./idleAnim.js";
-import { playOnce } from "./playOnce.js";
 import { animateX } from "./animateX.js";
 
 /**
@@ -45,9 +44,6 @@ export async function returnFromTrip() {
     await animateX(startX, homePos.y, homePos.x);
     trip.away = false;
     setAnim(idleAnim());
-    // Wave hello once home; deferred past the finally so rt.animating is
-    // cleared when playOnce checks it.
-    setTimeout(() => playOnce("wave", 2500), 50);
     if (latest.journal?.cities?.length) {
       say(
         t("bubble.visited", {

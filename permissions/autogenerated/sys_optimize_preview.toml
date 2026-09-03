@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-optimize-preview"
+description = "Enables the sys_optimize_preview command without any pre-configured scope."
+commands.allow = ["sys_optimize_preview"]
+
+[[permission]]
+identifier = "deny-sys-optimize-preview"
+description = "Denies the sys_optimize_preview command without any pre-configured scope."
+commands.deny = ["sys_optimize_preview"]

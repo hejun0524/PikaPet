@@ -25,6 +25,8 @@ ed25519-dalek = { version = "2", features = ["rand_core"] }
 rand = "0.8"
 base64 = "0.22"
 hex = "0.4"
+sysinfo = "0.32"
+trash = "5"
 
 [dev-dependencies]
 tauri = { version = "2", features = ["test"] }

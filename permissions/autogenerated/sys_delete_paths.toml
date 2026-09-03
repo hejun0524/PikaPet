@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-delete-paths"
+description = "Enables the sys_delete_paths command without any pre-configured scope."
+commands.allow = ["sys_delete_paths"]
+
+[[permission]]
+identifier = "deny-sys-delete-paths"
+description = "Denies the sys_delete_paths command without any pre-configured scope."
+commands.deny = ["sys_delete_paths"]

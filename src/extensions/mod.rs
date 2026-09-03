@@ -1,5 +1,6 @@
 pub mod bridge;
 pub mod capability;
+pub mod cleaner;
 pub mod hosting;
 pub mod install;
 pub mod manifest;

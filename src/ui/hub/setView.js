@@ -1,12 +1,14 @@
 // hub/setView.js
 
 import { invoke } from "../shared/tauri.js";
-import { ui } from "./state.js";
+import { ui, appSettings } from "./state.js";
 import { VIEWS, BASKET_VIEWS } from "./constants.js";
 import { renderAll } from "./renderAll.js";
 
 /**
- * Switch to another view and repaint everything. Ignores unknown views.
+ * Switch to another view and repaint everything. Ignores unknown views, and
+ * (while Focus Mode is on) ignores every view except Extensions, Settings,
+ * and an extension's own page — the pet's only reachable pages then.
  * Entering a basket page (cart/plan/trade/service) from anywhere else
  * remembers that view in `ui.returnView`, so its ← Back button (and a
  * successful checkout) can return there.
@@ -21,6 +23,9 @@ import { renderAll } from "./renderAll.js";
  */
 export function setView(v) {
   if (!VIEWS[v] && !BASKET_VIEWS[v] && !v.startsWith("extension:")) return;
+  if (appSettings.focusMode && v !== "extensions" && v !== "settings" && !v.startsWith("extension:")) {
+    return;
+  }
   // Leaving an extension page: ask it to pause itself (games listen for
   // this, see doc/extensions.md; music-like extensions just ignore it),
   // and hide its native child webview — it's a real overlay, not a DOM

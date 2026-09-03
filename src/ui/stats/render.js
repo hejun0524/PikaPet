@@ -30,6 +30,7 @@ const nameEl = document.getElementById("pet-name");
  */
 export function render() {
   applyStaticText();
+  document.body.classList.toggle("focus-mode", !!pet.settings.focusMode);
   nameEl.textContent = pet.name;
   const form = formInfo(pet.species);
   document.getElementById("breed").textContent = form.breed;

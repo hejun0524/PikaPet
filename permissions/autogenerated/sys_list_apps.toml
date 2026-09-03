@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-list-apps"
+description = "Enables the sys_list_apps command without any pre-configured scope."
+commands.allow = ["sys_list_apps"]
+
+[[permission]]
+identifier = "deny-sys-list-apps"
+description = "Denies the sys_list_apps command without any pre-configured scope."
+commands.deny = ["sys_list_apps"]

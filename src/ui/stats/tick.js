@@ -22,14 +22,18 @@ import { jlog } from "./jlog.js";
  * @returns {void}
  */
 export function tick() {
-  // All care meters are maintained while the pet is on a trip.
-  if (pet.activity.active?.type === "tour") {
+  // All care meters are maintained while the pet is on a trip, frozen
+  // outright while Focus Mode is on (the pet is a passive desk companion),
+  // and frozen the same way by the Developer console's `pika freeze on` —
+  // a plain testing toggle with none of Focus Mode's UI restrictions.
+  const frozen = pet.settings.focusMode || pet.settings.devFreeze;
+  if (pet.activity.active?.type === "tour" || frozen) {
     const changed = refreshPika() | refreshKitchen() | rolloverTasksIfNeeded();
     if (changed) {
       save();
       broadcastState();
     }
-    jlog("tick: skipped (touring)");
+    jlog(frozen ? "tick: skipped (frozen)" : "tick: skipped (touring)");
     return;
   }
   refreshPika();

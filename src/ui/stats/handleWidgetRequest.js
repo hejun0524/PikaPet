@@ -12,7 +12,7 @@ import { getLocale } from "../shared/i18n.js";
  * extension's main page still goes through widget-action.
  *
  * @param {string} type - Request type: "get-locale" | "keep-awake" |
- *   "keep-awake-status" | "notify".
+ *   "keep-awake-status" | "notify" | "sys-status-snapshot".
  * @param {Object|undefined} payload - Request payload, shape varies by type.
  * @returns {Promise<*>} The request's result; rejects on unknown types.
  */
@@ -31,6 +31,13 @@ export async function handleWidgetRequest(type, payload) {
       title: String(payload?.title ?? "MyPet"),
       body: String(payload?.body ?? ""),
     });
+  }
+  if (type === "sys-status-snapshot") {
+    // Plain CPU/memory/network numbers, no paths or filenames — safe to add
+    // to this fixed subset for every widget, unlike Burrow Cleaner's
+    // filesystem commands (see extensions/capability.rs::BUNDLED_CLEANER_ID),
+    // which stay locked to that one bundled extension's own page.
+    return invoke("sys_status_snapshot");
   }
   throw new Error(`unknown widget bridge request: ${type}`);
 }

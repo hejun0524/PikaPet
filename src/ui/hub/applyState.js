@@ -93,11 +93,14 @@ export function applyState(saved) {
     if (typeof saved.settings.devMode === "boolean") {
       appSettings.devMode = saved.settings.devMode;
     }
-    if (typeof saved.settings.devCoins === "boolean") {
-      appSettings.devCoins = saved.settings.devCoins;
-    }
     if (typeof saved.settings.pauseOnSleep === "boolean") {
       appSettings.pauseOnSleep = saved.settings.pauseOnSleep;
+    }
+    if (typeof saved.settings.focusMode === "boolean") {
+      appSettings.focusMode = saved.settings.focusMode;
+    }
+    if (typeof saved.settings.devFreeze === "boolean") {
+      appSettings.devFreeze = saved.settings.devFreeze;
     }
     if (typeof saved.settings.language === "string") {
       appSettings.language = saved.settings.language;

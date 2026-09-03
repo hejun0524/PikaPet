@@ -3,7 +3,6 @@
 // activities/shifts and streams countdowns.
 
 import { pet, runtime } from "./state.js";
-import { applyDevCoins } from "./applyDevCoins.js";
 import { tickMs } from "./tickMs.js";
 import { tick } from "./tick.js";
 import { completeActivity } from "./completeActivity.js";
@@ -16,9 +15,9 @@ import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
 
 /**
- * Arm the 1-second master interval: dev coin refills, the care-decay tick
- * (tracked via runtime.lastDecayAt), activity/shift completion, caretaker
- * automation, and countdown streaming while something is active.
+ * Arm the 1-second master interval: the care-decay tick (tracked via
+ * runtime.lastDecayAt), activity/shift completion, caretaker automation,
+ * and countdown streaming while something is active.
  * Side effects: installs a setInterval that mutates pet/runtime, renders,
  * saves, and broadcasts.
  *
@@ -26,12 +25,6 @@ import { broadcastState } from "./broadcastState.js";
  */
 export function initClock() {
   setInterval(() => {
-    // Dev auto-load refills the moment coins dip below the floor.
-    if (applyDevCoins()) {
-      render();
-      save();
-      broadcastState();
-    }
     if (Date.now() - runtime.lastDecayAt >= tickMs()) {
       runtime.lastDecayAt = Date.now();
       tick();

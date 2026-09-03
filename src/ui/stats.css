@@ -129,13 +129,32 @@ body.compact #extensions-section {
   display: none;
 }
 
+/* Focus Mode: the popover shrinks to avatar + name + Extensions/Settings —
+   a passive desk companion, not a game panel. Tray widgets (#widgets, out
+   here in the DOM, not inside #panel) are untouched. */
+body.focus-mode #breed,
+body.focus-mode .coins-line,
+body.focus-mode #study-status,
+body.focus-mode #care-section,
+body.focus-mode #traits-section,
+body.focus-mode #world-title,
+body.focus-mode footer,
+body.focus-mode #extensions-section {
+  display: none;
+}
+
+body.focus-mode #mini-home {
+  display: none;
+}
+
 #mini-actions {
   display: none;
   gap: 8px;
   margin-top: 10px;
 }
 
-body.compact #mini-actions {
+body.compact #mini-actions,
+body.focus-mode #mini-actions {
   display: flex;
 }
 

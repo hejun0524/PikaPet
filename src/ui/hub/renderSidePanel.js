@@ -3,7 +3,7 @@
 
 import { getCurrentWindow } from "../shared/tauri.js";
 import { t } from "../shared/i18n.js";
-import { state, ui } from "./state.js";
+import { state, ui, appSettings } from "./state.js";
 import { CARE_META, TRAIT_META, extensionList } from "../items.js";
 import { formInfo } from "./formInfo.js";
 import {
@@ -24,6 +24,7 @@ import {
  * @returns {void}
  */
 export function renderSidePanel() {
+  document.getElementById("layout").classList.toggle("focus-mode", !!appSettings.focusMode);
   getCurrentWindow().setTitle(t("hub.windowTitle", { name: state.name })).catch(() => {});
   document.getElementById("side-name").textContent = state.name;
   const form = formInfo(state.species);

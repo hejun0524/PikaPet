@@ -1,9 +1,7 @@
 // main/initEvents.js — all event wiring of the pet window: live settings
 // changes, "pet-state" broadcasts from the stats window, extension "pet-say"
-// requests, reaction one-shots ("fight-result" wins, "pet-react" toy play,
-// shy on rename/caretaker hire), left-drag / manual double-click on the
-// sprite, drag-direction feedback from window move events, and the
-// right-click native menu.
+// requests, left-drag / manual double-click on the sprite, drag-direction
+// feedback from window move events, and the right-click native menu.
 
 import { listen, emit } from "../shared/tauri.js";
 import { setLanguage } from "../shared/i18n.js";
@@ -18,16 +16,29 @@ import { say } from "./say.js";
 import { openHub } from "./openHub.js";
 import { setAnim } from "./setAnim.js";
 import { idleAnim } from "./idleAnim.js";
-import { playOnce } from "./playOnce.js";
 import { clampToScreen } from "./clampToScreen.js";
 import { buildMenu } from "./buildMenu.js";
 import { jlog } from "./jlog.js";
 
 /**
+ * Build the right-click menu and pop it up at the current cursor position —
+ * shared by the sprite's own "contextmenu" DOM event and the tray icon's
+ * right-click (relayed from Rust as "tray-context-menu", see main.rs's
+ * on_tray_icon_event), so both surfaces show the exact same dynamic menu.
+ *
+ * @returns {Promise<void>}
+ */
+async function popupContextMenu() {
+  const menu = await buildMenu();
+  await menu.popup();
+}
+
+/**
  * Register every event handler of the pet window: Tauri event listeners
- * ("settings-changed", "pet-state", "pet-say"), the sprite mousedown handler
- * (OS drag + manual double-click), the window onMoved handler (run animation
- * + settle timer), and the contextmenu handler (native menu popup).
+ * ("settings-changed", "pet-state", "pet-say", "tray-context-menu"), the
+ * sprite mousedown handler (OS drag + manual double-click), the window
+ * onMoved handler (run animation + settle timer), and the contextmenu
+ * handler (native menu popup).
  *
  * Side effects: subscribes listeners and DOM/window handlers; the handlers
  * themselves move/resize the window, mutate `latest`/`trip`/`rt`, write the
@@ -52,16 +63,11 @@ export function initEvents() {
     }
     if (payload.care) latest.care = payload.care;
     latest.journal = payload.touring?.journals?.[0] ?? latest.journal;
-    // A fresh name (Pet Center rename) makes the pet act bashful.
     if (typeof payload.name === "string" && payload.name) {
-      if (rt.lastName !== null && payload.name !== rt.lastName) playOnce("shy", 2500);
       rt.lastName = payload.name;
     }
-    const hadCaretaker = latest.caretaking !== null;
     latest.activity = payload.activity?.active ?? null;
     latest.caretaking = payload.caretaking?.active ?? null;
-    // Someone new is looking after the pet — bashful too.
-    if (!hadCaretaker && latest.caretaking) playOnce("shy", 2500);
     const touringNow = payload.activity?.active?.type === "tour";
     if (touringNow && !trip.away) {
       jlog("tour detected -> departing");
@@ -83,16 +89,6 @@ export function initEvents() {
     say(text, ms);
   });
 
-  // A won Fight Club battle earns a victory pounce.
-  listen("fight-result", ({ payload }) => {
-    if (payload?.win) playOnce("pounce", 2400);
-  });
-
-  // Stats-side reactions (currently: a toy was used — playtime pounce).
-  listen("pet-react", ({ payload }) => {
-    if (payload?.kind === "play") playOnce("pounce", 2400);
-  });
-
   // Left-drag hands the gesture to the OS so the whole window moves with the
   // cursor; direction feedback comes from the window's move events below.
   // Double-click opens the world window — detected by hand from mousedown
@@ -100,22 +96,13 @@ export function initEvents() {
   petEl.addEventListener("mousedown", (e) => {
     if (e.button !== 0) return;
     const now = Date.now();
-    rt.lastUserActionAt = now;
     if (now - rt.lastPressAt < DOUBLE_CLICK_MS) {
       rt.lastPressAt = 0;
-      playOnce("wave", 2000);
-      openHub("home");
+      openHub(rt.focusMode ? "extensions" : "home");
       return;
     }
     rt.lastPressAt = now;
     appWindow.startDragging();
-  });
-
-  // The cursor passing over the pet counts as the user being around (the
-  // click-through watcher only lets events through while it's over the
-  // sprite) — used to gate daytime inactivity naps.
-  window.addEventListener("mousemove", () => {
-    rt.lastUserActionAt = Date.now();
   });
 
   appWindow.onMoved(({ payload }) => {
@@ -145,10 +132,11 @@ export function initEvents() {
     }, 200);
   });
 
-  window.addEventListener("contextmenu", async (e) => {
+  window.addEventListener("contextmenu", (e) => {
     e.preventDefault();
-    rt.lastUserActionAt = Date.now();
-    const menu = await buildMenu();
-    await menu.popup();
+    popupContextMenu();
   });
+
+  // Right-clicking the menu bar tray icon (main.rs) — same menu, same place.
+  listen("tray-context-menu", () => popupContextMenu());
 }

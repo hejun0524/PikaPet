@@ -19,8 +19,9 @@ export const SITTER_CARE_LINE = 70;
 /** Coins charged for a Pet Registry change (name / call-me). */
 export const GOV_FEE = 50;
 
-/** Developer option: keep the wallet topped up at this many coins. */
-export const DEV_COINS = 20_000;
+/** `pika coin-shower` (Settings → Developer console) adds this many coins
+ * each time it runs. */
+export const COIN_SHOWER_AMOUNT = 20_000;
 
 /** Fixed width of the tray popover window, in logical pixels. */
 export const POPOVER_W = 360;

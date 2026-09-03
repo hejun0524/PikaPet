@@ -5,6 +5,7 @@ import {
   petEl,
   scalerEl,
   appWindow,
+  rt,
   CELL_W,
   CELL_H,
   BUBBLE_SPACE,
@@ -25,14 +26,26 @@ import { clampToScreen } from "./clampToScreen.js";
  * Side effects: writes petEl/scalerEl inline styles, resizes and moves the
  * window.
  *
- * @param {{scale?: number, allDesktops?: boolean}} s - Settings object;
- *   missing fields fall back to DEFAULT_SETTINGS.
+ * @param {{scale?: number, allDesktops?: boolean, focusMode?: boolean}} s -
+ *   Settings fields to apply. `s` is merged onto every field seen in a
+ *   previous call (`rt.lastSettings`) before reading anything out of it —
+ *   most callers pass the full settings object, but the pet's own
+ *   right-click "Focus Mode" toggle emits just `{focusMode}`, and treating
+ *   *that* as "everything else is unset" would snap scale/allDesktops back
+ *   to DEFAULT_SETTINGS instead of leaving them alone. Only truly-never-set
+ *   fields (nothing yet in `rt.lastSettings`, i.e. first boot before
+ *   save.json is read) fall back to DEFAULT_SETTINGS (or, for focusMode,
+ *   false).
  * @returns {Promise<void>}
  */
 export async function applySettings(s) {
-  const scale = typeof s.scale === "number" ? s.scale : DEFAULT_SETTINGS.scale;
+  rt.lastSettings = { ...rt.lastSettings, ...s };
+  const merged = rt.lastSettings;
+  const scale = typeof merged.scale === "number" ? merged.scale : DEFAULT_SETTINGS.scale;
   const allDesktops =
-    typeof s.allDesktops === "boolean" ? s.allDesktops : DEFAULT_SETTINGS.allDesktops;
+    typeof merged.allDesktops === "boolean" ? merged.allDesktops : DEFAULT_SETTINGS.allDesktops;
+  rt.focusMode = typeof merged.focusMode === "boolean" ? merged.focusMode : false;
+  rt.devFreeze = typeof merged.devFreeze === "boolean" ? merged.devFreeze : false;
 
   petEl.style.width = `${Math.round(CELL_W * scale)}px`;
   petEl.style.height = `${Math.round(CELL_H * scale)}px`;

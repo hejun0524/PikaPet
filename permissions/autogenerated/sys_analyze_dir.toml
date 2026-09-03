@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-analyze-dir"
+description = "Enables the sys_analyze_dir command without any pre-configured scope."
+commands.allow = ["sys_analyze_dir"]
+
+[[permission]]
+identifier = "deny-sys-analyze-dir"
+description = "Denies the sys_analyze_dir command without any pre-configured scope."
+commands.deny = ["sys_analyze_dir"]

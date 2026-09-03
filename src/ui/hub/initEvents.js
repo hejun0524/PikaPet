@@ -2,20 +2,11 @@
 // (side panel, top-bar basket buttons, drawers, tabs, grid) plus the drawer
 // checkout result listeners ("pika-result", "cart-result").
 
-import {
-  invoke,
-  emit,
-  listen,
-  WebviewWindow,
-  getCurrentWindow,
-  LogicalSize,
-  PhysicalPosition,
-} from "../shared/tauri.js";
-import { t, setLanguage, getLocale } from "../shared/i18n.js";
-import { state, ui, cart, tradeSell, tradeBuy, tradeIng, baskets, appSettings } from "./state.js";
+import { invoke, emit, listen, getCurrentWindow, LogicalSize, PhysicalPosition } from "../shared/tauri.js";
+import { t } from "../shared/i18n.js";
+import { state, ui, cart, tradeSell, tradeBuy, tradeIng, baskets } from "./state.js";
 import { findForm } from "../items.js";
 import { findIngredient } from "../kitchen.js";
-import { renderAll } from "./renderAll.js";
 import { findSellable, findCaretaker } from "../items.js";
 import { findClass } from "../school.js";
 import { findJob } from "../career.js";
@@ -37,6 +28,17 @@ import { applySideCollapsed } from "./applySideCollapsed.js";
 import { refreshGovApply } from "./refreshGovApply.js";
 import { CHOICE_BOOKS } from "../fightclub.js";
 import { startFightReplay, skipFightReplay } from "./fightReplay.js";
+import {
+  setScale,
+  setAllDesktops,
+  setPauseOnSleep,
+  setFocusMode,
+  setLanguageSetting,
+  setAutostart,
+  setPetVisible,
+} from "./settingsActions.js";
+import { runPikaCommand } from "./pikaCommands.js";
+import { renderTerminalOutput } from "./terminalOutput.js";
 
 /**
  * Wire every DOM event listener of the hub window, in the original source
@@ -109,6 +111,14 @@ export function initEvents() {
   // stays alive in #extension-host, so this doesn't interrupt whatever it's doing.
   document.getElementById("extensions-home-btn").addEventListener("click", () => setView("extensions"));
 
+  // Keyboard fallback for the above: an extension's native child webview
+  // can end up holding keyboard/mouse focus the hub's own topbar buttons
+  // never automatically get back (see hosting.rs's open_extension_webview),
+  // so Escape is a reliable way out even if a click on ← isn't registering.
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && ui.view.startsWith("extension:")) setView("extensions");
+  });
+
   listen("pika-result", ({ payload }) => {
     if (payload.ok) {
       tradeSell.clear();
@@ -165,7 +175,10 @@ export function initEvents() {
     else if (ui.view === "kitchen") ui.kitchenTab = tab.dataset.tab;
     else if (ui.view === "fightclub") ui.fightclubTab = tab.dataset.tab;
     else if (ui.view === "extensions") ui.extensionsTab = tab.dataset.tab;
-    else if (ui.view === "government") {
+    else if (ui.view === "settings") {
+      ui.settingsTab = tab.dataset.tab;
+      ui.resetPending = false; // switching tabs backs out of the confirm screen
+    } else if (ui.view === "government") {
       ui.petcenterTab = tab.dataset.tab;
       ui.pendingMagic = null;
       ui.createPending = false;
@@ -671,42 +684,59 @@ export function initEvents() {
 
   document.getElementById("grid").addEventListener("change", (e) => {
     if (e.target.id === "size") {
-      const pct = Math.min(150, Math.max(50, Math.round(Number(e.target.value) || 75)));
-      e.target.value = pct;
-      appSettings.scale = pct / 100;
-      emit("settings-changed", { ...appSettings });
+      e.target.value = setScale(Number(e.target.value) || 75);
     } else if (e.target.id === "all-desktops") {
-      appSettings.allDesktops = e.target.checked;
-      emit("settings-changed", { ...appSettings });
-    } else if (e.target.id === "dev-mode") {
-      appSettings.devMode = e.target.checked;
-      emit("settings-changed", { ...appSettings });
-    } else if (e.target.id === "dev-coins") {
-      appSettings.devCoins = e.target.checked;
-      emit("settings-changed", { ...appSettings });
+      setAllDesktops(e.target.checked);
     } else if (e.target.id === "pause-on-sleep") {
-      appSettings.pauseOnSleep = e.target.checked;
-      emit("settings-changed", { ...appSettings });
+      setPauseOnSleep(e.target.checked);
+    } else if (e.target.id === "focus-mode") {
+      setFocusMode(e.target.checked);
     } else if (e.target.id === "language") {
-      appSettings.language = e.target.value;
-      setLanguage(appSettings.language);
-      emit("settings-changed", { ...appSettings });
-      invoke("set_current_locale", { locale: getLocale() }).catch(() => {});
-      // Live extension pages get told too, so they can re-render themselves.
-      for (const id of ui.openExtensionIds) {
-        invoke("ext_push", { id, kind: "app-locale", data: { locale: getLocale() } }).catch(() => {});
-      }
-      renderAll();
+      setLanguageSetting(e.target.value);
     } else if (e.target.id === "autostart") {
-      invoke(e.target.checked ? "plugin:autostart|enable" : "plugin:autostart|disable").catch(
-        (err) => console.error("autostart toggle failed:", err)
-      );
+      setAutostart(e.target.checked).catch((err) => console.error("autostart toggle failed:", err));
     } else if (e.target.id === "hide-pet") {
-      (async () => {
-        const petWin = await WebviewWindow.getByLabel("main");
-        if (e.target.checked) await petWin.hide();
-        else await petWin.show();
-      })();
+      setPetVisible(!e.target.checked).catch((err) => console.error("hide-pet toggle failed:", err));
+    }
+  });
+
+  // Settings → Developer console: Enter runs a command, Up/Down recall
+  // previously typed ones (session-only — see ui.terminalHistory).
+  document.getElementById("grid").addEventListener("keydown", async (e) => {
+    if (e.target.id !== "pika-input") return;
+    if (e.key === "Enter") {
+      const raw = e.target.value;
+      if (!raw.trim()) return;
+      if (ui.terminalHistory[ui.terminalHistory.length - 1] !== raw) {
+        ui.terminalHistory.push(raw);
+      }
+      ui.terminalHistoryIndex = -1;
+      ui.terminalLines.push({ type: "prompt", text: `$ ${raw}` });
+      e.target.value = "";
+      renderTerminalOutput();
+      const result = await runPikaCommand(raw);
+      if (result.clear) {
+        ui.terminalLines = [];
+      } else {
+        ui.terminalLines.push(...result.lines);
+      }
+      renderTerminalOutput();
+    } else if (e.key === "ArrowUp") {
+      if (!ui.terminalHistory.length) return;
+      e.preventDefault();
+      ui.terminalHistoryIndex =
+        ui.terminalHistoryIndex < 0 ? ui.terminalHistory.length - 1 : Math.max(0, ui.terminalHistoryIndex - 1);
+      e.target.value = ui.terminalHistory[ui.terminalHistoryIndex];
+    } else if (e.key === "ArrowDown") {
+      if (ui.terminalHistoryIndex < 0) return;
+      e.preventDefault();
+      ui.terminalHistoryIndex++;
+      if (ui.terminalHistoryIndex >= ui.terminalHistory.length) {
+        ui.terminalHistoryIndex = -1;
+        e.target.value = "";
+      } else {
+        e.target.value = ui.terminalHistory[ui.terminalHistoryIndex];
+      }
     }
   });
 }

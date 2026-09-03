@@ -1,22 +1,25 @@
 /*
- * Spritesheet grid: 8 cols x 11 rows, native cell 192x208 (Codex Pet format;
- * frame counts verified identical across all four bundled sheets — by
- * alpha-scanning cells AND by rendering them; an early scan had a y-flip bug
- * that mirrored the row counts, which made the pet blink out on empty cells).
+ * Spritesheet grid: 8 cols x 11 rows, native cell 192x208 (Codex Pet format).
  * #pet renders at native size; the user-chosen pet size is applied from
  * main.js as CSS zoom (plus a matching window resize).
- *   row  0: idle, front facing     (7 frames)
- *   row  1: run facing right       (8 frames)
- *   row  2: run facing left        (8 frames)
- *   row  3: wave, paw raised       (4 frames) — greetings
- *   row  4: pounce / play-bow      (5 frames) — play & fight wins
- *   row  5: sad, drooping head     (8 frames) — mood low
- *   row  6: begging, pleading paws (6 frames) — energy low
- *   row  7: thinking, paw on chin  (6 frames) — busy-idle variant; its
- *           eyes-closed col 3 doubles as the static "sleep" pose
- *   row  8: shy head-tilt          (6 frames) — affection response
- *   row  9: look around, right     (8 frames) — idle variant
- *   row 10: look around, left      (8 frames) — idle variant
+ *
+ * Only 4 of the 11 rows are wired up, by design — kept deliberately minimal
+ * (no more-than-4-legs poses like waving):
+ *   row  0: idle, front facing  (7 frames)
+ *   row  1: run facing right    (8 frames)
+ *   row  2: run facing left     (8 frames)
+ *   row  5: sad, drooping head  (8 frames) — mood low
+ * Rows 3, 4, 6-10 (wave/pounce/beg/think/shy/look-around) exist in the
+ * bundled sheets but are intentionally not referenced anywhere below.
+ *
+ * FUTURE: bundled sheets are planned to shrink to just these 4 rows (in
+ * this order) instead of the current 10+ row sheet. When that lands, update
+ * here:
+ *   - #sheet's `height` below (rows * 208px) and `background-size`.
+ *   - Each remaining @keyframes' vertical offset (row-index * -208px) — sad
+ *     moves from row 5 (-1040px) to row 3 (-624px); idle/run-right/run-left
+ *     keep row 0/1/2.
+ *   - The row comment above.
  */
 
 html,
@@ -144,42 +147,8 @@ body:active {
   animation: anim-run-left 0.7s steps(8, jump-none) infinite;
 }
 
-#pet[data-anim="wave"] #sheet {
-  animation: anim-wave 0.6s steps(4, jump-none) infinite;
-}
-
-#pet[data-anim="pounce"] #sheet {
-  animation: anim-pounce 0.7s steps(5, jump-none) infinite;
-}
-
 #pet[data-anim="sad"] #sheet {
   animation: anim-sad 2.2s steps(8, jump-none) infinite;
-}
-
-#pet[data-anim="beg"] #sheet {
-  animation: anim-beg 1.5s steps(6, jump-none) infinite;
-}
-
-#pet[data-anim="think"] #sheet {
-  animation: anim-think 2.1s steps(6, jump-none) infinite;
-}
-
-#pet[data-anim="shy"] #sheet {
-  animation: anim-shy 1.3s steps(6, jump-none) infinite;
-}
-
-#pet[data-anim="look-right"] #sheet {
-  animation: anim-look-right 2.4s steps(8, jump-none) infinite;
-}
-
-#pet[data-anim="look-left"] #sheet {
-  animation: anim-look-left 2.4s steps(8, jump-none) infinite;
-}
-
-/* The sheets have no dedicated sleeping row; a motionless pet showing the
-   think row's eyes-closed frame (row 7, col 3) reads as sound asleep. */
-#pet[data-anim="sleep"] #sheet {
-  transform: translate(-576px, -1456px);
 }
 
 /* Row y-offset = row x -208px; end x = -(frames - 1) x 192px. */
@@ -198,42 +167,7 @@ body:active {
   to   { transform: translate(-1344px, -416px); } /* row 2, 8 frames */
 }
 
-@keyframes anim-wave {
-  from { transform: translate(0, -624px); }
-  to   { transform: translate(-576px, -624px); } /* row 3, 4 frames */
-}
-
-@keyframes anim-pounce {
-  from { transform: translate(0, -832px); }
-  to   { transform: translate(-768px, -832px); } /* row 4, 5 frames */
-}
-
 @keyframes anim-sad {
   from { transform: translate(0, -1040px); }
   to   { transform: translate(-1344px, -1040px); } /* row 5, 8 frames */
-}
-
-@keyframes anim-beg {
-  from { transform: translate(0, -1248px); }
-  to   { transform: translate(-960px, -1248px); } /* row 6, 6 frames */
-}
-
-@keyframes anim-think {
-  from { transform: translate(0, -1456px); }
-  to   { transform: translate(-960px, -1456px); } /* row 7, 6 frames */
-}
-
-@keyframes anim-shy {
-  from { transform: translate(0, -1664px); }
-  to   { transform: translate(-960px, -1664px); } /* row 8, 6 frames */
-}
-
-@keyframes anim-look-right {
-  from { transform: translate(0, -1872px); }
-  to   { transform: translate(-1344px, -1872px); } /* row 9, 8 frames */
-}
-
-@keyframes anim-look-left {
-  from { transform: translate(0, -2080px); }
-  to   { transform: translate(-1344px, -2080px); } /* row 10, 8 frames */
 }

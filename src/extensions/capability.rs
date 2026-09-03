@@ -28,6 +28,23 @@ pub fn commands_for_permission(permission: &str) -> &'static [&'static str] {
         "windows:open" => &["allow-open-extension-window"],
         "widgets:show" => &["allow-ext-widget-set", "allow-ext-widget-push"],
         "system:keepAwake" => &["allow-set-keep-awake", "allow-keep-awake-status"],
+        // Burrow Cleaner (see cleaner.rs) — a normal, signed marketplace
+        // extension like any other, just one that happens to ask for real
+        // filesystem access. Split into three tiers so the install-time
+        // permission prompt is honest about what it's granting: plain
+        // numbers, read-only scanning, and the two calls that actually
+        // touch disk.
+        "system:stats" => &["allow-sys-status-snapshot"],
+        "fs:scan" => &[
+            "allow-sys-list-apps",
+            "allow-sys-scan-leftovers",
+            "allow-sys-scan-app-uninstall",
+            "allow-sys-scan-purge-targets",
+            "allow-sys-find-installers",
+            "allow-sys-analyze-dir",
+            "allow-sys-optimize-preview",
+        ],
+        "fs:cleanup" => &["allow-sys-delete-paths", "allow-sys-optimize-run"],
         _ => &[],
     }
 }
@@ -142,6 +159,9 @@ mod tests {
         assert_eq!(commands_for_permission("notifications:show"), &["allow-notify"]);
         assert_eq!(commands_for_permission("windows:open"), &["allow-open-extension-window"]);
         assert_eq!(commands_for_permission("widgets:show"), &["allow-ext-widget-set", "allow-ext-widget-push"]);
+        assert_eq!(commands_for_permission("system:stats"), &["allow-sys-status-snapshot"]);
+        assert_eq!(commands_for_permission("fs:cleanup"), &["allow-sys-delete-paths", "allow-sys-optimize-run"]);
+        assert!(commands_for_permission("fs:scan").contains(&"allow-sys-scan-leftovers"));
         assert!(commands_for_permission("network:fetch").is_empty());
         assert!(commands_for_permission("made:up").is_empty());
     }

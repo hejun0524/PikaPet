@@ -39,6 +39,16 @@ fn main() {
         "fetch_registry",
         "update_status",
         "restart_to_update",
+        "sys_status_snapshot",
+        "sys_list_apps",
+        "sys_scan_leftovers",
+        "sys_scan_app_uninstall",
+        "sys_scan_purge_targets",
+        "sys_find_installers",
+        "sys_optimize_preview",
+        "sys_optimize_run",
+        "sys_analyze_dir",
+        "sys_delete_paths",
     ]));
     tauri_build::try_build(attrs).expect("failed to run build script");
 }

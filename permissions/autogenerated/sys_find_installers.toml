@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-find-installers"
+description = "Enables the sys_find_installers command without any pre-configured scope."
+commands.allow = ["sys_find_installers"]
+
+[[permission]]
+identifier = "deny-sys-find-installers"
+description = "Denies the sys_find_installers command without any pre-configured scope."
+commands.deny = ["sys_find_installers"]

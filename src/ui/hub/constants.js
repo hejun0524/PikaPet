@@ -47,6 +47,13 @@ export const EXTENSIONS_TABS = [
   { key: "manager", label: "Manager", tabEmoji: "🧰" },
 ];
 
+/** Settings-view tabs. */
+export const SETTINGS_TABS = [
+  { key: "general", label: "General", tabEmoji: "⚙️" },
+  { key: "data", label: "Data", tabEmoji: "💾" },
+  { key: "developer", label: "Developer", tabEmoji: "🧑‍💻" },
+];
+
 /** Pet-Center-view tabs. */
 export const PETCENTER_TABS = [
   { key: "registry", label: "Registry", tabEmoji: "📋" },

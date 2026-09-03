@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-optimize-run"
+description = "Enables the sys_optimize_run command without any pre-configured scope."
+commands.allow = ["sys_optimize_run"]
+
+[[permission]]
+identifier = "deny-sys-optimize-run"
+description = "Denies the sys_optimize_run command without any pre-configured scope."
+commands.deny = ["sys_optimize_run"]

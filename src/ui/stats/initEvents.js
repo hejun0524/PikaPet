@@ -18,11 +18,11 @@ import {
   findSellable,
   specialFormUnlocked,
 } from "../items.js";
-import { SOUVENIR_SELL_PRICE, findTour, ticketOfferKey } from "../touring.js";
+import { SOUVENIR_SELL_PRICE, ALL_PLACES, SICK_BELOW, findTour, ticketOfferKey } from "../touring.js";
 import { DELIVER_MINUTES, findIngredient, findRecipe, nextBotPrice } from "../kitchen.js";
 import { schoolMinuteMs } from "../school.js";
 import { pet, runtime, widgetStates } from "./state.js";
-import { GOV_FEE } from "./constants.js";
+import { GOV_FEE, COIN_SHOWER_AMOUNT } from "./constants.js";
 import { render } from "./render.js";
 import { save } from "./save.js";
 import { broadcastState } from "./broadcastState.js";
@@ -42,7 +42,8 @@ import { isEntryUnlocked } from "./isEntryUnlocked.js";
 import { endCurrentActivity } from "./endCurrentActivity.js";
 import { processCaretaking } from "./processCaretaking.js";
 import { endCaretaking } from "./endCaretaking.js";
-import { applyDevCoins } from "./applyDevCoins.js";
+import { meterOf } from "./meterOf.js";
+import { touringCert } from "./touringCert.js";
 import { applyTrayCompact } from "./applyTrayCompact.js";
 import { openHub } from "./openHub.js";
 import { initFightclub } from "./initFightclub.js";
@@ -513,10 +514,44 @@ export function initEvents() {
   listen("settings-changed", (event) => {
     pet.settings = { ...pet.settings, ...event.payload };
     setLanguage(pet.settings.language);
-    const coinsChanged = applyDevCoins();
     render(); // repaints the popover in the (possibly new) language
-    if (coinsChanged) broadcastState();
+    // Always broadcast: settings now travel further than coins alone (e.g.
+    // focusMode, changeable from the pet's own right-click menu, not just
+    // the hub's Settings page) — the hub only learns about a settings
+    // change through this "pet-state" broadcast, it doesn't listen for
+    // "settings-changed" directly.
+    broadcastState();
     save();
+  });
+
+  // One-shot developer-console actions (Settings → Developer, see
+  // hub/pikaCommands.js) that touch pet state directly rather than a
+  // persisted setting — coin-shower/set-coins/heal/sick/achieve-all.
+  listen("pika-action", ({ payload }) => {
+    const { action, value } = payload ?? {};
+    if (action === "coin-shower") {
+      pet.coins += COIN_SHOWER_AMOUNT;
+    } else if (action === "set-coins") {
+      pet.coins = Math.max(0, Math.round(Number(value) || 0));
+    } else if (action === "heal") {
+      for (const meter of pet.care) meter.value = meter.max;
+    } else if (action === "sick") {
+      const health = meterOf("health");
+      if (health) health.value = value ? Math.max(0, SICK_BELOW - 1) : health.max;
+    } else if (action === "achieve-all") {
+      // Scoped to touring "Explorer" certs — career/degree certs need a
+      // tier/stage to award, which a blanket cheat command can't guess
+      // safely; touring certs only need a place key (see touringCert.js).
+      for (const place of ALL_PLACES) {
+        const exists = pet.achievements.some((a) => a.type === "touring" && a.place === place.key);
+        if (!exists) pet.achievements.push(touringCert(place.key));
+      }
+    } else {
+      return;
+    }
+    render();
+    save();
+    broadcastState();
   });
 
   // Rust's wall-clock watcher (main.rs spawn_sleep_watcher) reports how long
