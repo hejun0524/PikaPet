@@ -42,5 +42,6 @@ On macOS this produces a `.app` for /Applications; Settings → "Show up when co
 | [🏘️ The hub](doc/hub.md) | All twelve views: Home, Life, Career, Touring, Achievements, Pika's Trading Post, Darcy's Fight Club, Noonie's Kitchen, Dune's Daily Tasks, Pet Center, Extensions, Settings |
 | [🌐 Languages](doc/languages.md) | The i18n system (12 languages), how names are translated, adding a language or new strings |
 | [🧩 Extensions](doc/extensions.md) | Using extensions + the full developer guide: zip format, manifest, permissions, bridge API, tray widgets, localization, and how to publish to the Marketplace |
+| [🎨 Icons](doc/icons.md) | Plan for replacing the app's emoji with designer-authored SVG icons, incrementally and with emoji fallback |
 | [🚀 Building & Releasing](doc/releasing.md) | Building for macOS and Windows, and shipping a signed app update through the auto-updater |
 | [🧭 Roadmap](doc/roadmap.md) | Auto-update status, debug knobs, and the to-do table |
