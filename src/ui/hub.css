@@ -763,7 +763,7 @@ footer button.active,
   height: 104px;
   background-repeat: no-repeat;
   background-position: 0 0;
-  background-size: 768px 1144px;
+  background-size: 768px auto;
   border-radius: 12px;
   background-color: var(--bg);
 }

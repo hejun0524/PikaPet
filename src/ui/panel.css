@@ -15,7 +15,7 @@ header {
   width: 64px;
   height: 69px;
   background: url("pets/toy_poodle.webp") no-repeat 0 0;
-  background-size: 512px 762px;
+  background-size: 512px auto;
   border-radius: 12px;
   background-color: var(--chip);
 }
