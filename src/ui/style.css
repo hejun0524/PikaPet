@@ -1,25 +1,17 @@
 /*
  * Spritesheet grid: 8 cols x 11 rows, native cell 192x208 (Codex Pet format).
  * #pet renders at native size; the user-chosen pet size is applied from
- * main.js as CSS zoom (plus a matching window resize).
+ * main.js as CSS zoom (plus a matching window resize):
  *
- * Only 4 of the 11 rows are wired up, by design — kept deliberately minimal
- * (no more-than-4-legs poses like waving):
  *   row  0: idle, front facing  (7 frames)
  *   row  1: run facing right    (8 frames)
  *   row  2: run facing left     (8 frames)
- *   row  5: sad, drooping head  (8 frames) — mood low
- * Rows 3, 4, 6-10 (wave/pounce/beg/think/shy/look-around) exist in the
- * bundled sheets but are intentionally not referenced anywhere below.
- *
- * FUTURE: bundled sheets are planned to shrink to just these 4 rows (in
- * this order) instead of the current 10+ row sheet. When that lands, update
- * here:
- *   - #sheet's `height` below (rows * 208px) and `background-size`.
- *   - Each remaining @keyframes' vertical offset (row-index * -208px) — sad
- *     moves from row 5 (-1040px) to row 3 (-624px); idle/run-right/run-left
- *     keep row 0/1/2.
- *   - The row comment above.
+ *   row  3: sad, drooping head  (8 frames) — mood low
+ * 
+ * When anything changes, update:
+ *   - #sheet's `height` below (rows * 208px)
+ *   - #sheet's `background-size`: entire spritesheet size
+ *   - Each remaining @keyframes' vertical offset (row-index * -208px)
  */
 
 html,
@@ -129,9 +121,9 @@ body:active {
 
 #sheet {
   width: 1536px;
-  height: 2288px;
+  height: 832px;
   background: url("pets/toy_poodle.webp") no-repeat 0 0;
-  background-size: 1536px 2288px;
+  background-size: 1536px 832px;
   will-change: transform;
 }
 
@@ -168,6 +160,6 @@ body:active {
 }
 
 @keyframes anim-sad {
-  from { transform: translate(0, -1040px); }
-  to   { transform: translate(-1344px, -1040px); } /* row 5, 8 frames */
+  from { transform: translate(0, -624px); }
+  to   { transform: translate(-1344px, -624px); } /* row 3, 8 frames */
 }
