@@ -21,10 +21,7 @@ export const SPECIAL_SPECIES = [
   { key: "pika", label: "Pika", breed: "Garden Cat", sheet: "pets/garden_cat.webp", special: "cities", defaultName: "Pika" },
   { key: "darcy", label: "Darcy", breed: "Tuxedo Cat", sheet: "pets/tuxedo_cat.webp", special: "skills", defaultName: "Darcy" },
   { key: "noonie", label: "Noonie", breed: "Calico Cat", sheet: "pets/calico_cat.webp", special: "recipes", defaultName: "Noonie" },
-  // Placeholder sheet (no Desert Cat art yet) — same temporary borrow used
-  // historically for the other three before their real sheets existed;
-  // swap this `sheet` field for pets/desert_cat.webp once art exists.
-  { key: "dune", label: "Dune", breed: "Desert Cat", sheet: "pets/white_cat.webp", special: "duneStreak", defaultName: "Dune" },
+  { key: "dune", label: "Dune", breed: "Desert Cat", sheet: "pets/desert_cat.webp", special: "duneStreak", defaultName: "Dune" },
 ];
 
 /**
